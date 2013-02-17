@@ -1,5 +1,7 @@
 package com.cauchymop.goblob;
 
+import com.cauchymop.goblob.GoBoard.Color;
+
 /**
  * Class to represent the visible content of the board (stones and territories).
  */
@@ -34,12 +36,24 @@ public class BoardContent {
     }
   }
 
-  public boolean play(GoBoard.Color color, int x, int y) {
-    if (!goBoard.play(GoBoard.Color.Black, x, y)) {
+  public boolean play(ContentColor contentColor, int x, int y) {
+    GoBoard.Color color = getColorFromContentColor(contentColor);
+    if (!goBoard.play(color, x, y)) {
       return false;
     }
     updateFromGoBoard();
     return true;
+  }
+
+  private Color getColorFromContentColor(ContentColor contentColor) {
+    switch (contentColor) {
+      case Black:
+        return Color.Black;
+      case White:
+        return Color.White;
+      default:
+        throw new RuntimeException("Invalid ContentColor: only Black and White can play.");
+    }
   }
 
   private void updateFromGoBoard() {

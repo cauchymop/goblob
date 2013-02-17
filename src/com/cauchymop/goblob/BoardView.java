@@ -9,6 +9,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RectF;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -89,16 +92,32 @@ public class BoardView extends View {
         // Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
         if (lastClickedCellCoord != null && lastClickedCellCoord.x == x
             && lastClickedCellCoord.y == y) {
-          board.setContentColor(x, y, currentPlayerColor);
-          lastClickedCellCoord = null;
-          endTurn();
-          invalidate();
+          play(x, y);
           return true;
         }
       }
     }
 
     return false;
+  }
+
+  /**
+   * @param x
+   * @param y
+   */
+  public void play(int x, int y) {
+    if (board.play(currentPlayerColor, x, y)) {
+      board.setContentColor(x, y, currentPlayerColor);
+      lastClickedCellCoord = null;
+      endTurn();
+      invalidate();
+    } else {
+      try {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone r = RingtoneManager.getRingtone(getContext(), notification);
+        r.play();
+    } catch (Exception e) {}
+    }
   }
 
   private void endTurn() {
