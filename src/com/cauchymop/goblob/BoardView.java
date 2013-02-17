@@ -10,43 +10,40 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
+
+import static com.cauchymop.goblob.BoardContent.ContentColor;
 
 @SuppressLint("DrawAllocation")
 public class BoardView extends View {
 
-    private enum ContentColor {
-        Empty, Black, White, BlackTerritory, WhiteTerritory
-    }
+    private int boardSizeInCells = 5;
+    private BoardContent board = new BoardContent(boardSizeInCells);
+    private ContentColor currentPlayerColor = ContentColor.Black;
+    private Point lastClickedCellCoord = null;
+    private int boardSizeInPixels;
+    private int marginX;
+    private int marginY;
+    private int cellSizeInPixels;
 
-    private ContentColor[][] board                = null;
-    private int              boardSizeInCells     = 5;
-    private ContentColor     currentPlayerColor   = ContentColor.Black;
-    private Point            lastClickedCellCoord = null;
-    private int              boardSizeInPixels;
-    private int              marginX;
-    private int              marginY;
-    private int              cellSizeInPixels;
+    private Map<BoardContent.ContentColor, Paint> colorToPaint = ImmutableMap.of(
+            ContentColor.White, new Paint(Color.RED),
+            ContentColor.Black, new Paint(Color.GREEN),
+            ContentColor.WhiteTerritory, new Paint(Color.MAGENTA),
+            ContentColor.BlackTerritory, new Paint(Color.CYAN),
+            ContentColor.Empty, new Paint(Color.GRAY)
+    );
 
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initBoard();
     }
 
     public BoardView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        initBoard();
     }
 
-    private void initBoard() {
-        board = new ContentColor[boardSizeInCells][];
-        for (int row = 0; row < boardSizeInCells; row++) {
-            board[row] = new ContentColor[boardSizeInCells];
-            for (int col = 0; col < boardSizeInCells; col++) {
-                board[row][col] = ContentColor.Empty;
-            }
-        }
-    }
-    
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -58,45 +55,36 @@ public class BoardView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         final int action = event.getAction();
         int nb_fingers = event.getPointerCount();
-        
+
         if (nb_fingers != 1) {
             return false;
         }
-        
+
+        int x = (int) ((event.getX() - marginX) / cellSizeInPixels);
+        int y = (int) ((event.getY() - marginY) / cellSizeInPixels);
+        if (y < 0 || y >= boardSizeInCells || x < 0 || x >= boardSizeInCells) {
+            lastClickedCellCoord = null;
+            return false;
+        }
         switch (action & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
-                int row = (int) ((event.getY() - marginY) / cellSizeInPixels);
-                int col = (int) ((event.getX() - marginX) / cellSizeInPixels);
 //                Log.i("TOUCH EVENT", "ACTION_DOWN: row:" + row +" col:" + col);
-                if (row < 0 || row >= boardSizeInCells || col < 0 || col >= boardSizeInCells) {
-                    lastClickedCellCoord = null;
-                    return false;
-                }
-                lastClickedCellCoord = new Point(col, row);
+                lastClickedCellCoord = new Point(x, y);
                 return true;
             }
 
             case MotionEvent.ACTION_UP: {
-                int row = (int) ((event.getY() - marginY) / cellSizeInPixels);
-                int col = (int) ((event.getX() - marginX) / cellSizeInPixels);
 //                Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
-                if (row < 0 || row >= boardSizeInCells || col < 0 || col >= boardSizeInCells) {
-                    lastClickedCellCoord = null;
-                    return false;
-                }
-
-                if (lastClickedCellCoord != null && lastClickedCellCoord.x == col && lastClickedCellCoord.y == row) {
-                    board[row][col] = currentPlayerColor;
+                if (lastClickedCellCoord != null && lastClickedCellCoord.x == x && lastClickedCellCoord.y == y) {
+                    board.setContentColor(x, y, currentPlayerColor);
                     lastClickedCellCoord = null;
                     endTurn();
                     invalidate();
                     return true;
                 }
             }
-
         }
 
         return false;
@@ -108,7 +96,6 @@ public class BoardView extends View {
         } else {
             currentPlayerColor = ContentColor.Black;
         }
-
     }
 
     @Override
@@ -119,39 +106,16 @@ public class BoardView extends View {
         int canvasMarginY = (canvas.getHeight() - canvasBoardSizeInPixels) / 2;
         int canvasCellSizeInPixels = canvasBoardSizeInPixels / boardSizeInCells;
         RectF r = new RectF();
-        for (int row = 0; row < boardSizeInCells; row++) {
-            for (int col = 0; col < boardSizeInCells; col++) {
-                r.set(canvasMarginX + (canvasCellSizeInPixels * col), canvasMarginY + (canvasCellSizeInPixels * row), canvasMarginX
-                                                                                                                      + (canvasCellSizeInPixels * (col + 1)),
-                      canvasMarginY + (canvasCellSizeInPixels * (row + 1)));
-                Paint paint = getPaintFromContentColor(board[row][col]);
+        for (int x = 0; x < boardSizeInCells; x++) {
+            for (int y = 0; y < boardSizeInCells; y++) {
+                r.set(canvasMarginX + (canvasCellSizeInPixels * y),
+                        canvasMarginY + (canvasCellSizeInPixels * x),
+                        canvasMarginX + (canvasCellSizeInPixels * (y + 1)),
+                        canvasMarginY + (canvasCellSizeInPixels * (x + 1)));
+                Paint paint = colorToPaint.get(board.getContentColor(x,  y));
                 canvas.drawRect(r, paint);
             }
         }
     }
 
-    private Paint getPaintFromContentColor(ContentColor contentColor) {
-        Paint paint = new Paint();
-        switch (contentColor) {
-            case White:
-                paint.setColor(Color.RED);
-                break;
-            case Black:
-                paint.setColor(Color.GREEN);
-                break;
-            case WhiteTerritory:
-                paint.setColor(Color.MAGENTA);
-                break;
-            case BlackTerritory:
-                paint.setColor(Color.CYAN);
-                break;
-            case Empty:
-                paint.setColor(Color.GRAY);
-                break;
-
-            default:
-                break;
-        }
-        return paint;
-    }
 }
