@@ -2,8 +2,6 @@ package com.cauchymop.goblob;
 
 import java.util.HashSet;
 
-import android.util.Log;
-
 /**
  * Class to represent the state of a Go board, and the rules of the game to play moves.
  */
@@ -114,8 +112,7 @@ public class GoBoard {
 
   private void initEmptyCells() {
     board = new Color[(boardSize+2)*(boardSize+2)];
-    Log.i("SIGSEGV_POLICE", "board = " + board);
-    for (int x = 0 ; x < boardSize+2 ; x++) {
+    for (int x = 0 ; x < boardSize ; x++) {
       for (int y = 0 ; y < boardSize ; y++) {
         board[getPos(x, y)] = Color.Empty;
       }
@@ -123,14 +120,12 @@ public class GoBoard {
   }
 
   private void initBorderCells() {
-    Log.i("SIGSEGV_POLICE", "initBorderCells BEGIN");
     for (int col = 0 ; col < boardSize ; col++) {
-      board[getPos(0, col)] = Color.Border;
-      board[getPos(col, 0)] = Color.Border;
-      board[getPos(boardSize-1, col)] = Color.Border;
-      board[getPos(col, boardSize-1)] = Color.Border;
+      board[getPos(-1, col)] = Color.Border;
+      board[getPos(col, -1)] = Color.Border;
+      board[getPos(boardSize, col)] = Color.Border;
+      board[getPos(col, boardSize)] = Color.Border;
     }
-    Log.i("SIGSEGV_POLICE", "initBorderCells END");
   }
 
   private int getPos(int x, int y) {
