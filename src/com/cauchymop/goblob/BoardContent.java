@@ -11,6 +11,7 @@ public class BoardContent {
 
     public BoardContent(int boardSizeInCells) {
         this.boardSizeInCells = boardSizeInCells;
+        initBoard();
     }
 
     public void setContentColor(int x, int y, ContentColor currentPlayerColor) {
