@@ -2,17 +2,18 @@ package com.cauchymop.goblob;
 
 import java.util.HashSet;
 
+import android.util.Log;
+
 /**
  * Class to represent the state of a Go board, and the rules of the game to play moves.
  */
 public class GoBoard {
 
-  private final int boardSizeInCells;
   private Color board[];
   private int boardSize;
 
-  public GoBoard(int boardSizeInCells) {
-    this.boardSizeInCells = boardSizeInCells;
+  public GoBoard(int boardSize) {
+    this.boardSize = boardSize;
     initEmptyCells();
     initBorderCells();
   }
@@ -96,11 +97,11 @@ public class GoBoard {
   }
 
   private int getNorth(int pos) {
-    return pos - (boardSizeInCells + 2);
+    return pos - (boardSize + 2);
   }
 
   private int getSouth(int pos) {
-    return pos + (boardSizeInCells + 2);
+    return pos + (boardSize + 2);
   }
 
   private int getWest(int pos) {
@@ -112,25 +113,28 @@ public class GoBoard {
   }
 
   private void initEmptyCells() {
-    board = new Color[(boardSizeInCells+2)*(boardSizeInCells+2)];
-    for (int x = 0 ; x < boardSizeInCells+2 ; x++) {
-      for (int y = 0 ; y < boardSizeInCells ; y++) {
+    board = new Color[(boardSize+2)*(boardSize+2)];
+    Log.i("SIGSEGV_POLICE", "board = " + board);
+    for (int x = 0 ; x < boardSize+2 ; x++) {
+      for (int y = 0 ; y < boardSize ; y++) {
         board[getPos(x, y)] = Color.Empty;
       }
     }
   }
 
   private void initBorderCells() {
-    for (int col = 0 ; col < boardSizeInCells ; col++) {
+    Log.i("SIGSEGV_POLICE", "initBorderCells BEGIN");
+    for (int col = 0 ; col < boardSize ; col++) {
       board[getPos(0, col)] = Color.Border;
       board[getPos(col, 0)] = Color.Border;
-      board[getPos(boardSizeInCells-1, col)] = Color.Border;
-      board[getPos(col, boardSizeInCells-1)] = Color.Border;
+      board[getPos(boardSize-1, col)] = Color.Border;
+      board[getPos(col, boardSize-1)] = Color.Border;
     }
+    Log.i("SIGSEGV_POLICE", "initBorderCells END");
   }
 
   private int getPos(int x, int y) {
-    return (y + 1) * (boardSizeInCells + 2) + (x + 1);
+    return (y + 1) * (boardSize + 2) + (x + 1);
   }
 
   public int getBoardSize() {
