@@ -66,29 +66,29 @@ public class GoBoard {
         }
         HashSet<Integer> liberties = new HashSet<Integer>();
         HashSet<Integer> stones = new HashSet<Integer>();
-        findLiberties(board[pos], pos, stones, liberties);
+        getGroupInfo(board[pos], pos, stones, liberties);
         if (liberties.isEmpty()) {
             captured.addAll(stones);
         }
     }
 
-    private HashSet getLiberties(int pos) {
+    private HashSet<Integer> getLiberties(int pos) {
         HashSet<Integer> liberties = new HashSet<Integer>();
         HashSet<Integer> stones = new HashSet<Integer>();
-        findLiberties(board[pos], pos, stones, liberties);
+        getGroupInfo(board[pos], pos, stones, liberties);
         return liberties;
     }
 
-    private void findLiberties(Color color, int pos, HashSet<Integer> stones, HashSet<Integer> liberties) {
+    private void getGroupInfo(Color color, int pos, HashSet<Integer> stones, HashSet<Integer> liberties) {
         if (stones.contains(pos) || liberties.contains(pos)) {
             return;
         }
         if (board[pos] == color) {
             stones.add(pos);
-            findLiberties(color, getNorth(pos), stones, liberties);
-            findLiberties(color, getSouth(pos), stones, liberties);
-            findLiberties(color, getWest(pos), stones, liberties);
-            findLiberties(color, getEast(pos), stones, liberties);
+            getGroupInfo(color, getNorth(pos), stones, liberties);
+            getGroupInfo(color, getSouth(pos), stones, liberties);
+            getGroupInfo(color, getWest(pos), stones, liberties);
+            getGroupInfo(color, getEast(pos), stones, liberties);
         } else if (board[pos] == Color.Empty) {
             liberties.add(pos);
         }
