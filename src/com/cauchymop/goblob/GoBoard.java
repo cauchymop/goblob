@@ -9,8 +9,9 @@ public class GoBoard {
 
     private final int boardSizeInCells;
     private Color board[];
+  private int boardSize;
 
-    public GoBoard(int boardSizeInCells) {
+  public GoBoard(int boardSizeInCells) {
         this.boardSizeInCells = boardSizeInCells;
         initEmptyCells();
         initBorderCells();
@@ -132,7 +133,15 @@ public class GoBoard {
         return (y + 1) * (boardSizeInCells + 2) + (x + 1);
     }
 
-    private static enum Color {
+  public int getBoardSize() {
+    return boardSize;
+  }
+
+  public Color getColor(int x, int y) {
+    return board[getPos(x, y)];
+  }
+
+  public static enum Color {
         Empty,
         Border,
         Black,

@@ -20,7 +20,7 @@ import com.google.common.collect.ImmutableMap;
 public class BoardView extends View {
 
   private int boardSizeInCells = 5;
-  private BoardContent board = new BoardContent(boardSizeInCells);
+  private BoardContent board = new BoardContent(new GoBoard(boardSizeInCells));
   private ContentColor currentPlayerColor = ContentColor.Black;
   private Point lastClickedCellCoord = null;
   private int boardSizeInPixels;
