@@ -10,7 +10,7 @@ public class BoardContent {
   private final int boardSize;
   private final GoBoard goBoard;
 
-  private ContentColor[][] board;
+  private ContentColor[] board;
 
   public BoardContent(GoBoard goBoard) {
     this.goBoard = goBoard;
@@ -19,19 +19,22 @@ public class BoardContent {
   }
 
   public void setContentColor(int x, int y, ContentColor currentPlayerColor) {
-    board[y][x] = currentPlayerColor;
+    board[getPos(x, y)] = currentPlayerColor;
+  }
+
+  private int getPos(int x, int y) {
+    return y * boardSize + x;
   }
 
   public ContentColor getContentColor(int x, int y) {
-    return board[y][x];
+    return board[getPos(x, y)];
   }
 
   private void initBoard() {
-    board = new ContentColor[boardSize][];
-    for (int row = 0; row < boardSize; row++) {
-      board[row] = new ContentColor[boardSize];
-      for (int col = 0; col < boardSize; col++) {
-        board[row][col] = ContentColor.Empty;
+    board = new ContentColor[boardSize * boardSize];
+    for (int y = 0; y < boardSize; y++) {
+      for (int x = 0; x < boardSize; x++) {
+        board[getPos(x, y)] = ContentColor.Empty;
       }
     }
   }
@@ -42,7 +45,12 @@ public class BoardContent {
       return false;
     }
     updateFromGoBoard();
+    updateTerritories();
     return true;
+  }
+
+  private void updateTerritories() {
+    // TODO: scan board and update territories.
   }
 
   private Color getColorFromContentColor(ContentColor contentColor) {
@@ -61,13 +69,13 @@ public class BoardContent {
       for (int y = 0 ; y <boardSize ; y++) {
         switch (goBoard.getColor(x, y)) {
           case Empty:
-            board[y][x] = ContentColor.Empty;
+            board[getPos(x, y)] = ContentColor.Empty;
             break;
           case Black:
-            board[y][x] = ContentColor.Black;
+            board[getPos(x, y)] = ContentColor.Black;
             break;
           case White:
-            board[y][x] = ContentColor.White;
+            board[getPos(x, y)] = ContentColor.White;
             break;
           default:
             throw new RuntimeException("Invalid color");
@@ -77,6 +85,6 @@ public class BoardContent {
   }
 
   public static enum ContentColor {
-    Empty, Black, White, BlackTerritory, WhiteTerritory;
+    Empty, Black, White, BlackTerritory, WhiteTerritory
   }
 }
