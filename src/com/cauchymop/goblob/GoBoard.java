@@ -5,15 +5,17 @@ import java.util.HashSet;
 /**
  * Class to represent the state of a Go board, and the rules of the game to play moves.
  */
-public class GoBoard {
-
-  private Color board[];
-  private int boardSize;
+public class GoBoard extends Board {
 
   public GoBoard(int boardSize) {
-    this.boardSize = boardSize;
+    super(boardSize);
     initEmptyCells();
     initBorderCells();
+  }
+
+  @Override
+  protected int getInternalBoardSize() {
+    return getBoardSize() + 2;
   }
 
   /**
@@ -26,13 +28,13 @@ public class GoBoard {
    */
   public boolean play(Color color, int x, int y) {
     int pos = getPos(x, y);
-    if (board[pos] != Color.Empty) {
+    if (getColor(pos) != Color.Empty) {
       return false;
     }
-    board[pos] = color;
+    setColor(pos, color);
     captureNeighbors(pos);
     if (getLiberties(pos).isEmpty()) {
-      board[pos] = Color.Empty;
+      setColor(pos, Color.Empty);
       return false;
     }
     return true;
@@ -49,24 +51,24 @@ public class GoBoard {
   }
 
   private void captureNeighbors(int pos) {
-    Color opponent = getOpponent(board[pos]);
+    Color opponent = getOpponent(getColor(pos));
     HashSet<Integer> captured = new HashSet<Integer>();
     findCapturedNeighbors(getNorth(pos), opponent, captured);
     findCapturedNeighbors(getSouth(pos), opponent, captured);
     findCapturedNeighbors(getEast(pos), opponent, captured);
     findCapturedNeighbors(getWest(pos), opponent, captured);
     for (Integer capturedPosition : captured) {
-      board[capturedPosition] = Color.Empty;
+      setColor(capturedPosition, Color.Empty);
     }
   }
 
   private void findCapturedNeighbors(int pos, Color opponent, HashSet<Integer> captured) {
-    if (board[pos] != opponent) {
+    if (getColor(pos) != opponent) {
       return;
     }
     HashSet<Integer> liberties = new HashSet<Integer>();
     HashSet<Integer> stones = new HashSet<Integer>();
-    getGroupInfo(board[pos], pos, stones, liberties);
+    getGroupInfo(getColor(pos), pos, stones, liberties);
     if (liberties.isEmpty()) {
       captured.addAll(stones);
     }
@@ -75,7 +77,7 @@ public class GoBoard {
   private HashSet<Integer> getLiberties(int pos) {
     HashSet<Integer> liberties = new HashSet<Integer>();
     HashSet<Integer> stones = new HashSet<Integer>();
-    getGroupInfo(board[pos], pos, stones, liberties);
+    getGroupInfo(getColor(pos), pos, stones, liberties);
     return liberties;
   }
 
@@ -83,67 +85,35 @@ public class GoBoard {
     if (stones.contains(pos) || liberties.contains(pos)) {
       return;
     }
-    if (board[pos] == color) {
+    if (getColor(pos) == color) {
       stones.add(pos);
       getGroupInfo(color, getNorth(pos), stones, liberties);
       getGroupInfo(color, getSouth(pos), stones, liberties);
       getGroupInfo(color, getWest(pos), stones, liberties);
       getGroupInfo(color, getEast(pos), stones, liberties);
-    } else if (board[pos] == Color.Empty) {
+    } else if (getColor(pos) == Color.Empty) {
       liberties.add(pos);
     }
   }
 
-  private int getNorth(int pos) {
-    return pos - (boardSize + 2);
-  }
-
-  private int getSouth(int pos) {
-    return pos + (boardSize + 2);
-  }
-
-  private int getWest(int pos) {
-    return pos - 1;
-  }
-
-  private int getEast(int pos) {
-    return pos + 1;
-  }
-
   private void initEmptyCells() {
-    board = new Color[(boardSize+2)*(boardSize+2)];
-    for (int x = 0 ; x < boardSize ; x++) {
-      for (int y = 0 ; y < boardSize ; y++) {
-        board[getPos(x, y)] = Color.Empty;
+    for (int x = 0 ; x < getBoardSize() ; x++) {
+      for (int y = 0 ; y < getBoardSize() ; y++) {
+        setColor(x, y, Color.Empty);
       }
     }
   }
 
   private void initBorderCells() {
-    for (int col = 0 ; col < boardSize ; col++) {
-      board[getPos(-1, col)] = Color.Border;
-      board[getPos(col, -1)] = Color.Border;
-      board[getPos(boardSize, col)] = Color.Border;
-      board[getPos(col, boardSize)] = Color.Border;
+    for (int col = -1 ; col < getBoardSize() + 1 ; col++) {
+      setColor(-1, col, Color.Border);
+      setColor(col, -1, Color.Border);
+      setColor(getBoardSize(), col, Color.Border);
+      setColor(col, getBoardSize(), Color.Border);
     }
   }
 
-  private int getPos(int x, int y) {
-    return (y + 1) * (boardSize + 2) + (x + 1);
-  }
-
-  public int getBoardSize() {
-    return boardSize;
-  }
-
-  public Color getColor(int x, int y) {
-    return board[getPos(x, y)];
-  }
-
-  public static enum Color {
-    Empty,
-    Border,
-    Black,
-    White,
+  public int getPos(int x, int y) {
+    return (y + 1) * getInternalBoardSize() + (x + 1);
   }
 }

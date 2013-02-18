@@ -1,46 +1,27 @@
 package com.cauchymop.goblob;
 
-import com.cauchymop.goblob.GoBoard.Color;
-
 /**
  * Class to represent the visible content of the board (stones and territories).
  */
-public class BoardContent {
+public class BoardContent extends Board {
 
-  private final int boardSize;
   private final GoBoard goBoard;
 
-  private ContentColor[] board;
-
   public BoardContent(GoBoard goBoard) {
+    super(goBoard.getBoardSize());
     this.goBoard = goBoard;
-    this.boardSize = goBoard.getBoardSize();
     initBoard();
   }
 
-  public void setContentColor(int x, int y, ContentColor currentPlayerColor) {
-    board[getPos(x, y)] = currentPlayerColor;
-  }
-
-  private int getPos(int x, int y) {
-    return y * boardSize + x;
-  }
-
-  public ContentColor getContentColor(int x, int y) {
-    return board[getPos(x, y)];
-  }
-
   private void initBoard() {
-    board = new ContentColor[boardSize * boardSize];
-    for (int y = 0; y < boardSize; y++) {
-      for (int x = 0; x < boardSize; x++) {
-        board[getPos(x, y)] = ContentColor.Empty;
+    for (int x = 0; x < getBoardSize(); x++) {
+      for (int y = 0; y < getBoardSize(); y++) {
+        setColor(getPos(x, y), Color.Empty);
       }
     }
   }
 
-  public boolean play(ContentColor contentColor, int x, int y) {
-    GoBoard.Color color = getColorFromContentColor(contentColor);
+  public boolean play(Color color, int x, int y) {
     if (!goBoard.play(color, x, y)) {
       return false;
     }
@@ -53,38 +34,11 @@ public class BoardContent {
     // TODO: scan board and update territories.
   }
 
-  private Color getColorFromContentColor(ContentColor contentColor) {
-    switch (contentColor) {
-      case Black:
-        return Color.Black;
-      case White:
-        return Color.White;
-      default:
-        throw new RuntimeException("Invalid ContentColor: only Black and White can play.");
-    }
-  }
-
   private void updateFromGoBoard() {
-    for (int x = 0 ; x < boardSize ; x++) {
-      for (int y = 0 ; y <boardSize ; y++) {
-        switch (goBoard.getColor(x, y)) {
-          case Empty:
-            board[getPos(x, y)] = ContentColor.Empty;
-            break;
-          case Black:
-            board[getPos(x, y)] = ContentColor.Black;
-            break;
-          case White:
-            board[getPos(x, y)] = ContentColor.White;
-            break;
-          default:
-            throw new RuntimeException("Invalid color");
-        }
+    for (int x = 0 ; x < getBoardSize() ; x++) {
+      for (int y = 0 ; y < getBoardSize() ; y++) {
+        setColor(getPos(x, y), goBoard.getColor(x, y));
       }
     }
-  }
-
-  public static enum ContentColor {
-    Empty, Black, White, BlackTerritory, WhiteTerritory
   }
 }

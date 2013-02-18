@@ -16,7 +16,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.cauchymop.goblob.BoardContent.ContentColor;
 import com.google.common.collect.ImmutableMap;
 
 @SuppressLint("DrawAllocation")
@@ -24,30 +23,20 @@ public class BoardView extends View {
 
   private int boardSizeInCells = 5;
   private BoardContent board = new BoardContent(new GoBoard(boardSizeInCells));
-  private ContentColor currentPlayerColor = ContentColor.Black;
+  private Board.Color currentPlayerColor = Board.Color.Black;
   private Point lastClickedCellCoord = null;
   private int boardSizeInPixels;
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
 
-  private Map<BoardContent.ContentColor, Paint> colorToPaint = ImmutableMap.of(
-      ContentColor.White, createPaint(Color.RED),
-      ContentColor.Black, createPaint(Color.GREEN),
-      ContentColor.WhiteTerritory, createPaint(Color.MAGENTA),
-      ContentColor.BlackTerritory, createPaint(Color.CYAN),
-      ContentColor.Empty, createPaint(Color.GRAY)
+  private Map<Board.Color, Paint> colorToPaint = ImmutableMap.of(
+      Board.Color.White, createPaint(Color.RED),
+      Board.Color.Black, createPaint(Color.GREEN),
+      Board.Color.WhiteTerritory, createPaint(Color.MAGENTA),
+      Board.Color.BlackTerritory, createPaint(Color.CYAN),
+      Board.Color.Empty, createPaint(Color.GRAY)
   );
-
-  /**
-   * @param color
-   * @return
-   */
-  public Paint createPaint(int color) {
-    Paint p = new Paint();
-    p.setColor(color);
-    return p;
-  }
 
   public BoardView(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -55,6 +44,12 @@ public class BoardView extends View {
 
   public BoardView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
+  }
+
+  private Paint createPaint(int color) {
+    Paint p = new Paint();
+    p.setColor(color);
+    return p;
   }
 
   @Override
@@ -101,30 +96,33 @@ public class BoardView extends View {
     return false;
   }
 
-  /**
-   * @param x
-   * @param y
-   */
-  public void play(int x, int y) {
+  private void play(int x, int y) {
     if (board.play(currentPlayerColor, x, y)) {
-      board.setContentColor(x, y, currentPlayerColor);
+      board.setColor(x, y, currentPlayerColor);
       lastClickedCellCoord = null;
       endTurn();
       invalidate();
     } else {
-      try {
-        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(getContext(), notification);
-        r.play();
-    } catch (Exception e) {}
+      buzz();
+    }
+  }
+
+  private void buzz() {
+    try {
+      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+      Ringtone r = RingtoneManager.getRingtone(getContext(), notification);
+      r.play();
+    } catch (Exception e) {
+      System.err.println("Exception while buzzing");
+      e.printStackTrace();
     }
   }
 
   private void endTurn() {
-    if (currentPlayerColor == ContentColor.Black) {
-      currentPlayerColor = ContentColor.White;
+    if (currentPlayerColor == Board.Color.Black) {
+      currentPlayerColor = Board.Color.White;
     } else {
-      currentPlayerColor = ContentColor.Black;
+      currentPlayerColor = Board.Color.Black;
     }
   }
 
@@ -142,7 +140,7 @@ public class BoardView extends View {
             canvasMarginY + (canvasCellSizeInPixels * y),
             canvasMarginX + (canvasCellSizeInPixels * (x + 1)),
             canvasMarginY + (canvasCellSizeInPixels * (y + 1)));
-        ContentColor contentColor = board.getContentColor(x, y);
+        Board.Color contentColor = board.getColor(x, y);
         // Log.i("", x + "," + y + ": " + contentColor);
         Paint paint = colorToPaint.get(contentColor);
         canvas.drawRect(r, paint);
