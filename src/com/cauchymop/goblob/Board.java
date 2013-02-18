@@ -10,11 +10,7 @@ public class Board {
 
   public Board(int boardSize) {
     this.boardSize = boardSize;
-    board = new Color[getInternalBoardSize() * getInternalBoardSize()];
-  }
-
-  protected int getInternalBoardSize() {
-    return boardSize;
+    board = new Color[(boardSize + 2) * (boardSize + 2)];
   }
 
   protected int getBoardSize() {
@@ -22,7 +18,7 @@ public class Board {
   }
 
   protected int getPos(int x, int y) {
-    return y * getInternalBoardSize() + x;
+    return (y + 1) * (boardSize + 2) + (x + 1);
   }
 
   public Color getColor(int position) {
@@ -42,11 +38,11 @@ public class Board {
   }
 
   public int getNorth(int pos) {
-    return pos - getInternalBoardSize();
+    return pos - (boardSize + 2);
   }
 
   public int getSouth(int pos) {
-    return pos + getInternalBoardSize();
+    return pos + (boardSize + 2);
   }
 
   public int getWest(int pos) {

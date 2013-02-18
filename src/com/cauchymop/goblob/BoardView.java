@@ -5,7 +5,6 @@ import java.util.Map;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RectF;
@@ -31,11 +30,11 @@ public class BoardView extends View {
   private int cellSizeInPixels;
 
   private Map<Board.Color, Paint> colorToPaint = ImmutableMap.of(
-      Board.Color.White, createPaint(Color.RED),
-      Board.Color.Black, createPaint(Color.GREEN),
-      Board.Color.WhiteTerritory, createPaint(Color.MAGENTA),
-      Board.Color.BlackTerritory, createPaint(Color.CYAN),
-      Board.Color.Empty, createPaint(Color.GRAY)
+      Board.Color.White, createPaint(0xFFFF0000),
+      Board.Color.Black, createPaint(0xFF00FF00),
+      Board.Color.WhiteTerritory, createPaint(0xFFC08080),
+      Board.Color.BlackTerritory, createPaint(0xFF80C080),
+      Board.Color.Empty, createPaint(0xFF000000)
   );
 
   public BoardView(Context context, AttributeSet attrs) {

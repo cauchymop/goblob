@@ -13,11 +13,6 @@ public class GoBoard extends Board {
     initBorderCells();
   }
 
-  @Override
-  protected int getInternalBoardSize() {
-    return getBoardSize() + 2;
-  }
-
   /**
    * Plays a move.
    *
@@ -111,9 +106,5 @@ public class GoBoard extends Board {
       setColor(getBoardSize(), col, Color.Border);
       setColor(col, getBoardSize(), Color.Border);
     }
-  }
-
-  public int getPos(int x, int y) {
-    return (y + 1) * getInternalBoardSize() + (x + 1);
   }
 }
