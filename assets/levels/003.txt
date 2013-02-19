@@ -1,0 +1,7 @@
+# Invade white before filling dame.
+
+. ○ ○ ○ .
+. . ● ○ ○
+● ● ● ○ .
+. ● ● ○ ○
+● . ● . .

@@ -1,0 +1,7 @@
+# Race for the center points.
+
+. ● ● ○ .
+. ● . ○ .
+. ● ○ ○ ○
+● ● . ○ .
+. ● . ○ .
