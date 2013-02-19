@@ -9,8 +9,6 @@ public class GoBoard extends Board {
 
   public GoBoard(int boardSize) {
     super(boardSize);
-    initEmptyCells();
-    initBorderCells();
   }
 
   /**
@@ -88,23 +86,6 @@ public class GoBoard extends Board {
       getGroupInfo(color, getEast(pos), stones, liberties);
     } else if (getColor(pos) == Color.Empty) {
       liberties.add(pos);
-    }
-  }
-
-  private void initEmptyCells() {
-    for (int x = 0 ; x < getBoardSize() ; x++) {
-      for (int y = 0 ; y < getBoardSize() ; y++) {
-        setColor(x, y, Color.Empty);
-      }
-    }
-  }
-
-  private void initBorderCells() {
-    for (int col = -1 ; col < getBoardSize() + 1 ; col++) {
-      setColor(-1, col, Color.Border);
-      setColor(col, -1, Color.Border);
-      setColor(getBoardSize(), col, Color.Border);
-      setColor(col, getBoardSize(), Color.Border);
     }
   }
 }

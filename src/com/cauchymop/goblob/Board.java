@@ -11,6 +11,25 @@ public class Board {
   public Board(int boardSize) {
     this.boardSize = boardSize;
     board = new Color[(boardSize + 2) * (boardSize + 2)];
+    initEmptyCells();
+    initBorderCells();
+  }
+
+  private void initEmptyCells() {
+    for (int x = 0 ; x < getBoardSize() ; x++) {
+      for (int y = 0 ; y < getBoardSize() ; y++) {
+        setColor(x, y, Color.Empty);
+      }
+    }
+  }
+
+  private void initBorderCells() {
+    for (int col = -1 ; col < getBoardSize() + 1 ; col++) {
+      setColor(-1, col, Color.Border);
+      setColor(col, -1, Color.Border);
+      setColor(getBoardSize(), col, Color.Border);
+      setColor(col, getBoardSize(), Color.Border);
+    }
   }
 
   protected int getBoardSize() {
