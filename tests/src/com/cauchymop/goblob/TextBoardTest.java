@@ -46,4 +46,13 @@ public class TextBoardTest extends AndroidTestCase {
     assertEquals(Board.Color.Empty, board.getColor(1, 1));
     assertEquals(Board.Color.White, board.getColor(0, 1));
   }
+
+  public void testFillBoard_comment() {
+    Board board = new Board(2);
+    TextBoard.fillBoard(board, "# .●\n○");
+    assertEquals(Board.Color.White, board.getColor(0, 0));
+    assertEquals(Board.Color.Empty, board.getColor(1, 0));
+    assertEquals(Board.Color.Empty, board.getColor(1, 1));
+    assertEquals(Board.Color.Empty, board.getColor(0, 1));
+  }
 }
