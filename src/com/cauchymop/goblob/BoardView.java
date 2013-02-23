@@ -21,20 +21,19 @@ import com.google.common.collect.ImmutableMap;
 public class BoardView extends View {
 
   private int boardSizeInCells = 5;
-  private BoardContent board = new BoardContent(new GoBoard(boardSizeInCells));
-  private Board.Color currentPlayerColor = Board.Color.Black;
+  private GoGame game = new GoGame(boardSizeInCells);
   private Point lastClickedCellCoord = null;
   private int boardSizeInPixels;
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
 
-  private Map<Board.Color, Paint> colorToPaint = ImmutableMap.of(
-      Board.Color.White, createPaint(0xFFFF0000),
-      Board.Color.Black, createPaint(0xFF00FF00),
-      Board.Color.WhiteTerritory, createPaint(0xFFC08080),
-      Board.Color.BlackTerritory, createPaint(0xFF80C080),
-      Board.Color.Empty, createPaint(0xFF000000)
+  private Map<StoneColor, Paint> colorToPaint = ImmutableMap.of(
+      StoneColor.White, createPaint(0xFFFF0000),
+      StoneColor.Black, createPaint(0xFF00FF00),
+      StoneColor.WhiteTerritory, createPaint(0xFFC08080),
+      StoneColor.BlackTerritory, createPaint(0xFF80C080),
+      StoneColor.Empty, createPaint(0xFF000000)
   );
 
   public BoardView(Context context, AttributeSet attrs) {
@@ -96,10 +95,10 @@ public class BoardView extends View {
   }
 
   private void play(int x, int y) {
-    if (board.play(currentPlayerColor, x, y)) {
-      board.setColor(x, y, currentPlayerColor);
+    game.getBoard().clearTerritories();
+    if (game.play(x, y)) {
+      game.getBoard().updateTerritories();
       lastClickedCellCoord = null;
-      endTurn();
       invalidate();
     } else {
       buzz();
@@ -117,14 +116,6 @@ public class BoardView extends View {
     }
   }
 
-  private void endTurn() {
-    if (currentPlayerColor == Board.Color.Black) {
-      currentPlayerColor = Board.Color.White;
-    } else {
-      currentPlayerColor = Board.Color.Black;
-    }
-  }
-
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
@@ -139,7 +130,7 @@ public class BoardView extends View {
             canvasMarginY + (canvasCellSizeInPixels * y),
             canvasMarginX + (canvasCellSizeInPixels * (x + 1)),
             canvasMarginY + (canvasCellSizeInPixels * (y + 1)));
-        Board.Color contentColor = board.getColor(x, y);
+        StoneColor contentColor = game.getBoard().getColor(x, y);
         // Log.i("", x + "," + y + ": " + contentColor);
         Paint paint = colorToPaint.get(contentColor);
         canvas.drawRect(r, paint);

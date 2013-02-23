@@ -19,7 +19,7 @@ public class TextBoard {
     return buf.toString();
   }
 
-  private static char getChar(Board.Color color) {
+  private static char getChar(StoneColor color) {
     switch (color) {
       case Empty:
         return '.';
@@ -52,12 +52,12 @@ public class TextBoard {
             break;
           case '●':
           case 'X':
-            board.setColor(x, y, Board.Color.Black);
+            board.setColor(x, y, StoneColor.Black);
             x++;
             break;
           case '○':
           case 'O':
-            board.setColor(x, y, Board.Color.White);
+            board.setColor(x, y, StoneColor.White);
             x++;
             break;
         }
