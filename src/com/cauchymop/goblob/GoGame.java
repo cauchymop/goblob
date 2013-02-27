@@ -1,14 +1,24 @@
 package com.cauchymop.goblob;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
+import android.os.Bundle;
+
+import com.google.common.collect.Lists;
+
 /**
- * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
+ * Class to represent the state of a Go game, and enforce the rules of the game
+ * to play moves.
  */
 public class GoGame {
+
+  public static final String EXTRA_CURRENT_BOARD = "CURRENT_BOARD";
+  public static final String EXTRA_CURRENT_COLOR_NAME = "CURRENT_COLOR_NAME";
+  public static final String EXTRA_BOARD_HISTORY = "BOARD_HISTORY";
+  public static final int DEFAULT_SIZE = 5;
 
   private List<Board> history = Lists.newArrayList();
   private Board board;
@@ -19,15 +29,58 @@ public class GoGame {
     this.currentColor = StoneColor.Black;
   }
 
+  public GoGame(Bundle savedGame) {
+    if (savedGame != null) {
+
+      // Get Current Board
+      String currentTextBoard = savedGame.getString(EXTRA_CURRENT_BOARD);
+      if (currentTextBoard != null) {
+        try {
+          this.board = TextBoard.fromString(currentTextBoard);
+        } catch (InvalidTextBoardException e) {
+          e.printStackTrace();
+        }
+      }
+
+      // Get Current Color
+      String currentColorName = savedGame.getString(EXTRA_CURRENT_COLOR_NAME);
+      this.currentColor = StoneColor.valueOf(currentColorName);
+
+      ArrayList<String> textHistory = savedGame.getStringArrayList(EXTRA_BOARD_HISTORY);
+      if (textHistory != null) {
+        try {
+          Iterator<String> it = textHistory.iterator();
+          while (it.hasNext()) {
+            String textBoard = (String) it.next();
+            history.add(TextBoard.fromString(textBoard));
+          }
+        } catch (InvalidTextBoardException e) {
+          e.printStackTrace();
+          // If one board is invalid, we clear the full history
+          history.clear();
+        }
+      }
+    }
+
+    // Falls back to an empty board with default size in case the savedGame
+    // is null or does not contains enough information
+    if (this.board == null || this.currentColor == null) {
+      this.board = new Board(DEFAULT_SIZE);
+      this.currentColor = StoneColor.Black;
+    }
+  }
+
   public Board getBoard() {
     return board;
   }
 
   /**
    * Plays a move.
-   *
-   * @param x the x coordinate for the move (0 to {@code boardSizeInCells}-1)
-   * @param y the y coordinate for the move (0 to {@code boardSizeInCells}-1)
+   * 
+   * @param x
+   *          the x coordinate for the move (0 to {@code boardSizeInCells}-1)
+   * @param y
+   *          the y coordinate for the move (0 to {@code boardSizeInCells}-1)
    * @return whether the move was valid and played
    */
   public boolean play(int x, int y) {
@@ -78,7 +131,8 @@ public class GoGame {
     return liberties;
   }
 
-  private void getGroupInfo(StoneColor color, int pos, HashSet<Integer> stones, HashSet<Integer> liberties) {
+  private void getGroupInfo(StoneColor color, int pos, HashSet<Integer> stones,
+      HashSet<Integer> liberties) {
     if (stones.contains(pos) || liberties.contains(pos)) {
       return;
     }
@@ -91,5 +145,19 @@ public class GoGame {
     } else if (board.getColor(pos) == StoneColor.Empty) {
       liberties.add(pos);
     }
+  }
+
+  public Bundle toBundle() {
+    Bundle bundle = new Bundle();
+    bundle.putString(EXTRA_CURRENT_BOARD, TextBoard.toString(board));
+    bundle.putString(EXTRA_CURRENT_COLOR_NAME, currentColor.name());
+    ArrayList<String> boards = new ArrayList<String>();
+    Iterator<Board> iterator = history.iterator();
+    while (iterator.hasNext()) {
+      Board b = (Board) iterator.next();
+      boards.add(TextBoard.toString(b));
+    }
+    bundle.putStringArrayList(EXTRA_BOARD_HISTORY, boards);
+    return bundle;
   }
 }
