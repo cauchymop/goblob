@@ -11,8 +11,6 @@ import android.graphics.RectF;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,7 +20,7 @@ import com.google.common.collect.ImmutableMap;
 @SuppressLint("DrawAllocation")
 public class BoardView extends View {
 
-  private int boardSizeInCells = GoGame.DEFAULT_SIZE;
+  private int boardSizeInCells = 5;
   private GoGame game = new GoGame(boardSizeInCells);
   private Point lastClickedCellCoord = null;
   private int marginX;
@@ -94,27 +92,6 @@ public class BoardView extends View {
     }
 
     return false;
-  }
-
-  @Override
-  public Parcelable onSaveInstanceState() {
-    Bundle bundle = new Bundle();
-    bundle.putParcelable("instanceState", super.onSaveInstanceState());
-    Bundle savedGame = game.toBundle();
-    bundle.putBundle("game", savedGame);
-    return bundle;
-  }
-
-  @Override
-  public void onRestoreInstanceState(Parcelable state) {
-    if (state instanceof Bundle) {
-      Bundle bundle = (Bundle) state;
-      Bundle savedGame = bundle.getBundle("game");
-      this.game = new GoGame(savedGame);
-      super.onRestoreInstanceState(bundle.getParcelable("instanceState"));
-      return;
-    }
-    super.onRestoreInstanceState(state);
   }
 
   private void play(int x, int y) {
