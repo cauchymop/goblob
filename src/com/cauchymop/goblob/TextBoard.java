@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * Class to convert between a {@link Board} and its text representation.
+ * Class to convert between a {@link GoBoard} and its text representation.
  */
 public class TextBoard {
 
-  public static String toString(Board board) {
+  public static String toString(GoBoard board) {
     StringBuilder buf = new StringBuilder();
-    for (int y = 0 ; y < board.getBoardSize() ; y++) {
-      for (int x = 0 ; x < board.getBoardSize() ; x++) {
+    for (int y = 0 ; y < board.getSize() ; y++) {
+      for (int x = 0 ; x < board.getSize() ; x++) {
         buf.append(getChar(board.getColor(x, y)));
       }
       buf.append('\n');
@@ -31,7 +31,7 @@ public class TextBoard {
     throw new RuntimeException("Invalid color");
   }
 
-  public static void fillBoard(Board board, String text) {
+  public static void fillBoard(GoBoard board, String text) {
     int x = 0;
     int y = 0;
     StringReader reader = new StringReader(text);
@@ -52,12 +52,12 @@ public class TextBoard {
             break;
           case '●':
           case 'X':
-            board.setColor(x, y, StoneColor.Black);
+            board.play(StoneColor.Black, x, y);
             x++;
             break;
           case '○':
           case 'O':
-            board.setColor(x, y, StoneColor.White);
+            board.play(StoneColor.White, x, y);
             x++;
             break;
         }

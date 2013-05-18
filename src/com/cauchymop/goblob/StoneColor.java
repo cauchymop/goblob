@@ -1,7 +1,7 @@
 package com.cauchymop.goblob;
 
 /**
-* Colors which can be used on a {@link Board}.
+* Colors which can be used in a {@link GoGame}.
 */
 public enum StoneColor {
   Empty,
@@ -20,5 +20,20 @@ public enum StoneColor {
       default:
         throw new RuntimeException("Invalid color");
     }
+  }
+
+  public StoneColor getPlayerColor() {
+    switch (this) {
+      case BlackTerritory:
+        return Black;
+      case WhiteTerritory:
+        return White;
+      default:
+        return this;
+    }
+  }
+
+  public boolean isEmpty() {
+    return this == Empty || this == BlackTerritory || this == WhiteTerritory;
   }
 }

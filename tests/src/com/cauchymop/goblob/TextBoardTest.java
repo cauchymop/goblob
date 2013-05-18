@@ -8,27 +8,27 @@ import android.test.AndroidTestCase;
 public class TextBoardTest extends AndroidTestCase {
 
   public void testToString() {
-    Board board = new Board(2);
+    GoBoard board = new SimpleGoBoard(2);
     assertEquals("..\n..\n", TextBoard.toString(board));
   }
 
   public void testToString_white() {
-    Board board = new Board(2);
-    board.setColor(1, 1, StoneColor.White);
+    GoBoard board = new SimpleGoBoard(2);
+    board.play(StoneColor.White, 1, 1);
     assertEquals("..\n.○\n", TextBoard.toString(board));
   }
 
   public void testToString_black() {
-    Board board = new Board(2);
-    board.setColor(1, 1, StoneColor.Black);
+    GoBoard board = new SimpleGoBoard(2);
+    board.play(StoneColor.Black, 1, 1);
     assertEquals("..\n.●\n", TextBoard.toString(board));
   }
 
   public void testToString_invalid() {
-    Board board = new Board(2);
+    GoBoard board = new SimpleGoBoard(2);
     for (StoneColor color : new StoneColor[]{StoneColor.BlackTerritory,
         StoneColor.WhiteTerritory, StoneColor.Border}) {
-      board.setColor(0, 0, color);
+      board.play(color, 0, 0);
       try {
         TextBoard.toString(board);
         fail("Encoding an invalid color should raise an exception");
@@ -39,7 +39,7 @@ public class TextBoardTest extends AndroidTestCase {
   }
 
   public void testFillBoard() {
-    Board board = new Board(2);
+    GoBoard board = new SimpleGoBoard(2);
     TextBoard.fillBoard(board, ".●\n○.\n");
     assertEquals(StoneColor.Empty, board.getColor(0, 0));
     assertEquals(StoneColor.Black, board.getColor(1, 0));
@@ -48,7 +48,7 @@ public class TextBoardTest extends AndroidTestCase {
   }
 
   public void testFillBoard_comment() {
-    Board board = new Board(2);
+    GoBoard board = new SimpleGoBoard(2);
     TextBoard.fillBoard(board, "# .●\n○");
     assertEquals(StoneColor.White, board.getColor(0, 0));
     assertEquals(StoneColor.Empty, board.getColor(1, 0));

@@ -23,10 +23,10 @@ public class BoardView extends View {
   private int boardSizeInCells = 5;
   private GoGame game = new GoGame(boardSizeInCells);
   private Point lastClickedCellCoord = null;
-  private int boardSizeInPixels;
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
+  private int globalDepth = 5;
 
   private Map<StoneColor, Paint> colorToPaint = ImmutableMap.of(
       StoneColor.White, createPaint(0xFFFF0000),
@@ -53,7 +53,7 @@ public class BoardView extends View {
   @Override
   protected void onSizeChanged(int w, int h, int oldw, int oldh) {
     super.onSizeChanged(w, h, oldw, oldh);
-    boardSizeInPixels = Math.min(getWidth(), getHeight());
+    int boardSizeInPixels = Math.min(getWidth(), getHeight());
     marginX = (getWidth() - boardSizeInPixels) / 2;
     marginY = (getHeight() - boardSizeInPixels) / 2;
     cellSizeInPixels = boardSizeInPixels / boardSizeInCells;
@@ -95,9 +95,8 @@ public class BoardView extends View {
   }
 
   private void play(int x, int y) {
-    game.getBoard().clearTerritories();
     if (game.play(x, y)) {
-      game.getBoard().updateTerritories();
+//      globalDepth--;
       lastClickedCellCoord = null;
       invalidate();
     } else {
@@ -119,21 +118,25 @@ public class BoardView extends View {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    int canvasBoardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
-    int canvasMarginX = (canvas.getWidth() - canvasBoardSizeInPixels) / 2;
-    int canvasMarginY = (canvas.getHeight() - canvasBoardSizeInPixels) / 2;
-    int canvasCellSizeInPixels = canvasBoardSizeInPixels / boardSizeInCells;
+    int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
+    int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
+    int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
+    int cellSize = boardSizeInPixels / boardSizeInCells;
+    double[] scores = AI.getMoveValues(game, globalDepth);
+    Paint textPaint = createPaint(0xFFC0C0FF);
+    textPaint.setTextSize(30);
     RectF r = new RectF();
     for (int x = 0; x < boardSizeInCells; x++) {
       for (int y = 0; y < boardSizeInCells; y++) {
-        r.set(canvasMarginX + (canvasCellSizeInPixels * x),
-            canvasMarginY + (canvasCellSizeInPixels * y),
-            canvasMarginX + (canvasCellSizeInPixels * (x + 1)),
-            canvasMarginY + (canvasCellSizeInPixels * (y + 1)));
-        StoneColor contentColor = game.getBoard().getColor(x, y);
-        // Log.i("", x + "," + y + ": " + contentColor);
+        r.set(marginX + (cellSize * x), marginY + (cellSize * y),
+            marginX + (cellSize * (x + 1)), marginY + (cellSize * (y + 1)));
+        StoneColor contentColor = game.getColor(x, y);
         Paint paint = colorToPaint.get(contentColor);
         canvas.drawRect(r, paint);
+        double score = scores[(y * boardSizeInCells + x)];
+        if (Double.isNaN(score)) continue;
+        String textScore = Double.toString(score);
+        canvas.drawText(textScore, r.centerX()-10*textScore.length(), r.centerY()+15, textPaint);
       }
     }
   }
