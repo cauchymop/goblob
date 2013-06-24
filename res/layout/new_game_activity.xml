@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"
+            android:layout_gravity="left|center_vertical">
+        <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/black_label"
+                    android:layout_column="0"/>
+            <Spinner
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/black_player_spinner"
+                    android:layout_column="1"/>
+        </TableRow>
+        <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/white_label"
+                    android:layout_column="0"/>
+            <Spinner
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/white_player_spinner"
+                    android:layout_column="1"/>
+        </TableRow>
+        <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+            <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/board_size_label"
+                    android:layout_column="0"/>
+            <SeekBar
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/boardSizeSeekBar" android:layout_column="2"/>
+
+        </TableRow>
+        <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+            <TextView
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/handicap_label"
+                    android:layout_column="0"/>
+            <SeekBar
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+
+                    android:id="@+id/handicapSeekBar" android:layout_column="2"/>
+        </TableRow>
+    </TableLayout>
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_game_label"
+            android:onClick="startGame"
+            />
+</LinearLayout>

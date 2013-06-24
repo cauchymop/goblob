@@ -13,16 +13,36 @@ public class GoGame implements Game {
   private int boardSize;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
-  private GoBoard[] boardPool = new GoBoard[10];
-  private int boardPoolSize = 0;
   private GoBoard board;
 
-  public GoGame(int boardSize) {
+  // Instance pool management.
+  private GoBoard[] boardPool = new GoBoard[10];
+  private int boardPoolSize = 0;
+  private final Player blackPlayer;
+  private final Player whitePlayer;
+
+  public GoGame(int boardSize, Player blackPlayer, Player whitePlayer) {
     this.boardSize = boardSize;
     currentColor = StoneColor.Black;
     board = getNewBoard();
     board.empty();
     boardHistory.add(board);
+    this.blackPlayer = blackPlayer;
+    this.whitePlayer = whitePlayer;
+  }
+
+  public void runGame() {
+    while (!isGameEnd()) {
+      getCurrentPlayer().startTurn(this);
+    }
+  }
+
+  private Player getCurrentPlayer() {
+    if (currentColor == StoneColor.Black) {
+      return blackPlayer;
+    } else {
+      return whitePlayer;
+    }
   }
 
   private GoBoard getNewBoard() {

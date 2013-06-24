@@ -11,22 +11,20 @@ import android.graphics.RectF;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.google.common.collect.ImmutableMap;
 
 @SuppressLint("DrawAllocation")
-public class BoardView extends View {
+public class GoGameView extends View {
 
   private int boardSizeInCells = 5;
-  private GoGame game = new GoGame(boardSizeInCells);
+  private GoGame game;
   private Point lastClickedCellCoord = null;
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
-  private int globalDepth = 5;
 
   private Map<StoneColor, Paint> colorToPaint = ImmutableMap.of(
       StoneColor.White, createPaint(0xFFFF0000),
@@ -36,12 +34,9 @@ public class BoardView extends View {
       StoneColor.Empty, createPaint(0xFF000000)
       );
 
-  public BoardView(Context context, AttributeSet attrs) {
-    super(context, attrs);
-  }
-
-  public BoardView(Context context, AttributeSet attrs, int defStyle) {
-    super(context, attrs, defStyle);
+  public GoGameView(Context context, GoGame game) {
+      super(context, null);
+      this.game = game;
   }
 
   private Paint createPaint(int color) {
@@ -122,7 +117,6 @@ public class BoardView extends View {
     int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
     int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
     int cellSize = boardSizeInPixels / boardSizeInCells;
-    double[] scores = AI.getMoveValues(game, globalDepth);
     Paint textPaint = createPaint(0xFFC0C0FF);
     textPaint.setTextSize(30);
     RectF r = new RectF();
@@ -133,10 +127,7 @@ public class BoardView extends View {
         StoneColor contentColor = game.getColor(x, y);
         Paint paint = colorToPaint.get(contentColor);
         canvas.drawRect(r, paint);
-        double score = scores[(y * boardSizeInCells + x)];
-        if (Double.isNaN(score)) continue;
-        String textScore = Double.toString(score);
-        canvas.drawText(textScore, r.centerX()-10*textScore.length(), r.centerY()+15, textPaint);
+//        canvas.drawText(textScore, r.centerX()-10*textScore.length(), r.centerY()+15, textPaint);
       }
     }
   }
