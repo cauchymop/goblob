@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 /**
- * TODO: set description.
+ * Activity to create a new game.
  */
 public class NewGameActivity extends Activity {
 
@@ -18,6 +18,10 @@ public class NewGameActivity extends Activity {
 
   public void startGame(View view) {
     Intent startGameIntent = new Intent(getApplicationContext(), GameActivity.class);
+    Player blackPlayer = new Player(Player.PlayerType.HUMAN, "Mr Black");
+    Player whitePlayer = new Player(Player.PlayerType.HUMAN, "Mr White");
+    GoGame goGame = new GoGame(5, blackPlayer, whitePlayer);
+    startGameIntent.putExtra(GameActivity.EXTRA_GAME, goGame);
     startActivity(startGameIntent);
   }
 }

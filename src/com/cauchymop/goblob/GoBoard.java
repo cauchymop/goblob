@@ -1,9 +1,11 @@
 package com.cauchymop.goblob;
 
+import android.os.Parcelable;
+
 /**
  * Class to represent the state of a Go board.
  */
-public interface GoBoard {
+public interface GoBoard extends Parcelable {
 
   public void empty();
 

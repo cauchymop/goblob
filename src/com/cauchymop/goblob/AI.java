@@ -13,7 +13,7 @@ public class AI {
     double bestResult = -MAX;
     int bestMove = -1;
     for (int move = 0 ; move < posCount; move++) {
-      if (game.play(move)) {
+      if (game.play(move, Game.MoveType.DUMMY)) {
         double result = -getAlphaBeta(game, heuristic, depth, -MAX, MAX);
         if (result > bestResult) {
           bestResult = result;
@@ -40,7 +40,7 @@ public class AI {
 
     // loop over ordered positions
     for (int pos = 0 ; pos < game.getPosCount() ; pos++) {
-      if (game.play(pos)) {
+      if (game.play(pos, Game.MoveType.DUMMY)) {
         score = -getAlphaBeta(game, heuristic, depth - 1, -max, -bestScore);
         bestScore = Math.max(score, bestScore);
         game.undo();
@@ -65,7 +65,7 @@ public class AI {
     int posCount = game.getPosCount();
     double[] result = new double[posCount];
     for (int pos = 0 ; pos < posCount; pos++) {
-      if (game.play(pos)) {
+      if (game.play(pos, Game.MoveType.DUMMY)) {
         result[pos] = -getAlphaBeta(game, heuristic, depth, -MAX, MAX);
         game.undo();
       } else {

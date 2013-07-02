@@ -1,5 +1,7 @@
 package com.cauchymop.goblob;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
@@ -7,19 +9,21 @@ import java.util.ArrayList;
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
  */
-public class GoGame implements Game {
+public class GoGame extends Game implements Parcelable {
 
-  private StoneColor currentColor;
   private int boardSize;
+  private GoBoard board;
+  private final Player blackPlayer;
+  private final Player whitePlayer;
+  private PlayerController blackController;
+  private PlayerController whiteController;
+  private StoneColor currentColor;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
-  private GoBoard board;
 
   // Instance pool management.
   private GoBoard[] boardPool = new GoBoard[10];
   private int boardPoolSize = 0;
-  private final Player blackPlayer;
-  private final Player whitePlayer;
 
   public GoGame(int boardSize, Player blackPlayer, Player whitePlayer) {
     this.boardSize = boardSize;
@@ -31,17 +35,48 @@ public class GoGame implements Game {
     this.whitePlayer = whitePlayer;
   }
 
+  private GoGame(Parcel in) {
+    boardSize = in.readInt();
+    board = in.readParcelable(GoBoard.class.getClassLoader());
+    blackPlayer = in.readParcelable(Player.class.getClassLoader());
+    whitePlayer = in.readParcelable(Player.class.getClassLoader());
+    currentColor = StoneColor.values()[in.readInt()];
+    boardHistory = in.readArrayList(GoBoard.class.getClassLoader());
+    moveHistory = in.readArrayList(Integer.class.getClassLoader());
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeInt(boardSize);
+    dest.writeParcelable(board, 0);
+    dest.writeParcelable(blackPlayer, 0);
+    dest.writeParcelable(whitePlayer, 0);
+    dest.writeInt(currentColor.ordinal());
+    dest.writeList(boardHistory);
+    dest.writeList(moveHistory);
+  }
+
+  public static final Parcelable.Creator<GoGame> CREATOR = new Parcelable.Creator<GoGame>() {
+    public GoGame createFromParcel(Parcel in) {
+      return new GoGame(in);
+    }
+
+    public GoGame[] newArray(int size) {
+      return new GoGame[size];
+    }
+  };
+
   public void runGame() {
     while (!isGameEnd()) {
-      getCurrentPlayer().startTurn(this);
+      getCurrentController().startTurn();
     }
   }
 
-  private Player getCurrentPlayer() {
+  private PlayerController getCurrentController() {
     if (currentColor == StoneColor.Black) {
-      return blackPlayer;
+      return blackController;
     } else {
-      return whitePlayer;
+      return whiteController;
     }
   }
 
@@ -58,16 +93,19 @@ public class GoGame implements Game {
     boardPoolSize++;
   }
 
-  public void pass() {
+  public void pass(MoveType moveType) {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
     boardHistory.add(newBoard);
     moveHistory.add(boardSize*boardSize);
     board = newBoard;
     currentColor = currentColor.getOpponent();
+    if (moveType == MoveType.REAL) {
+      fireGameChanged();
+    }
   }
 
-  public boolean play(int x, int y) {
+  public boolean play(int x, int y, MoveType moveType) {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
     if (newBoard.play(currentColor, x, y)) {
@@ -75,6 +113,9 @@ public class GoGame implements Game {
       moveHistory.add(y*boardSize + x);
       board = newBoard;
       currentColor = currentColor.getOpponent();
+      if (moveType == MoveType.REAL) {
+        fireGameChanged();
+      }
       return true;
     }
     recycleBoard(newBoard);
@@ -95,12 +136,12 @@ public class GoGame implements Game {
   }
 
   @Override
-  public boolean play(int pos) {
+  public boolean play(int pos, MoveType moveType) {
     if (pos == boardSize * boardSize) {
-      pass();
+      pass(moveType);
       return true;
     }
-    return play(pos % boardSize, pos / boardSize);
+    return play(pos % boardSize, pos / boardSize, moveType);
   }
 
   @Override
@@ -121,5 +162,26 @@ public class GoGame implements Game {
 
   public StoneColor getColor(int x, int y) {
     return board.getColor(x, y);
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
+  }
+
+  public void setBlackController(PlayerController blackController) {
+    this.blackController = blackController;
+  }
+
+  public void setWhiteController(PlayerController whiteController) {
+    this.whiteController = whiteController;
+  }
+
+  public Player getBlackPlayer() {
+    return blackPlayer;
+  }
+
+  public Player getWhitePlayer() {
+    return whitePlayer;
   }
 }

@@ -8,7 +8,7 @@ import android.widget.FrameLayout;
 
 public class GameActivity extends Activity {
 
-  private GoGame goGame;
+  public static final String EXTRA_GAME = "Game";
   private GoGameView goGameView;
 
   @Override
@@ -16,7 +16,7 @@ public class GameActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.game_activity);
     FrameLayout container = (FrameLayout) findViewById(R.id.boardViewContainer);
-    goGame = new GoGame(5, new HumanPlayer("Mr Black"), new HumanPlayer("Mr White"));
+    GoGame goGame = getIntent().getParcelableExtra(EXTRA_GAME);
     goGameView = new GoGameView(getApplicationContext(), goGame);
     container.addView(goGameView);
   }
@@ -29,28 +29,6 @@ public class GameActivity extends Activity {
   }
 
   public void pass(View v) {
-    goGame.pass();
-  }
-
-  /**
-   * A human player, player using the Android interface.
-   */
-  public static class HumanPlayer implements Player {
-
-    private String name;
-
-    public HumanPlayer(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String getName() {
-      return name;
-    }
-
-    @Override
-    public void startTurn(Game game) {
-      // TODO: implement this.
-    }
+    goGameView.pass();
   }
 }

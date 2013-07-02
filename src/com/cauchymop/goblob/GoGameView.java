@@ -17,7 +17,7 @@ import android.view.View;
 import com.google.common.collect.ImmutableMap;
 
 @SuppressLint("DrawAllocation")
-public class GoGameView extends View {
+public class GoGameView extends View implements Game.Listener {
 
   private int boardSizeInCells = 5;
   private GoGame game;
@@ -25,6 +25,7 @@ public class GoGameView extends View {
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
+  private HumanPlayerController currentPlayerController;
 
   private Map<StoneColor, Paint> colorToPaint = ImmutableMap.of(
       StoneColor.White, createPaint(0xFFFF0000),
@@ -32,11 +33,25 @@ public class GoGameView extends View {
       StoneColor.WhiteTerritory, createPaint(0xFFC08080),
       StoneColor.BlackTerritory, createPaint(0xFF80C080),
       StoneColor.Empty, createPaint(0xFF000000)
-      );
+  );
 
   public GoGameView(Context context, GoGame game) {
-      super(context, null);
-      this.game = game;
+    super(context, null);
+    this.game = game;
+    game.setBlackController(getController(game.getBlackPlayer()));
+    game.setWhiteController(getController(game.getWhitePlayer()));
+    game.addListener(this);
+    game.runGame();
+  }
+
+  private PlayerController getController(Player player) {
+    if (player.getType() == Player.PlayerType.AI) {
+      return new AIPlayerController(game);
+    }
+    if (player.getType() == Player.PlayerType.HUMAN) {
+      return new HumanPlayerController(game);
+    }
+    throw new RuntimeException("Unsupported player type");
   }
 
   private Paint createPaint(int color) {
@@ -80,23 +95,13 @@ public class GoGameView extends View {
         // Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
         if (lastClickedCellCoord != null && lastClickedCellCoord.x == x
             && lastClickedCellCoord.y == y) {
-          play(x, y);
+          currentPlayerController.play(x, y);
           return true;
         }
       }
     }
 
     return false;
-  }
-
-  private void play(int x, int y) {
-    if (game.play(x, y)) {
-//      globalDepth--;
-      lastClickedCellCoord = null;
-      invalidate();
-    } else {
-      buzz();
-    }
   }
 
   private void buzz() {
@@ -129,6 +134,53 @@ public class GoGameView extends View {
         canvas.drawRect(r, paint);
 //        canvas.drawText(textScore, r.centerX()-10*textScore.length(), r.centerY()+15, textPaint);
       }
+    }
+  }
+
+  @Override
+  public void gameChanged(Game game) {
+    invalidate();
+  }
+
+  public void pass() {
+    game.pass(Game.MoveType.REAL);
+  }
+
+  private class HumanPlayerController extends PlayerController {
+
+    private boolean played;
+    private GoGame game;
+
+    public HumanPlayerController(GoGame game) {
+      this.game = game;
+    }
+
+    private void play(int x, int y) {
+      if (game.play(x, y, Game.MoveType.REAL)) {
+        this.notifyAll();
+      } else {
+        buzz();
+      }
+    }
+
+    @Override
+    public void startTurn() {
+      // TODO: show that it's my turn.
+
+      played = false;
+      currentPlayerController = this;
+      synchronized (this) {
+        while (!played) {
+          try {
+            this.wait();
+          } catch (InterruptedException e) {
+            // Expected.
+          }
+        }
+      }
+
+      // TODO: show that it's not my turn anymore.
+      lastClickedCellCoord = null;
     }
   }
 }

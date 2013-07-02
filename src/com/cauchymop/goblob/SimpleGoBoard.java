@@ -5,7 +5,7 @@ import java.security.InvalidParameterException;
 /**
  * Class to implement {@link GoBoard} in the most simple way.
  */
-public class SimpleGoBoard implements GoBoard {
+public abstract class SimpleGoBoard implements GoBoard {
 
   private int size;
   private StoneColor[] board;

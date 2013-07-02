@@ -1,5 +1,7 @@
 package com.cauchymop.goblob;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
@@ -27,6 +29,33 @@ public class GoBoard5 implements GoBoard {
 
   public GoBoard5() {
   }
+
+  private GoBoard5(Parcel in) {
+    blackField = in.readInt();
+    whiteField = in.readInt();
+    groupByPosition = in.createIntArray();
+    stoneFieldByGroup = in.createIntArray();
+    libertyFieldByGroup = in.createIntArray();
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeInt(blackField);
+    dest.writeInt(whiteField);
+    dest.writeIntArray(groupByPosition);
+    dest.writeIntArray(stoneFieldByGroup);
+    dest.writeIntArray(libertyFieldByGroup);
+  }
+
+  public static final Parcelable.Creator<GoBoard5> CREATOR = new Parcelable.Creator<GoBoard5>() {
+    public GoBoard5 createFromParcel(Parcel in) {
+      return new GoBoard5(in);
+    }
+
+    public GoBoard5[] newArray(int size) {
+      return new GoBoard5[size];
+    }
+  };
 
   @Override
   public void empty() {
@@ -186,5 +215,10 @@ public class GoBoard5 implements GoBoard {
 
   private static int getPos(int x, int y) {
     return y * 5 + x;
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
   }
 }
