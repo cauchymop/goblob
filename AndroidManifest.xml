@@ -5,7 +5,7 @@
           android:versionName="1.0">
 
     <uses-sdk
-            android:minSdkVersion="8"
+            android:minSdkVersion="14"
             android:targetSdkVersion="17"/>
 
     <application
@@ -21,7 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".NewGameActivity" />
+        <activity android:name=".NewGameActivity" android:noHistory="true" />
         <activity android:name=".GameActivity" />
     </application>
 

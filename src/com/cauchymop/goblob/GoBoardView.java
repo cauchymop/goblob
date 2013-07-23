@@ -1,6 +1,7 @@
 package com.cauchymop.goblob;
 
 import java.util.Map;
+import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -8,16 +9,14 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RectF;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 @SuppressLint("DrawAllocation")
-public class GoGameView extends View implements Game.Listener {
+public class GoBoardView extends View {
 
   private int boardSizeInCells = 5;
   private GoGame game;
@@ -25,7 +24,8 @@ public class GoGameView extends View implements Game.Listener {
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
-  private HumanPlayerController currentPlayerController;
+
+  private Set<Listener> listeners = Sets.newHashSet();
 
   private Map<StoneColor, Paint> colorToPaint = ImmutableMap.of(
       StoneColor.White, createPaint(0xFFFF0000),
@@ -35,23 +35,9 @@ public class GoGameView extends View implements Game.Listener {
       StoneColor.Empty, createPaint(0xFF000000)
   );
 
-  public GoGameView(Context context, GoGame game) {
+  public GoBoardView(Context context, GoGame game) {
     super(context, null);
     this.game = game;
-    game.setBlackController(getController(game.getBlackPlayer()));
-    game.setWhiteController(getController(game.getWhitePlayer()));
-    game.addListener(this);
-    game.runGame();
-  }
-
-  private PlayerController getController(Player player) {
-    if (player.getType() == Player.PlayerType.AI) {
-      return new AIPlayerController(game);
-    }
-    if (player.getType() == Player.PlayerType.HUMAN) {
-      return new HumanPlayerController(game);
-    }
-    throw new RuntimeException("Unsupported player type");
   }
 
   private Paint createPaint(int color) {
@@ -95,7 +81,8 @@ public class GoGameView extends View implements Game.Listener {
         // Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
         if (lastClickedCellCoord != null && lastClickedCellCoord.x == x
             && lastClickedCellCoord.y == y) {
-          currentPlayerController.play(x, y);
+          firePlayed(x, y);
+          lastClickedCellCoord = null;
           return true;
         }
       }
@@ -104,15 +91,18 @@ public class GoGameView extends View implements Game.Listener {
     return false;
   }
 
-  private void buzz() {
-    try {
-      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-      Ringtone r = RingtoneManager.getRingtone(getContext(), notification);
-      r.play();
-    } catch (Exception e) {
-      System.err.println("Exception while buzzing");
-      e.printStackTrace();
+  private void firePlayed(int x, int y) {
+    for (Listener listener : listeners) {
+      listener.played(x, y);
     }
+  }
+
+  public void addListener(Listener listener) {
+    listeners.add(listener);
+  }
+
+  public void removeListener(Listener listener) {
+    listeners.remove(listener);
   }
 
   @Override
@@ -137,50 +127,7 @@ public class GoGameView extends View implements Game.Listener {
     }
   }
 
-  @Override
-  public void gameChanged(Game game) {
-    invalidate();
-  }
-
-  public void pass() {
-    game.pass(Game.MoveType.REAL);
-  }
-
-  private class HumanPlayerController extends PlayerController {
-
-    private boolean played;
-    private GoGame game;
-
-    public HumanPlayerController(GoGame game) {
-      this.game = game;
-    }
-
-    private void play(int x, int y) {
-      if (game.play(x, y, Game.MoveType.REAL)) {
-        this.notifyAll();
-      } else {
-        buzz();
-      }
-    }
-
-    @Override
-    public void startTurn() {
-      // TODO: show that it's my turn.
-
-      played = false;
-      currentPlayerController = this;
-      synchronized (this) {
-        while (!played) {
-          try {
-            this.wait();
-          } catch (InterruptedException e) {
-            // Expected.
-          }
-        }
-      }
-
-      // TODO: show that it's not my turn anymore.
-      lastClickedCellCoord = null;
-    }
+  public interface Listener {
+    public void played(int x, int y);
   }
 }

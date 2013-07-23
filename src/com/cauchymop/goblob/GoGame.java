@@ -67,9 +67,16 @@ public class GoGame extends Game implements Parcelable {
   };
 
   public void runGame() {
-    while (!isGameEnd()) {
-      getCurrentController().startTurn();
-    }
+    Thread thread = new Thread("Game") {
+
+      @Override
+      public void run() {
+        while (!isGameEnd()) {
+          getCurrentController().startTurn();
+        }
+      }
+    };
+    thread.start();
   }
 
   private PlayerController getCurrentController() {
