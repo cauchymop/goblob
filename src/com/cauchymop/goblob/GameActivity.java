@@ -74,7 +74,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
         }
       });
     }
-    goBoardView.invalidate();
+    goBoardView.postInvalidate();
   }
 
   @Override
@@ -93,6 +93,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
 
     private void play(int x, int y) {
       if (game.play(x, y, Game.MoveType.REAL)) {
+        played = true;
         synchronized (this) {
           this.notifyAll();
         }

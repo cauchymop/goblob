@@ -1,16 +1,20 @@
 package com.cauchymop.goblob;
 
+import java.util.ArrayList;
+
 import android.os.Parcel;
 import android.os.Parcelable;
-import com.google.common.collect.Lists;
+import android.util.Log;
 
-import java.util.ArrayList;
+import com.google.common.collect.Lists;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
  */
 public class GoGame extends Game implements Parcelable {
 
+  private static final String TAG = GoGame.class.getSimpleName();
+  
   private int boardSize;
   private GoBoard board;
   private final Player blackPlayer;
@@ -72,6 +76,7 @@ public class GoGame extends Game implements Parcelable {
       @Override
       public void run() {
         while (!isGameEnd()) {
+          Log.d(TAG, currentColor + ".startTurn()");
           getCurrentController().startTurn();
         }
       }
@@ -177,10 +182,12 @@ public class GoGame extends Game implements Parcelable {
   }
 
   public void setBlackController(PlayerController blackController) {
+    Log.d(TAG, "setBlackController: " + blackController);
     this.blackController = blackController;
   }
 
   public void setWhiteController(PlayerController whiteController) {
+    Log.d(TAG, "setWhiteController: " + whiteController);
     this.whiteController = whiteController;
   }
 
