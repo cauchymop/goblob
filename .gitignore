@@ -19,3 +19,6 @@ local.properties
 .classpath
 .project
 .idea
+
+# Mac specific files
+.DS_Store
