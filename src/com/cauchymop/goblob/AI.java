@@ -8,18 +8,19 @@ public class AI {
   private static final double MAX = 100.0;
   private static final int HEURISTICS_THRESHOLD = 4;
 
-  public static int getBestMove(Game game, Heuristic heuristic, int depth) {
-    int posCount = game.getPosCount();
+  public static int getBestMove(Game originalGame, Heuristic heuristic, int depth) {
+    Game localGame = originalGame.copy();
+    int posCount = localGame.getPosCount();
     double bestResult = -MAX;
     int bestMove = -1;
     for (int move = 0 ; move < posCount; move++) {
-      if (game.play(move, Game.MoveType.DUMMY)) {
-        double result = -getAlphaBeta(game, heuristic, depth, -MAX, MAX);
+      if (localGame.play(move)) {
+        double result = -getAlphaBeta(localGame, heuristic, depth, -MAX, MAX);
         if (result > bestResult) {
           bestResult = result;
           bestMove = move;
         }
-        game.undo();
+        localGame.undo();
       }
     }
     return bestMove;
@@ -40,7 +41,7 @@ public class AI {
 
     // loop over ordered positions
     for (int pos = 0 ; pos < game.getPosCount() ; pos++) {
-      if (game.play(pos, Game.MoveType.DUMMY)) {
+      if (game.play(pos)) {
         score = -getAlphaBeta(game, heuristic, depth - 1, -max, -bestScore);
         bestScore = Math.max(score, bestScore);
         game.undo();
@@ -65,7 +66,7 @@ public class AI {
     int posCount = game.getPosCount();
     double[] result = new double[posCount];
     for (int pos = 0 ; pos < posCount; pos++) {
-      if (game.play(pos, Game.MoveType.DUMMY)) {
+      if (game.play(pos)) {
         result[pos] = -getAlphaBeta(game, heuristic, depth, -MAX, MAX);
         game.undo();
       } else {

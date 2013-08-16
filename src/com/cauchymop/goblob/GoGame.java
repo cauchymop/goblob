@@ -105,19 +105,17 @@ public class GoGame extends Game implements Parcelable {
     boardPoolSize++;
   }
 
-  public void pass(MoveType moveType) {
+  public void pass() {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
     boardHistory.add(newBoard);
     moveHistory.add(boardSize*boardSize);
     board = newBoard;
     currentColor = currentColor.getOpponent();
-    if (moveType == MoveType.REAL) {
-      fireGameChanged();
-    }
+    fireGameChanged();
   }
 
-  public boolean play(int x, int y, MoveType moveType) {
+  public boolean play(int x, int y) {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
     if (newBoard.play(currentColor, x, y)) {
@@ -125,9 +123,7 @@ public class GoGame extends Game implements Parcelable {
       moveHistory.add(y*boardSize + x);
       board = newBoard;
       currentColor = currentColor.getOpponent();
-      if (moveType == MoveType.REAL) {
-        fireGameChanged();
-      }
+      fireGameChanged();
       return true;
     }
     recycleBoard(newBoard);
@@ -143,17 +139,26 @@ public class GoGame extends Game implements Parcelable {
   }
 
   @Override
+  public Game copy() {
+    GoGame copy = new GoGame(boardSize, blackPlayer, whitePlayer);
+    for (Integer move : moveHistory) {
+      copy.play(move);
+    }
+    return copy;
+  }
+
+  @Override
   public int getPosCount() {
     return boardSize * boardSize + 1;
   }
 
   @Override
-  public boolean play(int pos, MoveType moveType) {
+  public boolean play(int pos) {
     if (pos == boardSize * boardSize) {
-      pass(moveType);
+      pass();
       return true;
     }
-    return play(pos % boardSize, pos / boardSize, moveType);
+    return play(pos % boardSize, pos / boardSize);
   }
 
   @Override

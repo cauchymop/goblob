@@ -51,7 +51,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   }
 
   public void pass(View v) {
-    goGame.pass(Game.MoveType.REAL);
+    goGame.pass();
   }
 
   @Override
@@ -92,7 +92,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     }
 
     private void play(int x, int y) {
-      if (game.play(x, y, Game.MoveType.REAL)) {
+      if (game.play(x, y)) {
         played = true;
         synchronized (this) {
           this.notifyAll();

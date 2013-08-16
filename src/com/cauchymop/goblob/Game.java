@@ -12,8 +12,9 @@ public abstract class Game {
   private Set<Listener> listeners = Sets.newHashSet();
 
   public abstract void undo();
+  public abstract Game copy();
   public abstract int getPosCount();
-  public abstract boolean play(int pos, MoveType moveType);
+  public abstract boolean play(int pos);
   public abstract boolean isGameEnd();
   public abstract double getScore();
 
@@ -33,10 +34,5 @@ public abstract class Game {
 
   public interface Listener {
     public void gameChanged(Game game);
-  }
-
-  public enum MoveType {
-    DUMMY,
-    REAL
   }
 }
