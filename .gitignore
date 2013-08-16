@@ -22,3 +22,8 @@ local.properties
 
 # Mac specific files
 .DS_Store
+
+# Android Studio Files
+*.iml
+.gradle/
+build/
