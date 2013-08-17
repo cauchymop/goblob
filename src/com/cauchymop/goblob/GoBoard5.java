@@ -2,6 +2,7 @@ package com.cauchymop.goblob;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
@@ -220,5 +221,20 @@ public class GoBoard5 implements GoBoard {
   @Override
   public int describeContents() {
     return 0;
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (!(object instanceof GoBoard5)) {
+      return false;
+    }
+    GoBoard5 other = (GoBoard5) object;
+
+    return this.blackField == other.blackField && this.whiteField == other.whiteField;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(blackField, whiteField);
   }
 }
