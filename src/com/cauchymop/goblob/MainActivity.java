@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
     }
 
     public void startFreeGame(View v) {
-        Intent newGameIntent = new Intent(getApplicationContext(), NewGameActivity.class);
+        Intent newGameIntent = new Intent(getApplicationContext(), PlayerChoiceActivity.class);
         startActivity(newGameIntent);
     }
 
