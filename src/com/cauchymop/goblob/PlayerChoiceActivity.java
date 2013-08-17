@@ -58,9 +58,6 @@ public class PlayerChoiceActivity extends Activity {
         break;
     }
 
-    Log.e("OLIVIER", "opponentType = " + opponentType);
-    Log.e("OLIVIER", "boardSize = " + boardSize);
-
     Intent configureGameIntent = new Intent(getApplicationContext(), GameConfigurationActivity.class);
     Player opponentPlayer = new Player(opponentType, getString(R.string.opponent_label));
     configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_OPPONENT, opponentPlayer);

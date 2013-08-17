@@ -29,7 +29,7 @@ public class GameConfigurationActivity extends Activity {
   private enum PlayerColor {
     BLACK,
     WHITE;
-  } ;
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +66,8 @@ public class GameConfigurationActivity extends Activity {
   }
 
   public void startGame(View view) {
-
     opponentPlayer.setName(opponentNameField.getText().toString());
     yourPlayer.setName(yourNameField.getText().toString());
-
 
     GoGame goGame;
     switch ((PlayerColor) yourColorSpinner.getSelectedItem()) {
