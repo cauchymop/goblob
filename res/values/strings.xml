@@ -9,8 +9,20 @@
     <string name="button_label_free_game">Free Game</string>
     <string name="black_label">Black</string>
     <string name="white_label">White</string>
-    <string name="board_size_label">Board Size</string>
+    <string name="board_size_label">Select the Board Size</string>
     <string name="handicap_label">Handicap</string>
     <string name="start_game_label">Start Game</string>
+    <string name="choose_opponent_label">Select your opponent</string>
+    <string name="configure_game_label">Configure Game</string>
+    <string name="computer_opponent_label">Computer</string>
+    <string name="human_local_opponent_label">Human (Local)</string>
+    <string name="board_size_label_5x5">5x5</string>
+    <string name="board_size_label_9x9">9x9</string>
+    <string name="board_size_label_13x13">13x13</string>
+    <string name="board_size_label_19x19">19x19</string>
+    <string name="you_label">You</string>
+    <string name="name_label">Name</string>
+    <string name="color_label">Color</string>
+    <string name="opponent_label">Opponent</string>
 
 </resources>

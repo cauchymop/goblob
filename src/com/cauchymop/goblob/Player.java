@@ -50,6 +50,10 @@ public class Player implements Parcelable {
     return type;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public enum PlayerType {
     AI,
     HUMAN
