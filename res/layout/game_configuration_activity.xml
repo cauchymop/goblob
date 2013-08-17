@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <Button android:id="@+id/configure_game_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_game_label"
+            android:onClick="startGame"
+            android:padding="12dip"
+            android:layout_alignParentBottom="true"
+            />
+    <ScrollView   android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:layout_above="@id/configure_game_button"
+                  android:scrollbarAlwaysDrawVerticalTrack="true">
+        <LinearLayout android:orientation="vertical"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content">
+
+            <TextView  style="@style/Title"
+                       android:text="@string/you_label"/>
+
+            <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="1"
+                    android:padding="10dip"
+                    android:layout_gravity="left|center_vertical">
+                <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                    <TextView
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="@string/name_label"
+                            android:layout_column="0"/>
+                    <EditText
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/your_player_name"
+                            android:layout_column="1"/>
+                </TableRow>
+                <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                    <TextView
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="@string/color_label"
+                            android:layout_column="0"/>
+                    <Spinner
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/your_player_color_spinner"
+                            android:layout_column="1"/>
+                </TableRow>
+            </TableLayout>
+
+            <TextView  style="@style/Title"
+                       android:text="@string/opponent_label"/>
+
+            <TableLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="1"
+                    android:padding="10dip"
+                    android:layout_gravity="left|center_vertical">
+                <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                    <TextView
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="@string/name_label"
+                            android:layout_column="0"/>
+                    <EditText
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/opponent_player_name"
+                            android:layout_column="1"/>
+                </TableRow>
+                <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                    <TextView
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="@string/color_label"
+                            android:layout_column="0"/>
+                    <Spinner
+                            android:layout_width="0dip"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:id="@+id/opponent_color_spinner"
+                            android:layout_column="1"/>
+                </TableRow>
+            </TableLayout>
+
+            <TextView  style="@style/Title"
+                       android:text="@string/handicap_label"/>
+
+            <SeekBar
+                    android:layout_width="0dip"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:max="9"
+                    android:id="@+id/handicap_bar"/>
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
