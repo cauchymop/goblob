@@ -118,7 +118,7 @@ public class GoGame extends Game implements Parcelable {
   public boolean play(int x, int y) {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
-    if (newBoard.play(currentColor, x, y)) {
+    if (newBoard.play(currentColor, x, y) && !boardHistory.contains(newBoard)) {
       boardHistory.add(newBoard);
       moveHistory.add(y*boardSize + x);
       board = newBoard;
