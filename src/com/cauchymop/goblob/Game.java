@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 /**
-* Interface for a generic game. Implement this to use {@link AI}.
+* Interface for a generic game. Implement this to use {@link AlphaBeta}.
 */
 public abstract class Game {
 
