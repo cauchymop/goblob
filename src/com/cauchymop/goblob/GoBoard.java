@@ -3,11 +3,11 @@ package com.cauchymop.goblob;
 import android.os.Parcelable;
 
 /**
- * Class to represent the state of a Go board.
+ * Class to represent the state of a Go board, and apply the logic of playing a move.
  */
 public interface GoBoard extends Parcelable {
 
-  public void empty();
+  public void clear();
 
   public boolean play(StoneColor color, int x, int y);
 

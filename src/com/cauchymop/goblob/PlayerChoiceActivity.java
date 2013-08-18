@@ -14,6 +14,8 @@ import android.widget.Spinner;
  */
 public class PlayerChoiceActivity extends Activity {
 
+  private static final String TAG = GoGame.class.getName();
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -22,8 +24,7 @@ public class PlayerChoiceActivity extends Activity {
   }
 
   public void configureGame(View view) {
-
-    Log.e("OLIVIER", "configureGame");
+    Log.i(TAG, "configureGame");
     RadioGroup opponentRadioGroup = (RadioGroup) findViewById(R.id.opponent_radio_group);
     RadioGroup boardSizeRadioGroup = (RadioGroup) findViewById(R.id.board_size_radio_group);
 
