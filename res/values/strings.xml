@@ -23,5 +23,7 @@
     <string name="name_label">Name</string>
     <string name="color_label">Color</string>
     <string name="opponent_label">Opponent</string>
+    <string name="your_default_name">Player 1</string>
+    <string name="opponent_default_name">Player 2</string>
 
 </resources>

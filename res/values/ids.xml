@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="board_size_5x5"/>
+    <item type="id" name="board_size_9x9"/>
+    <item type="id" name="board_size_13x13"/>
+    <item type="id" name="board_size_19x19"/>
+</resources>
