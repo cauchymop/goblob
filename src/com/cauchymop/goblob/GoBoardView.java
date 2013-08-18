@@ -18,10 +18,10 @@ import com.google.common.collect.Sets;
 @SuppressLint("DrawAllocation")
 public class GoBoardView extends View {
 
-  private static Paint boardColor = createPaint(0xFFD0B060);
-  private static Paint blackColor = createPaint(0xFF000000);
-  private static Paint lineColor = createPaint(0xFF000000);
-  private static Paint whiteColor = createPaint(0xFFFFFFFF);
+  private static final Paint blackColor = createPaint(0xFF000000);
+  private static final Paint lineColor = createPaint(0xFF000000);
+  private static final Paint whiteColor = createPaint(0xFFFFFFFF);
+  private static final double STONE_RATIO = 0.95;
 
   private GoGame game;
   private Point lastClickedCellCoord = null;
@@ -109,9 +109,11 @@ public class GoBoardView extends View {
     int marginY = (canvas.getHeight() - boardSizeInPixels) / 2 + cellSizeInPixels / 2;
     for (int x = 0; x < game.getBoardSize(); x++) {
       canvas.drawLine(marginX, marginY + cellSizeInPixels * x,
-          marginX + cellSizeInPixels * (game.getBoardSize()-1), marginY + cellSizeInPixels * x, lineColor);
+          marginX + cellSizeInPixels * (game.getBoardSize()-1), marginY + cellSizeInPixels * x,
+          lineColor);
       canvas.drawLine(marginX + cellSizeInPixels * x, marginY,
-          marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * (game.getBoardSize()-1), lineColor);
+          marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * (game.getBoardSize()-1),
+          lineColor);
     }
     for (int x = 0; x < game.getBoardSize(); x++) {
       for (int y = 0; y < game.getBoardSize(); y++) {
@@ -119,7 +121,7 @@ public class GoBoardView extends View {
         if (contentColor == StoneColor.Empty) continue;
         Paint color = (contentColor == StoneColor.Black) ? blackColor : whiteColor;
         canvas.drawCircle(marginX + cellSizeInPixels * x,
-            marginY + cellSizeInPixels * y, cellSizeInPixels / 2, color);
+            marginY + cellSizeInPixels * y, (int) (cellSizeInPixels / 2 * STONE_RATIO), color);
       }
     }
   }
