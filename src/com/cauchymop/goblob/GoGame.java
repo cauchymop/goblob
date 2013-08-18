@@ -204,4 +204,8 @@ public class GoGame extends Game implements Parcelable {
   public Player getWhitePlayer() {
     return whitePlayer;
   }
+
+  public int getBoardSize() {
+    return boardSize;
+  }
 }
