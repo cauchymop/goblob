@@ -3,8 +3,7 @@ package com.cauchymop.goblob;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.text.TextUtils;
+import android.text.Editable;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -26,11 +25,6 @@ public class GameConfigurationActivity extends Activity {
   private Player opponentPlayer;
   private Player yourPlayer;
 
-  private enum PlayerColor {
-    BLACK,
-    WHITE;
-  };
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -42,10 +36,10 @@ public class GameConfigurationActivity extends Activity {
 
     yourColorSpinner = (Spinner) findViewById(R.id.your_player_color_spinner);
     yourColorSpinner.setAdapter(new PlayerTypeAdapter());
-    yourColorSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
+    yourColorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        opponentColorSpinner.setSelection(1-position);
+        opponentColorSpinner.setSelection(1 - position);
       }
 
       @Override
@@ -53,24 +47,45 @@ public class GameConfigurationActivity extends Activity {
       }
     });
 
-    yourNameField = (EditText)findViewById(R.id.your_player_name);
-    opponentNameField = (EditText)findViewById(R.id.opponent_player_name);
+    yourNameField = (EditText) findViewById(R.id.your_player_name);
+    opponentNameField = (EditText) findViewById(R.id.opponent_player_name);
 
-    boardSize = getIntent().getExtras().getInt(EXTRA_BOARD_SIZE);
-    opponentPlayer = getIntent().getExtras().getParcelable(EXTRA_OPPONENT);
+    final Bundle extras = getIntent().getExtras();
+    if (extras != null) {
+      boardSize = extras.getInt(EXTRA_BOARD_SIZE);
+      opponentPlayer = extras.getParcelable(EXTRA_OPPONENT);
+    } else {
+      // This should never happen: if extras are null, it means previous activity has not
+      // provided the necessary data we need to create a Game => we finish to go back to
+      // previous screen.
+      setResult(RESULT_CANCELED);
+      finish();
+      return;
+    }
 
-    yourPlayer = new Player(Player.PlayerType.HUMAN, getString(R.string.you_label));
+    yourPlayer = new Player(Player.PlayerType.HUMAN, getString(R.string.your_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());
   }
 
   public void startGame(View view) {
-    opponentPlayer.setName(opponentNameField.getText().toString());
-    yourPlayer.setName(yourNameField.getText().toString());
+    if (view == null || view.getId() != R.id.start_game_button) {
+      return;
+    }
+    final Editable opponentNameText = opponentNameField.getText();
+    if (opponentNameText != null) {
+      opponentPlayer.setName(opponentNameText.toString());
+    }
+
+    final Editable yourNameText = yourNameField.getText();
+    if (yourNameText != null) {
+      yourPlayer.setName(yourNameText.toString());
+    }
 
     GoGame goGame;
-    switch ((PlayerColor) yourColorSpinner.getSelectedItem()) {
+    final PlayerColor selectedItem = (PlayerColor) yourColorSpinner.getSelectedItem();
+    switch (selectedItem != null ? selectedItem : PlayerColor.BLACK) {
       case BLACK:
         goGame = new GoGame(boardSize, yourPlayer, opponentPlayer);
         break;
@@ -83,6 +98,11 @@ public class GameConfigurationActivity extends Activity {
     Intent startGameIntent = new Intent(getApplicationContext(), GameActivity.class);
     startGameIntent.putExtra(GameActivity.EXTRA_GAME, goGame);
     startActivity(startGameIntent);
+  }
+
+  private enum PlayerColor {
+    BLACK,
+    WHITE
   }
 
   private class PlayerTypeAdapter extends ArrayAdapter<PlayerColor> {
