@@ -5,7 +5,6 @@ package com.cauchymop.goblob;
 */
 public enum StoneColor {
   Empty,
-  Border,
   Black,
   White,
   BlackTerritory,

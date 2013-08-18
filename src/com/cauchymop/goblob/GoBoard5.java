@@ -9,24 +9,23 @@ import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 
 /**
- * Class to represent the state of a Go board on a 5x5, and enforce the rules of the game to play
- * moves.
+ * {@link GoBoard} implementation optimized for 5x5.
  */
 public class GoBoard5 implements GoBoard {
 
   private static final int BOARD_SIZE = 5;
-  private static final int NUMBER_OF_GROUPS = 26;
+  private static final int NUMBER_OF_GROUPS = 27;  // 1 empty, 13 black groups, 13 white groups.
   private static final int NUMBER_OF_POSITIONS = BOARD_SIZE * BOARD_SIZE;
   private static final int BLACK_GROUP_START = 1;
   private static final int WHITE_GROUP_START = 14;
 
-  private static final int[][] neighborPositionsByPosition = getNeighborPositionsByPostion();
+  private static final int[][] neighborPositionsByPosition = getNeighborPositionsByPosition();
 
   private int blackField;
   private int whiteField;
-  private int[] groupByPosition = new int[25];
-  private int[] stoneFieldByGroup = new int[27];  // 1 empty, 13 black groups, 13 white groups.
-  private int[] libertyFieldByGroup = new int[27];
+  private int[] groupByPosition = new int[NUMBER_OF_POSITIONS];
+  private int[] stoneFieldByGroup = new int[NUMBER_OF_GROUPS];
+  private int[] libertyFieldByGroup = new int[NUMBER_OF_GROUPS];
 
   public GoBoard5() {
   }
@@ -59,18 +58,18 @@ public class GoBoard5 implements GoBoard {
   };
 
   @Override
-  public void empty() {
+  public void clear() {
     blackField = 0;
     whiteField = 0;
     for (int i=0 ; i<NUMBER_OF_POSITIONS ; i++) {
       groupByPosition[i] = 0;
     }
     for (int i=0 ; i<NUMBER_OF_GROUPS ; i++) {
-      stoneFieldByGroup[i+1] = 0;
+      stoneFieldByGroup[i] = 0;
     }
   }
 
-  private static int[][] getNeighborPositionsByPostion() {
+  private static int[][] getNeighborPositionsByPosition() {
     int[][] neighborPositionsByPositions = new int[NUMBER_OF_POSITIONS][];
     for (int x = 0 ; x < BOARD_SIZE ; x++) {
       for (int y = 0 ; y < BOARD_SIZE ; y++) {
@@ -90,7 +89,7 @@ public class GoBoard5 implements GoBoard {
   /**
    * Plays a move.
    *
-   * @return whether the move was valid and played
+   * @return whether the move was valid (if it was not, this instance can't be used anymore)
    */
   @Override
   public boolean play(StoneColor color, int x, int y) {
@@ -198,7 +197,7 @@ public class GoBoard5 implements GoBoard {
 
   @Override
   public int getSize() {
-    return 5;
+    return BOARD_SIZE;
   }
 
   @Override
@@ -209,13 +208,13 @@ public class GoBoard5 implements GoBoard {
     GoBoard5 other = (GoBoard5) board;
     blackField = other.blackField;
     whiteField = other.whiteField;
-    System.arraycopy(other.groupByPosition, 0, groupByPosition, 0, 25);
-    System.arraycopy(other.stoneFieldByGroup, 0, stoneFieldByGroup, 0, 27);
-    System.arraycopy(other.libertyFieldByGroup, 0, libertyFieldByGroup, 0, 27);
+    System.arraycopy(other.groupByPosition, 0, groupByPosition, 0, NUMBER_OF_POSITIONS);
+    System.arraycopy(other.stoneFieldByGroup, 0, stoneFieldByGroup, 0, NUMBER_OF_GROUPS);
+    System.arraycopy(other.libertyFieldByGroup, 0, libertyFieldByGroup, 0, NUMBER_OF_GROUPS);
   }
 
   private static int getPos(int x, int y) {
-    return y * 5 + x;
+    return y * BOARD_SIZE + x;
   }
 
   @Override

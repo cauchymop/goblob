@@ -13,7 +13,7 @@ import com.google.common.collect.Lists;
  */
 public class GoGame extends Game implements Parcelable {
 
-  private static final String TAG = GoGame.class.getSimpleName();
+  private static final String TAG = GoGame.class.getName();
   
   private int boardSize;
   private GoBoard board;
@@ -33,7 +33,6 @@ public class GoGame extends Game implements Parcelable {
     this.boardSize = boardSize;
     currentColor = StoneColor.Black;
     board = getNewBoard();
-    board.empty();
     boardHistory.add(board);
     this.blackPlayer = blackPlayer;
     this.whitePlayer = whitePlayer;
@@ -94,10 +93,12 @@ public class GoGame extends Game implements Parcelable {
 
   private GoBoard getNewBoard() {
     if (boardPoolSize == 0) {
-      return new GoBoard5();
+      return new GenericGoBoard(boardSize);
     }
     boardPoolSize--;
-    return boardPool[boardPoolSize];
+    GoBoard board = boardPool[boardPoolSize];
+    board.clear();
+    return board;
   }
 
   private void recycleBoard(GoBoard board) {
