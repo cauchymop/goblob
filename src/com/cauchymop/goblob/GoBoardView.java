@@ -18,6 +18,11 @@ import com.google.common.collect.Sets;
 @SuppressLint("DrawAllocation")
 public class GoBoardView extends View {
 
+  private static final Paint blackColor = createPaint(0xFF000000);
+  private static final Paint lineColor = createPaint(0xFF000000);
+  private static final Paint whiteColor = createPaint(0xFFFFFFFF);
+  private static final double STONE_RATIO = 0.95;
+
   private GoGame game;
   private Point lastClickedCellCoord = null;
   private int marginX;
@@ -26,20 +31,12 @@ public class GoBoardView extends View {
 
   private Set<Listener> listeners = Sets.newHashSet();
 
-  private Map<StoneColor, Paint> colorToPaint = ImmutableMap.of(
-      StoneColor.White, createPaint(0xFFFF0000),
-      StoneColor.Black, createPaint(0xFF00FF00),
-      StoneColor.WhiteTerritory, createPaint(0xFFC08080),
-      StoneColor.BlackTerritory, createPaint(0xFF80C080),
-      StoneColor.Empty, createPaint(0xFF000000)
-  );
-
   public GoBoardView(Context context, GoGame game) {
     super(context, null);
     this.game = game;
   }
 
-  private Paint createPaint(int color) {
+  private static Paint createPaint(int color) {
     Paint p = new Paint();
     p.setColor(color);
     return p;
@@ -108,20 +105,23 @@ public class GoBoardView extends View {
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
-    int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
-    int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
-    int cellSize = boardSizeInPixels / game.getBoardSize();
-    Paint textPaint = createPaint(0xFFC0C0FF);
-    textPaint.setTextSize(30);
-    RectF r = new RectF();
+    int marginX = (canvas.getWidth() - boardSizeInPixels) / 2 + cellSizeInPixels / 2;
+    int marginY = (canvas.getHeight() - boardSizeInPixels) / 2 + cellSizeInPixels / 2;
+    for (int x = 0; x < game.getBoardSize(); x++) {
+      canvas.drawLine(marginX, marginY + cellSizeInPixels * x,
+          marginX + cellSizeInPixels * (game.getBoardSize()-1), marginY + cellSizeInPixels * x,
+          lineColor);
+      canvas.drawLine(marginX + cellSizeInPixels * x, marginY,
+          marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * (game.getBoardSize()-1),
+          lineColor);
+    }
     for (int x = 0; x < game.getBoardSize(); x++) {
       for (int y = 0; y < game.getBoardSize(); y++) {
-        r.set(marginX + (cellSize * x), marginY + (cellSize * y),
-            marginX + (cellSize * (x + 1)), marginY + (cellSize * (y + 1)));
         StoneColor contentColor = game.getColor(x, y);
-        Paint paint = colorToPaint.get(contentColor);
-        canvas.drawRect(r, paint);
-//        canvas.drawText(textScore, r.centerX()-10*textScore.length(), r.centerY()+15, textPaint);
+        if (contentColor == StoneColor.Empty) continue;
+        Paint color = (contentColor == StoneColor.Black) ? blackColor : whiteColor;
+        canvas.drawCircle(marginX + cellSizeInPixels * x,
+            marginY + cellSizeInPixels * y, (int) (cellSizeInPixels / 2 * STONE_RATIO), color);
       }
     }
   }
