@@ -6,7 +6,7 @@
 
     <uses-sdk
             android:minSdkVersion="14"
-            android:targetSdkVersion="17"/>
+            android:targetSdkVersion="18"/>
 
     <application
             android:allowBackup="true"
@@ -23,7 +23,7 @@
         </activity>
         <activity android:name=".PlayerChoiceActivity"/>
         <activity android:name=".GameConfigurationActivity"/>
-        <activity android:name=".GameActivity" />
+        <activity android:name=".GameActivity"/>
     </application>
 
 </manifest>

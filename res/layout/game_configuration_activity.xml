@@ -5,7 +5,7 @@
                 android:layout_height="match_parent">
 
     <Button
-            android:id="@+id/configure_game_button"
+            android:id="@+id/start_game_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/start_game_label"
@@ -17,7 +17,7 @@
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@id/configure_game_button"
+            android:layout_above="@id/start_game_button"
             android:scrollbarAlwaysDrawVerticalTrack="true">
 
         <LinearLayout
