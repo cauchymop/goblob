@@ -1,26 +1,19 @@
 package com.cauchymop.goblob;
 
-import java.util.Map;
 import java.util.Set;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.RectF;
+import android.graphics.*;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 @SuppressLint("DrawAllocation")
 public class GoBoardView extends View {
 
-  private static final Paint blackColor = createPaint(0xFF000000);
   private static final Paint lineColor = createPaint(0xFF000000);
-  private static final Paint whiteColor = createPaint(0xFFFFFFFF);
   private static final double STONE_RATIO = 0.95;
 
   private GoGame game;
@@ -28,12 +21,16 @@ public class GoBoardView extends View {
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
+  private Bitmap whiteStoneBitmap;
+  private Bitmap blackStoneBitmap;
 
   private Set<Listener> listeners = Sets.newHashSet();
 
   public GoBoardView(Context context, GoGame game) {
     super(context, null);
     this.game = game;
+    blackStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.black_stone);
+    whiteStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.white_stone);
   }
 
   private static Paint createPaint(int color) {
@@ -105,23 +102,27 @@ public class GoBoardView extends View {
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
-    int marginX = (canvas.getWidth() - boardSizeInPixels) / 2 + cellSizeInPixels / 2;
-    int marginY = (canvas.getHeight() - boardSizeInPixels) / 2 + cellSizeInPixels / 2;
+    int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
+    int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
+    int startLineX = marginX + cellSizeInPixels / 2;
+    int startLineY = marginY + cellSizeInPixels / 2;
+    int lineLength = cellSizeInPixels * (game.getBoardSize() - 1);
     for (int x = 0; x < game.getBoardSize(); x++) {
-      canvas.drawLine(marginX, marginY + cellSizeInPixels * x,
-          marginX + cellSizeInPixels * (game.getBoardSize()-1), marginY + cellSizeInPixels * x,
-          lineColor);
-      canvas.drawLine(marginX + cellSizeInPixels * x, marginY,
-          marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * (game.getBoardSize()-1),
-          lineColor);
+      canvas.drawLine(startLineX, startLineY + cellSizeInPixels * x,
+          startLineX + lineLength, startLineY + cellSizeInPixels * x, lineColor);
+      canvas.drawLine(startLineX + cellSizeInPixels * x, startLineY,
+          startLineX + cellSizeInPixels * x, startLineY + lineLength, lineColor);
     }
+    Rect rect = new Rect();
     for (int x = 0; x < game.getBoardSize(); x++) {
       for (int y = 0; y < game.getBoardSize(); y++) {
         StoneColor contentColor = game.getColor(x, y);
         if (contentColor == StoneColor.Empty) continue;
-        Paint color = (contentColor == StoneColor.Black) ? blackColor : whiteColor;
-        canvas.drawCircle(marginX + cellSizeInPixels * x,
-            marginY + cellSizeInPixels * y, (int) (cellSizeInPixels / 2 * STONE_RATIO), color);
+        Bitmap stoneBitmap = (contentColor == StoneColor.Black)
+            ? blackStoneBitmap : whiteStoneBitmap;
+        rect.set(marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * y,
+            marginX + cellSizeInPixels * (x+1), marginY + cellSizeInPixels * (y + 1));
+        canvas.drawBitmap(stoneBitmap, null, rect, null);
       }
     }
   }
