@@ -18,7 +18,6 @@ import com.google.common.collect.Sets;
 @SuppressLint("DrawAllocation")
 public class GoBoardView extends View {
 
-  private int boardSizeInCells = 5;
   private GoGame game;
   private Point lastClickedCellCoord = null;
   private int marginX;
@@ -52,7 +51,7 @@ public class GoBoardView extends View {
     int boardSizeInPixels = Math.min(getWidth(), getHeight());
     marginX = (getWidth() - boardSizeInPixels) / 2;
     marginY = (getHeight() - boardSizeInPixels) / 2;
-    cellSizeInPixels = boardSizeInPixels / boardSizeInCells;
+    cellSizeInPixels = boardSizeInPixels / game.getBoardSize();
   }
 
   @Override
@@ -66,7 +65,7 @@ public class GoBoardView extends View {
 
     int x = (int) ((event.getX() - marginX) / cellSizeInPixels);
     int y = (int) ((event.getY() - marginY) / cellSizeInPixels);
-    if (y < 0 || y >= boardSizeInCells || x < 0 || x >= boardSizeInCells) {
+    if (y < 0 || y >= game.getBoardSize() || x < 0 || x >= game.getBoardSize()) {
       lastClickedCellCoord = null;
       return false;
     }
@@ -111,12 +110,12 @@ public class GoBoardView extends View {
     int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
     int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
     int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
-    int cellSize = boardSizeInPixels / boardSizeInCells;
+    int cellSize = boardSizeInPixels / game.getBoardSize();
     Paint textPaint = createPaint(0xFFC0C0FF);
     textPaint.setTextSize(30);
     RectF r = new RectF();
-    for (int x = 0; x < boardSizeInCells; x++) {
-      for (int y = 0; y < boardSizeInCells; y++) {
+    for (int x = 0; x < game.getBoardSize(); x++) {
+      for (int y = 0; y < game.getBoardSize(); y++) {
         r.set(marginX + (cellSize * x), marginY + (cellSize * y),
             marginX + (cellSize * (x + 1)), marginY + (cellSize * (y + 1)));
         StoneColor contentColor = game.getColor(x, y);
