@@ -3,8 +3,6 @@ package com.cauchymop.goblob;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -59,9 +57,9 @@ public class GameConfigurationActivity extends Activity {
     boardSize = getIntent().getExtras().getInt(EXTRA_BOARD_SIZE);
     opponentPlayer = getIntent().getExtras().getParcelable(EXTRA_OPPONENT);
 
-    yourPlayer = new Player(Player.PlayerType.HUMAN, getString(R.string.you_label));
+      yourPlayer = new Player(Player.PlayerType.HUMAN, getString(R.string.your_default_name));
 
-    opponentNameField.setText(opponentPlayer.getName());
+      opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());
   }
 
