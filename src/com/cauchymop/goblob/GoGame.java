@@ -1,12 +1,12 @@
 package com.cauchymop.goblob;
 
-import java.util.ArrayList;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
@@ -203,6 +203,10 @@ public class GoGame extends Game implements Parcelable {
 
   public Player getWhitePlayer() {
     return whitePlayer;
+  }
+
+  public StoneColor getCurrentColor() {
+    return currentColor;
   }
 
   public int getBoardSize() {

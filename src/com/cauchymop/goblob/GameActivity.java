@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class GameActivity extends Activity implements Game.Listener, GoBoardView.Listener {
 
@@ -17,6 +19,8 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   private GoGame goGame;
   private GoBoardView goBoardView;
   private HumanPlayerController currentPlayerController;
+  private TextView titleView;
+  private ImageView titleImage;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,24 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     goBoardView = new GoBoardView(getApplicationContext(), goGame);
     goBoardView.addListener(this);
     container.addView(goBoardView);
+
+    titleView = (TextView) findViewById(R.id.title);
+    titleImage = (ImageView) findViewById(R.id.titleImage);
+    updateFromCurrentPlayer();
+  }
+
+  private void updateFromCurrentPlayer() {
+    switch (goGame.getCurrentColor()) {
+      case Black:
+        titleView.setText(goGame.getBlackPlayer().getName());
+        titleImage.setImageResource(R.drawable.black_stone);
+        break;
+      case White:
+        titleView.setText(goGame.getWhitePlayer().getName());
+        titleImage.setImageResource(R.drawable.white_stone);
+      default:
+        break;
+    }
   }
 
   private PlayerController getController(Player player) {
@@ -75,6 +97,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
       });
     }
     goBoardView.postInvalidate();
+    updateFromCurrentPlayer();
   }
 
   @Override
