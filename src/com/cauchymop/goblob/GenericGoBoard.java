@@ -30,8 +30,11 @@ public class GenericGoBoard implements GoBoard {
   public GenericGoBoard(int size) {
     this.size = size;
     numberOfPositions = size * size;
-    numberOfGroups = numberOfPositions + 2;
-    whiteGroupStart = 1 + numberOfGroups / 2;
+    // Worst case, every other intersection is occupied by a stone of the same color.
+    int numberOfGroupsPerColor = numberOfPositions / 2 + 1;
+    // One set per color, plus zero which means empty
+    numberOfGroups = 2 * numberOfGroupsPerColor + 1;
+    whiteGroupStart = BLACK_GROUP_START + numberOfGroupsPerColor;
     neighborPositionsByPosition = getNeighborPositionsByPosition();
     blackField = new BitSet(numberOfPositions);
     whiteField = new BitSet(numberOfPositions);
