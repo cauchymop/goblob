@@ -15,6 +15,6 @@ public class AIPlayerController extends PlayerController {
 
   @Override
   public void startTurn() {
-    game.play(ai.getBestMove(game, HeuristicProvider.getHeuristic(game), DEPTH));
+    game.play(ai.getBestMove(game, DEPTH));
   }
 }
