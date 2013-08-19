@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -78,6 +79,9 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   }
 
   public void pass(View v) {
+    if (v == null || v.getId() != R.id.pass_button) {
+      return;
+    }
     goGame.pass();
   }
 
@@ -143,7 +147,8 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
 
     @Override
     public void startTurn() {
-      // TODO: show that it's my turn.
+      // Enable Interactions for Local Humans
+      setHumanInteractionEnabled(true);
 
       played = false;
       currentPlayerController = this;
@@ -157,7 +162,20 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
         }
       }
 
-      // TODO: show that it's not my turn anymore.
+      // Disable Interactions for Local Humans
+      setHumanInteractionEnabled(false);
     }
+  }
+
+  private void setHumanInteractionEnabled(final boolean enabled) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        // Enable or Disable Pass Button for Local Humans
+        final Button pass_button = (Button) findViewById(R.id.pass_button);
+        pass_button.setEnabled(enabled);
+      }
+    });
+
   }
 }
