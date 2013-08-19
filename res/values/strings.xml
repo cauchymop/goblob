@@ -25,5 +25,6 @@
     <string name="opponent_label">Opponent</string>
     <string name="your_default_name">Player 1</string>
     <string name="opponent_default_name">Player 2</string>
+    <string name="sign_out">Sign out</string>
 
 </resources>
