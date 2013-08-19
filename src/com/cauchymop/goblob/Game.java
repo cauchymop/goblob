@@ -5,17 +5,24 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 /**
-* Interface for a generic game. Implement this to use {@link AlphaBeta}.
-*/
+ * Interface for a generic game. Implement this to use {@link AlphaBeta}.
+ */
 public abstract class Game {
 
   private Set<Listener> listeners = Sets.newHashSet();
 
+  protected abstract PlayerController getCurrentController();
+
   public abstract void undo();
+
   public abstract Game copy();
+
   public abstract int getPosCount();
-  public abstract boolean play(int pos);
+
+  public abstract boolean play(PlayerController controller, int pos);
+
   public abstract boolean isGameEnd();
+
   public abstract double getScore();
 
   public void addListener(Listener listener) {

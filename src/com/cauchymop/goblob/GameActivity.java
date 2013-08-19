@@ -82,7 +82,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     if (v == null || v.getId() != R.id.pass_button) {
       return;
     }
-    goGame.pass();
+    currentPlayerController.pass();
   }
 
   @Override
@@ -114,8 +114,21 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     currentPlayerController.play(x, y);
   }
 
-  private class HumanPlayerController extends PlayerController {
+  private void setHumanInteractionEnabled(final boolean enabled) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        // Enable or Disable Pass Button for Local Humans
+        final Button pass_button = (Button) findViewById(R.id.pass_button);
+        pass_button.setEnabled(enabled);
 
+        final View boardContainer = findViewById(R.id.boardViewContainer);
+        goBoardView.setClickable(enabled);
+      }
+    });
+  }
+
+  private class HumanPlayerController extends PlayerController {
     private boolean played;
     private GoGame game;
 
@@ -124,7 +137,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     }
 
     private void play(int x, int y) {
-      if (!played && game.play(x, y)) {
+      if (!played && game.play(this, x, y)) {
         played = true;
         synchronized (this) {
           this.notifyAll();
@@ -134,14 +147,14 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
       }
     }
 
-    private void buzz() {
-      try {
-        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-        r.play();
-      } catch (Exception e) {
-        System.err.println("Exception while buzzing");
-        e.printStackTrace();
+    private void pass() {
+      if (!played && game.pass(this)) {
+        played = true;
+        synchronized (this) {
+          this.notifyAll();
+        }
+      } else {
+        buzz();
       }
     }
 
@@ -150,8 +163,8 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
       // Enable Interactions for Local Humans
       setHumanInteractionEnabled(true);
 
-      played = false;
       currentPlayerController = this;
+      played = false;
       synchronized (this) {
         while (!played) {
           try {
@@ -165,17 +178,16 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
       // Disable Interactions for Local Humans
       setHumanInteractionEnabled(false);
     }
-  }
 
-  private void setHumanInteractionEnabled(final boolean enabled) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        // Enable or Disable Pass Button for Local Humans
-        final Button pass_button = (Button) findViewById(R.id.pass_button);
-        pass_button.setEnabled(enabled);
+    private void buzz() {
+      try {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+        r.play();
+      } catch (Exception e) {
+        System.err.println("Exception while buzzing");
+        e.printStackTrace();
       }
-    });
-
+    }
   }
 }
