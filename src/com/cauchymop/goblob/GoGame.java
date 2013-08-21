@@ -83,8 +83,7 @@ public class GoGame extends Game implements Parcelable {
     thread.start();
   }
 
-  @Override
-  protected PlayerController getCurrentController() {
+  private PlayerController getCurrentController() {
     if (currentColor == StoneColor.Black) {
       return blackController;
     } else {

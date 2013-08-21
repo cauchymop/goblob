@@ -11,8 +11,6 @@ public abstract class Game {
 
   private Set<Listener> listeners = Sets.newHashSet();
 
-  protected abstract PlayerController getCurrentController();
-
   public abstract void undo();
 
   public abstract Game copy();
