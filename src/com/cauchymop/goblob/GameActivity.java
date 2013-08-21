@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -78,7 +79,10 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   }
 
   public void pass(View v) {
-    goGame.pass();
+    if (v == null || v.getId() != R.id.pass_button) {
+      return;
+    }
+    currentPlayerController.pass();
   }
 
   @Override
@@ -110,8 +114,21 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     currentPlayerController.play(x, y);
   }
 
-  private class HumanPlayerController extends PlayerController {
+  private void setHumanInteractionEnabled(final boolean enabled) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        // Enable or Disable Pass Button for Local Humans
+        final Button pass_button = (Button) findViewById(R.id.pass_button);
+        pass_button.setEnabled(enabled);
 
+        final View boardContainer = findViewById(R.id.boardViewContainer);
+        goBoardView.setClickable(enabled);
+      }
+    });
+  }
+
+  private class HumanPlayerController extends PlayerController {
     private boolean played;
     private GoGame game;
 
@@ -120,7 +137,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     }
 
     private void play(int x, int y) {
-      if (!played && game.play(x, y)) {
+      if (!played && game.play(this, x, y)) {
         played = true;
         synchronized (this) {
           this.notifyAll();
@@ -128,6 +145,38 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
       } else {
         buzz();
       }
+    }
+
+    private void pass() {
+      if (!played && game.pass(this)) {
+        played = true;
+        synchronized (this) {
+          this.notifyAll();
+        }
+      } else {
+        buzz();
+      }
+    }
+
+    @Override
+    public void startTurn() {
+      // Enable Interactions for Local Humans
+      setHumanInteractionEnabled(true);
+
+      currentPlayerController = this;
+      played = false;
+      synchronized (this) {
+        while (!played) {
+          try {
+            this.wait();
+          } catch (InterruptedException e) {
+            // Expected.
+          }
+        }
+      }
+
+      // Disable Interactions for Local Humans
+      setHumanInteractionEnabled(false);
     }
 
     private void buzz() {
@@ -139,25 +188,6 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
         System.err.println("Exception while buzzing");
         e.printStackTrace();
       }
-    }
-
-    @Override
-    public void startTurn() {
-      // TODO: show that it's my turn.
-
-      played = false;
-      currentPlayerController = this;
-      synchronized (this) {
-        while (!played) {
-          try {
-            this.wait();
-          } catch (InterruptedException e) {
-            // Expected.
-          }
-        }
-      }
-
-      // TODO: show that it's not my turn anymore.
     }
   }
 }
