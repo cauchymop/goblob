@@ -1,14 +1,19 @@
 package com.cauchymop.goblob;
 
-import java.util.Set;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.google.common.collect.Sets;
+
+import java.util.Set;
 
 @SuppressLint("DrawAllocation")
 public class GoBoardView extends View {
@@ -29,6 +34,7 @@ public class GoBoardView extends View {
   public GoBoardView(Context context, GoGame game) {
     super(context, null);
     this.game = game;
+    setClickable(true);
     blackStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.black_stone);
     whiteStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.white_stone);
   }
@@ -50,6 +56,9 @@ public class GoBoardView extends View {
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
+    if (!isClickable()) {
+      return false;
+    }
     final int action = event.getAction();
     int nb_fingers = event.getPointerCount();
 

@@ -13,8 +13,8 @@ public class AlphaBeta implements AI {
     int posCount = localGame.getPosCount();
     double bestResult = -MAX;
     int bestMove = -1;
-    for (int move = 0 ; move < posCount; move++) {
-      if (localGame.play(move)) {
+    for (int move = 0; move < posCount; move++) {
+      if (localGame.play(null, move)) {
         double result = -getAlphaBeta(localGame, depth, -MAX, MAX);
         if (result > bestResult) {
           bestResult = result;
@@ -34,8 +34,8 @@ public class AlphaBeta implements AI {
     }
     double bestScore = min;
 
-    for (int pos = 0 ; pos < game.getPosCount() ; pos++) {
-      if (game.play(pos)) {
+    for (int pos = 0; pos < game.getPosCount(); pos++) {
+      if (game.play(null, pos)) {
         score = -getAlphaBeta(game, depth - 1, -max, -bestScore);
         bestScore = Math.max(score, bestScore);
         game.undo();
@@ -52,8 +52,8 @@ public class AlphaBeta implements AI {
   public static double[] getMoveValues(Game game, int depth) {
     int posCount = game.getPosCount();
     double[] result = new double[posCount];
-    for (int pos = 0 ; pos < posCount; pos++) {
-      if (game.play(pos)) {
+    for (int pos = 0; pos < posCount; pos++) {
+      if (game.play(null, pos)) {
         result[pos] = -getAlphaBeta(game, depth, -MAX, MAX);
         game.undo();
       } else {

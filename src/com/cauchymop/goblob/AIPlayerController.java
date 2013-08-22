@@ -15,6 +15,6 @@ public class AIPlayerController extends PlayerController {
 
   @Override
   public void startTurn() {
-    game.play(ai.getBestMove(game, DEPTH));
+    game.play(this, ai.getBestMove(game, DEPTH));
   }
 }
