@@ -5,65 +5,63 @@
               android:orientation="horizontal"
               tools:context=".MainActivity">
 
+  <FrameLayout
+      android:background="@drawable/board_bg"
+      android:layout_gravity="center"
+      android:gravity="center"
+      android:id="@+id/boardViewContainer"
+      android:layout_width="0dip"
+      android:layout_height="match_parent"
+      android:layout_weight="60">
 
-    <FrameLayout
-            android:background="@drawable/board_bg"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:id="@+id/boardViewContainer"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_weight="60">
+  </FrameLayout>
 
-    </FrameLayout>
+  <RelativeLayout
+      android:layout_width="0dip"
+      android:layout_height="wrap_content"
+      android:layout_weight="40"
+      android:gravity="center"
+      android:layout_gravity="center"
+      android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dip"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_alignParentTop="true">
 
-    <RelativeLayout
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="40"
-            android:gravity="center"
-            android:layout_gravity="center"
-            android:orientation="vertical">
+      <ImageView
+          android:layout_width="44dip"
+          android:layout_height="44dip"
+          android:id="@+id/titleImage"
+          android:src="@drawable/black_stone"
+          android:layout_gravity="left|center_vertical"/>
 
-        <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dip"
-                android:layout_gravity="center_horizontal|top"
-                android:layout_alignParentTop="true">
-
-            <ImageView
-                    android:layout_width="44dip"
-                    android:layout_height="44dip"
-                    android:id="@+id/titleImage"
-                    android:src="@drawable/black_stone"
-                    android:layout_gravity="left|center_vertical"/>
-
-            <TextView
-                    style="@style/Title"
-                    android:id="@+id/title"
-                    android:text="@string/black_label"
-                    android:layout_gravity="left|center_vertical"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:layout_alignParentBottom="true">
-
-            <Button
-                    android:id="@+id/pass_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="20dip"
-                    android:paddingRight="20dip"
-                    android:text="@string/button_pass_label"
-                    android:onClick="pass"/>
-        </LinearLayout>
-
-    </RelativeLayout>
-
+      <TextView
+          style="@style/Title"
+          android:id="@+id/title"
+          android:text="@string/black_label"
+          android:layout_gravity="left|center_vertical"/>
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_alignParentBottom="true">
+
+      <Button
+          android:id="@+id/pass_button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:paddingLeft="20dip"
+          android:paddingRight="20dip"
+          android:text="@string/button_pass_label"
+          android:onClick="pass"/>
+    </LinearLayout>
+
+  </RelativeLayout>
+
+</LinearLayout>
