@@ -1,5 +1,6 @@
 package com.cauchymop.goblob;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -10,6 +11,7 @@ public class Player implements Parcelable {
 
   private PlayerType type;
   private String name;
+  private Bitmap avatar;
 
   public Player(PlayerType type, String name) {
     this.type = type;
@@ -19,6 +21,7 @@ public class Player implements Parcelable {
   private Player(Parcel in) {
     name = in.readString();
     type = PlayerType.valueOf(in.readString());
+    avatar = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
   }
 
   @Override
@@ -30,6 +33,7 @@ public class Player implements Parcelable {
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeString(name);
     dest.writeString(type.name());
+    dest.writeValue(avatar);
   }
 
   public static final Parcelable.Creator<Player> CREATOR = new Parcelable.Creator<Player>() {
@@ -42,16 +46,24 @@ public class Player implements Parcelable {
     }
   };
 
-  public String getName() {
-    return name;
-  }
-
   public PlayerType getType() {
     return type;
   }
 
+  public String getName() {
+    return name;
+  }
+
   public void setName(String name) {
     this.name = name;
+  }
+
+  public Bitmap getAvatar() {
+    return avatar;
+  }
+
+  public void setAvatar(Bitmap avatar) {
+    this.avatar = avatar;
   }
 
   public enum PlayerType {

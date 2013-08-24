@@ -1,5 +1,7 @@
 package com.cauchymop.goblob;
 
+import android.os.Bundle;
+
 import com.google.common.collect.Sets;
 
 import java.util.Set;
@@ -31,13 +33,13 @@ public abstract class Game {
     listeners.remove(listener);
   }
 
-  protected void fireGameChanged() {
+  protected void fireGameChanged(Bundle info) {
     for (Listener listener : listeners) {
-      listener.gameChanged(this);
+      listener.gameChanged(this, info);
     }
   }
 
   public interface Listener {
-    public void gameChanged(Game game);
+    public void gameChanged(Game game, Bundle info);
   }
 }

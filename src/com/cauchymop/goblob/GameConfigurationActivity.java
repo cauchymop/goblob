@@ -2,6 +2,8 @@ package com.cauchymop.goblob;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.Editable;
 import android.view.View;
@@ -85,12 +87,18 @@ public class GameConfigurationActivity extends Activity {
 
     GoGame goGame;
     final PlayerColor selectedItem = (PlayerColor) yourColorSpinner.getSelectedItem();
+    final Bitmap blackAvatar = BitmapFactory.decodeResource(getResources(), R.drawable.black_stone);
+    final Bitmap whiteAvatar = BitmapFactory.decodeResource(getResources(), R.drawable.white_stone);
     switch (selectedItem != null ? selectedItem : PlayerColor.BLACK) {
       case BLACK:
+        yourPlayer.setAvatar(blackAvatar);
+        opponentPlayer.setAvatar(whiteAvatar);
         goGame = new GoGame(boardSize, yourPlayer, opponentPlayer);
         break;
       case WHITE:
       default:
+        yourPlayer.setAvatar(whiteAvatar);
+        opponentPlayer.setAvatar(blackAvatar);
         goGame = new GoGame(boardSize, opponentPlayer, yourPlayer);
         break;
     }

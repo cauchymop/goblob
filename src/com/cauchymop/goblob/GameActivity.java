@@ -46,19 +46,41 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        switch (goGame.getCurrentColor()) {
-          case Black:
-            titleView.setText(goGame.getBlackPlayer().getName());
-            titleImage.setImageResource(R.drawable.black_stone);
-            break;
-          case White:
-            titleView.setText(goGame.getWhitePlayer().getName());
-            titleImage.setImageResource(R.drawable.white_stone);
-          default:
-            break;
-        }
+        final Player currentPlayer = getCurrentPlayer();
+        titleView.setText(currentPlayer.getName());
+        titleImage.setImageBitmap(currentPlayer.getAvatar());
       }
     });
+  }
+
+  private Player getCurrentPlayer() {
+    final Player currentPlayer;
+    switch (goGame.getCurrentColor()) {
+      case Black:
+        currentPlayer = goGame.getBlackPlayer();
+        break;
+      case White:
+        currentPlayer = goGame.getWhitePlayer();
+        break;
+      default:
+        throw new IllegalStateException("Invalid Player Color: " + goGame.getCurrentColor());
+    }
+    return currentPlayer;
+  }
+
+  private Player getOpponent() {
+    final Player opponent;
+    switch (goGame.getCurrentColor()) {
+      case Black:
+        opponent = goGame.getWhitePlayer();
+        break;
+      case White:
+        opponent = goGame.getBlackPlayer();
+        break;
+      default:
+        throw new IllegalStateException("Invalid Player Color: " + goGame.getCurrentColor());
+    }
+    return opponent;
   }
 
   private PlayerController getController(Player player) {
@@ -86,14 +108,16 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   }
 
   @Override
-  public void gameChanged(Game game) {
+  public void gameChanged(Game game, Bundle info) {
+    // Check for End of Game
     if (game.isGameEnd()) {
       runOnUiThread(new Runnable() {
         @Override
         public void run() {
           new AlertDialog.Builder(GameActivity.this)
-              .setMessage("End of game")
-              .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+              .setTitle(getString(R.string.end_of_game_dialog_title))
+              .setMessage(getString(R.string.end_of_game_dialog_message))
+              .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   setResult(RESULT_OK);
@@ -104,9 +128,36 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
               .show();
         }
       });
+      return;
     }
+
+    // Refresh UI and current controller
     goBoardView.postInvalidate();
     updateFromCurrentPlayer();
+
+    // Check for Pass from Previous Player
+    if (info != null && info.getBoolean(GoGame.CHANGE_PLAYER_PASSED)) {
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          String message = getString(R.string.opponent_passed_dialog_message, getOpponent().getName());
+          new AlertDialog.Builder(GameActivity.this)
+              .setTitle(getString(R.string.opponent_passed_dialog_title))
+              .setMessage(message)
+              .setPositiveButton(getString(R.string.button_pass_label), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  currentPlayerController.pass();
+                }
+              })
+              .setNegativeButton(getString(R.string.button_continue_label), null)
+              .create()
+              .show();
+        }
+      });
+    }
+
+
   }
 
   @Override

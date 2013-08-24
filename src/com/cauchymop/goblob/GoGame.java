@@ -1,5 +1,6 @@
 package com.cauchymop.goblob;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -13,8 +14,11 @@ import java.util.ArrayList;
  */
 public class GoGame extends Game implements Parcelable {
 
+  public static final String CHANGE_PLAYER_PASSED = "player_passed";
+  public static final String CHANGE_PLAYER_PLAYED = "player_played";
+
   private static final String TAG = GoGame.class.getName();
-  
+
   private int boardSize;
   private GoBoard board;
   private final Player blackPlayer;
@@ -116,7 +120,9 @@ public class GoGame extends Game implements Parcelable {
     moveHistory.add(boardSize*boardSize);
     board = newBoard;
     currentColor = currentColor.getOpponent();
-    fireGameChanged();
+    Bundle changeInfo = new Bundle();
+    changeInfo.putBoolean(CHANGE_PLAYER_PASSED, true);
+    fireGameChanged(changeInfo);
     return true;
   }
 
@@ -131,7 +137,9 @@ public class GoGame extends Game implements Parcelable {
       moveHistory.add(y*boardSize + x);
       board = newBoard;
       currentColor = currentColor.getOpponent();
-      fireGameChanged();
+      Bundle changeInfo = new Bundle();
+      changeInfo.putBoolean(CHANGE_PLAYER_PLAYED, true);
+      fireGameChanged(changeInfo);
       return true;
     }
     recycleBoard(newBoard);
