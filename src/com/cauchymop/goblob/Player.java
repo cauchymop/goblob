@@ -18,7 +18,7 @@ public class Player implements Parcelable {
     this.name = name;
   }
 
-  private Player(Parcel in) {
+  protected Player(Parcel in) {
     name = in.readString();
     type = PlayerType.valueOf(in.readString());
     avatar = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
