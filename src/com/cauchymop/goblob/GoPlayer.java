@@ -7,6 +7,17 @@ import android.os.Parcelable;
  * A {@link Player} for the Game of Go.
  */
 public class GoPlayer extends Player {
+
+  public static final Parcelable.Creator<GoPlayer> CREATOR = new Parcelable.Creator<GoPlayer>() {
+    public GoPlayer createFromParcel(Parcel in) {
+      return new GoPlayer(in);
+    }
+
+    public GoPlayer[] newArray(int size) {
+      return new GoPlayer[size];
+    }
+  };
+
   private StoneColor stoneColor = StoneColor.Black;
 
   public GoPlayer(PlayerType type, String name) {
@@ -31,14 +42,4 @@ public class GoPlayer extends Player {
     super.writeToParcel(dest, flags);
     dest.writeString(stoneColor.name());
   }
-
-  public static final Parcelable.Creator<GoPlayer> CREATOR = new Parcelable.Creator<GoPlayer>() {
-    public GoPlayer createFromParcel(Parcel in) {
-      return new GoPlayer(in);
-    }
-
-    public GoPlayer[] newArray(int size) {
-      return new GoPlayer[size];
-    }
-  };
 }
