@@ -22,8 +22,8 @@ public class GameConfigurationActivity extends Activity {
   private EditText yourNameField;
   private EditText opponentNameField;
   private int boardSize;
-  private Player opponentPlayer;
-  private Player yourPlayer;
+  private GoPlayer opponentPlayer;
+  private GoPlayer yourPlayer;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,7 @@ public class GameConfigurationActivity extends Activity {
       return;
     }
 
-    yourPlayer = new Player(Player.PlayerType.HUMAN, getString(R.string.your_default_name));
+    yourPlayer = new GoPlayer(Player.PlayerType.HUMAN, getString(R.string.your_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());
@@ -84,16 +84,23 @@ public class GameConfigurationActivity extends Activity {
     }
 
     GoGame goGame;
-    final PlayerColor selectedItem = (PlayerColor) yourColorSpinner.getSelectedItem();
-    switch (selectedItem != null ? selectedItem : PlayerColor.BLACK) {
+    final PlayerColor yourPlayerColor = (PlayerColor) yourColorSpinner.getSelectedItem();
+    final GoPlayer blackPlayer, whitePlayer;
+    switch (yourPlayerColor != null ? yourPlayerColor : PlayerColor.BLACK) {
       case BLACK:
-        goGame = new GoGame(boardSize, yourPlayer, opponentPlayer);
+        blackPlayer = yourPlayer;
+        whitePlayer = opponentPlayer;
         break;
       case WHITE:
       default:
-        goGame = new GoGame(boardSize, opponentPlayer, yourPlayer);
+        blackPlayer = opponentPlayer;
+        whitePlayer = yourPlayer;
         break;
     }
+
+    blackPlayer.setStoneColor(StoneColor.Black);
+    whitePlayer.setStoneColor(StoneColor.White);
+    goGame = new GoGame(boardSize, blackPlayer, whitePlayer);
 
     Intent startGameIntent = new Intent(getApplicationContext(), GameActivity.class);
     startGameIntent.putExtra(GameActivity.EXTRA_GAME, goGame);

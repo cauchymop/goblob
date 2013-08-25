@@ -139,7 +139,7 @@ public class GoBoardView extends View {
           Bitmap stoneBitmap = (contentColor == StoneColor.Black)
               ? blackStoneBitmap : whiteStoneBitmap;
           rect.set(marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * y,
-              marginX + cellSizeInPixels * (x+1), marginY + cellSizeInPixels * (y + 1));
+              marginX + cellSizeInPixels * (x + 1), marginY + cellSizeInPixels * (y + 1));
           canvas.drawBitmap(stoneBitmap, null, rect, null);
         }
         int pos = y * game.getBoardSize() + x;

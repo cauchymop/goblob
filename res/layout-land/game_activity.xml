@@ -16,9 +16,9 @@
 
   </FrameLayout>
 
-  <RelativeLayout
+  <LinearLayout
       android:layout_width="0dip"
-      android:layout_height="wrap_content"
+      android:layout_height="fill_parent"
       android:layout_weight="40"
       android:gravity="center"
       android:layout_gravity="center"
@@ -28,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dip"
-        android:layout_gravity="center_horizontal|top"
+        android:layout_gravity="left|center_vertical"
         android:layout_alignParentTop="true">
 
       <ImageView
@@ -47,21 +47,30 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
         android:gravity="center"
         android:layout_gravity="center"
         android:layout_alignParentBottom="true">
 
-      <Button
-          android:id="@+id/pass_button"
+      <TextView
+          android:id="@+id/message_textview"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:paddingLeft="20dip"
-          android:paddingRight="20dip"
-          android:text="@string/button_pass_label"
-          android:onClick="pass"/>
+          android:gravity="center"
+          android:textAppearance="?android:attr/textAppearanceLarge"/>
+
     </LinearLayout>
 
-  </RelativeLayout>
+    <Button
+        android:id="@+id/pass_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dip"
+        android:paddingRight="20dip"
+        android:text="@string/button_pass_label"
+        android:onClick="pass"/>
+
+  </LinearLayout>
 
 </LinearLayout>

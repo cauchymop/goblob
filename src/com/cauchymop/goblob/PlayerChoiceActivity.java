@@ -118,7 +118,7 @@ public class PlayerChoiceActivity extends Activity {
 
     Intent configureGameIntent = new Intent(getApplicationContext(), GameConfigurationActivity.class);
 
-    Player opponentPlayer = new Player(opponentType, opponentDefaultName);
+    GoPlayer opponentPlayer = new GoPlayer(opponentType, opponentDefaultName);
     configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_OPPONENT, opponentPlayer);
     configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_BOARD_SIZE, boardSize);
     startActivity(configureGameIntent);
