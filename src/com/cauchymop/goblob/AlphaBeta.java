@@ -6,28 +6,31 @@ package com.cauchymop.goblob;
 public class AlphaBeta implements AI {
 
   private static final double MAX = 100.0;
-  private static final int HEURISTICS_THRESHOLD = 4;
+
+  private double[] scores;
 
   public int getBestMove(Game originalGame, int depth) {
     Game localGame = originalGame.copy();
     int posCount = localGame.getPosCount();
+    scores = new double[posCount];
     double bestResult = -MAX;
     int bestMove = -1;
     for (int move = 0; move < posCount; move++) {
       if (localGame.play(null, move)) {
-        double result = -getAlphaBeta(localGame, depth, -MAX, MAX);
-        if (result > bestResult) {
-          bestResult = result;
+        scores[move] = -getAlphaBeta(localGame, depth, -MAX, MAX);
+        if (scores[move] > bestResult) {
+          bestResult = scores[move];
           bestMove = move;
         }
         localGame.undo();
+      } else {
+        scores[move] = Double.NaN;
       }
     }
     return bestMove;
   }
 
-  public static double getAlphaBeta(Game game, int depth, double min,
-      double max) {
+  public double getAlphaBeta(Game game, int depth, double min, double max) {
     double score = game.getScore();
     if (depth == 0 || game.isGameEnd() || Math.abs(score) >= 8) {
       return game.getScore();
@@ -44,22 +47,11 @@ public class AlphaBeta implements AI {
         }
       }
     }
-    double reference = 0;
 
     return bestScore;
   }
 
-  public static double[] getMoveValues(Game game, int depth) {
-    int posCount = game.getPosCount();
-    double[] result = new double[posCount];
-    for (int pos = 0; pos < posCount; pos++) {
-      if (game.play(null, pos)) {
-        result[pos] = -getAlphaBeta(game, depth, -MAX, MAX);
-        game.undo();
-      } else {
-        result[pos] = Double.NaN;
-      }
-    }
-    return result;
+  public double[] getScores() {
+    return scores;
   }
 }

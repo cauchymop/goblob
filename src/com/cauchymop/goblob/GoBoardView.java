@@ -19,6 +19,8 @@ import java.util.Set;
 public class GoBoardView extends View {
 
   private static final Paint lineColor = createPaint(0xFF000000);
+  private static final Paint textColor = createTextPaint(0xFFFF0000, 20);
+
   private static final double STONE_RATIO = 0.95;
 
   private GoGame game;
@@ -43,6 +45,12 @@ public class GoBoardView extends View {
     Paint p = new Paint();
     p.setColor(color);
     return p;
+  }
+
+  private static Paint createTextPaint(int color, int size) {
+    Paint textPaint = createPaint(color);
+    textPaint.setTextSize(size);
+    return textPaint;
   }
 
   @Override
@@ -122,16 +130,24 @@ public class GoBoardView extends View {
       canvas.drawLine(startLineX + cellSizeInPixels * x, startLineY,
           startLineX + cellSizeInPixels * x, startLineY + lineLength, lineColor);
     }
+    double[] scores = game.getScores();
     Rect rect = new Rect();
     for (int x = 0; x < game.getBoardSize(); x++) {
       for (int y = 0; y < game.getBoardSize(); y++) {
         StoneColor contentColor = game.getColor(x, y);
-        if (contentColor == StoneColor.Empty) continue;
-        Bitmap stoneBitmap = (contentColor == StoneColor.Black)
-            ? blackStoneBitmap : whiteStoneBitmap;
-        rect.set(marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * y,
-            marginX + cellSizeInPixels * (x+1), marginY + cellSizeInPixels * (y + 1));
-        canvas.drawBitmap(stoneBitmap, null, rect, null);
+        if (contentColor != StoneColor.Empty) {
+          Bitmap stoneBitmap = (contentColor == StoneColor.Black)
+              ? blackStoneBitmap : whiteStoneBitmap;
+          rect.set(marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * y,
+              marginX + cellSizeInPixels * (x+1), marginY + cellSizeInPixels * (y + 1));
+          canvas.drawBitmap(stoneBitmap, null, rect, null);
+        }
+        int pos = y * game.getBoardSize() + x;
+        if (scores != null && !Double.isNaN(scores[pos])) {
+          double score = scores[pos];
+          canvas.drawText(Double.toString(score), startLineX + cellSizeInPixels * x,
+              startLineY + cellSizeInPixels * y, textColor);
+        }
       }
     }
   }

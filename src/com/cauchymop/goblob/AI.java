@@ -5,4 +5,5 @@ package com.cauchymop.goblob;
  */
 public interface AI {
   int getBestMove(Game game, int depth);
+  public double[] getScores();
 }
