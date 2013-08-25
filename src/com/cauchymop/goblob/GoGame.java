@@ -93,7 +93,7 @@ public class GoGame extends Game implements Parcelable {
 
   private GoBoard getNewBoard() {
     if (boardPoolSize == 0) {
-      return new GenericGoBoard(boardSize);
+      return boardSize == 5 ? new GoBoard5() : new GenericGoBoard(boardSize);
     }
     boardPoolSize--;
     GoBoard board = boardPool[boardPoolSize];
@@ -218,5 +218,17 @@ public class GoGame extends Game implements Parcelable {
 
   public int getBoardSize() {
     return boardSize;
+  }
+
+  public double[] getScores() {
+    PlayerController lastController = whiteController;
+    if (! (lastController instanceof AIPlayerController)) {
+      lastController = blackController;
+      if (! (lastController instanceof AIPlayerController)) {
+        return null;
+      }
+    }
+    AIPlayerController aiController = (AIPlayerController) lastController;
+    return aiController.getAi().getScores();
   }
 }
