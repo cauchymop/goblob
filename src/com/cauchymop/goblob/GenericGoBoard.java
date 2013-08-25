@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -54,6 +55,9 @@ public class GenericGoBoard implements GoBoard {
   }
 
   private void populateFromGroups() {
+    for (BitSet libertyField : libertyFieldByGroup) {
+      libertyField.clear();
+    }
     for (int pos = 0 ; pos < numberOfPositions ; pos++) {
       int group = groupByPosition[pos];
       if (group == 0) continue;
@@ -91,9 +95,7 @@ public class GenericGoBoard implements GoBoard {
   public void clear() {
     blackField.clear();
     whiteField.clear();
-    for (int i=0 ; i< numberOfPositions; i++) {
-      groupByPosition[i] = 0;
-    }
+    Arrays.fill(groupByPosition, 0);
     for (int i=0 ; i< numberOfGroups; i++) {
       stoneFieldByGroup[i].clear();
     }
@@ -140,13 +142,12 @@ public class GenericGoBoard implements GoBoard {
         int friendGroup = groupByPosition[neighbor];
         if (friendGroup != group) {
           stoneFieldByGroup[group].or(stoneFieldByGroup[friendGroup]);
-          stoneFieldByGroup[friendGroup].clear();
-          libertyFieldByGroup[group].or(libertyFieldByGroup[friendGroup]);
-          for (int pos = 0 ; pos < numberOfPositions; pos++) {
-            if (groupByPosition[pos] == friendGroup) {
-              groupByPosition[pos] = group;
-            }
+          for (int pos = stoneFieldByGroup[friendGroup].nextSetBit(0) ; pos != -1 ;
+               pos = stoneFieldByGroup[friendGroup].nextSetBit(pos+1)) {
+            groupByPosition[pos] = group;
           }
+          libertyFieldByGroup[group].or(libertyFieldByGroup[friendGroup]);
+          stoneFieldByGroup[friendGroup].clear();
         }
       } else if (foeField.get(neighbor)) {
         int foeGroup = groupByPosition[neighbor];
@@ -180,9 +181,8 @@ public class GenericGoBoard implements GoBoard {
 
   private void capture(int group) {
     StoneColor foeColor = getColorByGroup(group).getOpponent();
-    for (int pos = 0 ; pos < numberOfPositions; pos++) {
-      if (!stoneFieldByGroup[group].get(pos)) continue;
-
+    for (int pos = stoneFieldByGroup[group].nextSetBit(0) ; pos != -1 ;
+         pos = stoneFieldByGroup[group].nextSetBit(pos+1)) {
       // Remove the stone.
       whiteField.clear(pos);
       blackField.clear(pos);

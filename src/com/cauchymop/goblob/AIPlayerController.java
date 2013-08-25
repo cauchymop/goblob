@@ -17,4 +17,8 @@ public class AIPlayerController extends PlayerController {
   public void startTurn() {
     game.play(this, ai.getBestMove(game, DEPTH));
   }
+
+  public AI getAi() {
+    return ai;
+  }
 }
