@@ -4,18 +4,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by olivierbonal on 8/24/13.
+ * A {@link Player} for the Game of Go.
  */
 public class GoPlayer extends Player {
   private StoneColor stoneColor = StoneColor.Black;
 
   public GoPlayer(PlayerType type, String name) {
     super(type, name);
-  }
-
-  public GoPlayer(PlayerType type, String name, StoneColor stoneColor) {
-    this(type, name);
-    setStoneColor(stoneColor);
   }
 
   protected GoPlayer(Parcel in) {
