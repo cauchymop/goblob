@@ -2,6 +2,7 @@ package com.cauchymop.goblob;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
@@ -42,7 +43,7 @@ public class GenericGoBoard implements GoBoard {
     groupByPosition = new int[numberOfPositions];
     stoneFieldByGroup = new BitSet[numberOfGroups];
     libertyFieldByGroup = new BitSet[numberOfGroups];
-    for (int index = 0 ; index < numberOfGroups ; index++) {
+    for (int index = 0; index < numberOfGroups; index++) {
       stoneFieldByGroup[index] = new BitSet();
       libertyFieldByGroup[index] = new BitSet();
     }
@@ -58,7 +59,7 @@ public class GenericGoBoard implements GoBoard {
     for (BitSet libertyField : libertyFieldByGroup) {
       libertyField.clear();
     }
-    for (int pos = 0 ; pos < numberOfPositions ; pos++) {
+    for (int pos = 0; pos < numberOfPositions; pos++) {
       int group = groupByPosition[pos];
       if (group == 0) continue;
       if (group < whiteGroupStart) {
@@ -96,26 +97,25 @@ public class GenericGoBoard implements GoBoard {
     blackField.clear();
     whiteField.clear();
     Arrays.fill(groupByPosition, 0);
-    for (int i=0 ; i< numberOfGroups; i++) {
+    for (int i = 0; i < numberOfGroups; i++) {
       stoneFieldByGroup[i].clear();
     }
   }
 
   private int[][] getNeighborPositionsByPosition() {
     int[][] neighborPositionsByPositions = new int[numberOfPositions][];
-    for (int x = 0 ; x < size; x++) {
-      for (int y = 0 ; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      for (int y = 0; y < size; y++) {
         ArrayList<Integer> neighbors = Lists.newArrayList();
-        if (x>0) neighbors.add(getPos(x-1, y));
-        if (y>0) neighbors.add(getPos(x, y-1));
-        if (x< size -1) neighbors.add(getPos(x+1, y));
-        if (y< size -1) neighbors.add(getPos(x, y+1));
+        if (x > 0) neighbors.add(getPos(x - 1, y));
+        if (y > 0) neighbors.add(getPos(x, y - 1));
+        if (x < size - 1) neighbors.add(getPos(x + 1, y));
+        if (y < size - 1) neighbors.add(getPos(x, y + 1));
         neighborPositionsByPositions[getPos(x, y)] = Ints.toArray(neighbors);
       }
     }
     return neighborPositionsByPositions;
   }
-
 
   /**
    * Plays a move.
@@ -142,8 +142,8 @@ public class GenericGoBoard implements GoBoard {
         int friendGroup = groupByPosition[neighbor];
         if (friendGroup != group) {
           stoneFieldByGroup[group].or(stoneFieldByGroup[friendGroup]);
-          for (int pos = stoneFieldByGroup[friendGroup].nextSetBit(0) ; pos != -1 ;
-               pos = stoneFieldByGroup[friendGroup].nextSetBit(pos+1)) {
+          for (int pos = stoneFieldByGroup[friendGroup].nextSetBit(0); pos != -1;
+               pos = stoneFieldByGroup[friendGroup].nextSetBit(pos + 1)) {
             groupByPosition[pos] = group;
           }
           libertyFieldByGroup[group].or(libertyFieldByGroup[friendGroup]);
@@ -174,15 +174,15 @@ public class GenericGoBoard implements GoBoard {
 
   private int getAvailableGroup(StoneColor color) {
     int groupStart = (color == StoneColor.Black) ? BLACK_GROUP_START : whiteGroupStart;
-    for (int group = groupStart ; ; group++) {
+    for (int group = groupStart; ; group++) {
       if (stoneFieldByGroup[group].isEmpty()) return group;
     }
   }
 
   private void capture(int group) {
     StoneColor foeColor = getColorByGroup(group).getOpponent();
-    for (int pos = stoneFieldByGroup[group].nextSetBit(0) ; pos != -1 ;
-         pos = stoneFieldByGroup[group].nextSetBit(pos+1)) {
+    for (int pos = stoneFieldByGroup[group].nextSetBit(0); pos != -1;
+         pos = stoneFieldByGroup[group].nextSetBit(pos + 1)) {
       // Remove the stone.
       whiteField.clear(pos);
       blackField.clear(pos);

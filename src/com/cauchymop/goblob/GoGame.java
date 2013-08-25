@@ -222,9 +222,9 @@ public class GoGame extends Game implements Parcelable {
 
   public double[] getScores() {
     PlayerController lastController = whiteController;
-    if (! (lastController instanceof AIPlayerController)) {
+    if (!(lastController instanceof AIPlayerController)) {
       lastController = blackController;
-      if (! (lastController instanceof AIPlayerController)) {
+      if (!(lastController instanceof AIPlayerController)) {
         return null;
       }
     }
