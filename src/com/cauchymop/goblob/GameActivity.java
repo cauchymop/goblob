@@ -46,19 +46,31 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        switch (goGame.getCurrentColor()) {
-          case Black:
-            titleView.setText(goGame.getBlackPlayer().getName());
-            titleImage.setImageResource(R.drawable.black_stone);
-            break;
-          case White:
-            titleView.setText(goGame.getWhitePlayer().getName());
-            titleImage.setImageResource(R.drawable.white_stone);
-          default:
-            break;
-        }
+        updateTitleArea();
+        updateMessageArea();
       }
     });
+  }
+
+  private void updateTitleArea() {
+    final GoPlayer currentPlayer = goGame.getCurrentPlayer();
+    titleView.setText(currentPlayer.getName());
+    titleImage.setImageResource(currentPlayer.getStoneColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
+  }
+
+  /**
+   * Display a message if needed (other player has passed...), clean the message area otherwise.
+   */
+  private void updateMessageArea() {
+    final String message;
+    if (goGame.isLastMovePass()) {
+      message = getString(R.string.opponent_passed_message, goGame.getOpponent().getName());
+    } else {
+      message = null;
+    }
+
+    TextView messageView = (TextView) findViewById(R.id.message_textview);
+    messageView.setText(message);
   }
 
   private PlayerController getController(Player player) {
@@ -88,25 +100,33 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   @Override
   public void gameChanged(Game game) {
     if (game.isGameEnd()) {
-      runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          new AlertDialog.Builder(GameActivity.this)
-              .setMessage("End of game")
-              .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                  setResult(RESULT_OK);
-                  finish();
-                }
-              })
-              .create()
-              .show();
-        }
-      });
+      handleEndOfGameMessage();
+      return;
     }
+
+    // Refresh UI and current controller
     goBoardView.postInvalidate();
     updateFromCurrentPlayer();
+  }
+
+  private void handleEndOfGameMessage() {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        new AlertDialog.Builder(GameActivity.this)
+            .setTitle(getString(R.string.end_of_game_dialog_title))
+            .setMessage(getString(R.string.end_of_game_dialog_message))
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+                setResult(RESULT_OK);
+                finish();
+              }
+            })
+            .create()
+            .show();
+      }
+    });
   }
 
   @Override

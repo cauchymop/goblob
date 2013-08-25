@@ -13,23 +13,32 @@ import java.util.ArrayList;
  */
 public class GoGame extends Game implements Parcelable {
 
+  public static final int NO_MOVE = -1;
+  public static final Parcelable.Creator<GoGame> CREATOR = new Parcelable.Creator<GoGame>() {
+    public GoGame createFromParcel(Parcel in) {
+      return new GoGame(in);
+    }
+
+    public GoGame[] newArray(int size) {
+      return new GoGame[size];
+    }
+  };
+
   private static final String TAG = GoGame.class.getName();
-  
+  private final GoPlayer blackPlayer;
+  private final GoPlayer whitePlayer;
   private int boardSize;
   private GoBoard board;
-  private final Player blackPlayer;
-  private final Player whitePlayer;
   private PlayerController blackController;
   private PlayerController whiteController;
   private StoneColor currentColor;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
-
   // Instance pool management.
   private GoBoard[] boardPool = new GoBoard[10];
   private int boardPoolSize = 0;
 
-  public GoGame(int boardSize, Player blackPlayer, Player whitePlayer) {
+  public GoGame(int boardSize, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     this.boardSize = boardSize;
     currentColor = StoneColor.Black;
     board = getNewBoard();
@@ -58,16 +67,6 @@ public class GoGame extends Game implements Parcelable {
     dest.writeList(boardHistory);
     dest.writeList(moveHistory);
   }
-
-  public static final Parcelable.Creator<GoGame> CREATOR = new Parcelable.Creator<GoGame>() {
-    public GoGame createFromParcel(Parcel in) {
-      return new GoGame(in);
-    }
-
-    public GoGame[] newArray(int size) {
-      return new GoGame[size];
-    }
-  };
 
   public void runGame() {
     Thread thread = new Thread("Game") {
@@ -113,7 +112,7 @@ public class GoGame extends Game implements Parcelable {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
     boardHistory.add(newBoard);
-    moveHistory.add(boardSize*boardSize);
+    moveHistory.add(getPassValue());
     board = newBoard;
     currentColor = currentColor.getOpponent();
     fireGameChanged();
@@ -128,7 +127,7 @@ public class GoGame extends Game implements Parcelable {
     newBoard.copyFrom(board);
     if (newBoard.play(currentColor, x, y) && !boardHistory.contains(newBoard)) {
       boardHistory.add(newBoard);
-      moveHistory.add(y*boardSize + x);
+      moveHistory.add(y * boardSize + x);
       board = newBoard;
       currentColor = currentColor.getOpponent();
       fireGameChanged();
@@ -162,7 +161,7 @@ public class GoGame extends Game implements Parcelable {
 
   @Override
   public boolean play(PlayerController controller, int pos) {
-    if (pos == boardSize * boardSize) {
+    if (pos == getPassValue()) {
       pass(controller);
       return true;
     }
@@ -176,7 +175,7 @@ public class GoGame extends Game implements Parcelable {
     }
     int lastMove = moveHistory.get(moveHistory.size() - 1);
     int previousMove = moveHistory.get(moveHistory.size() - 2);
-    int passMove = boardSize * boardSize;
+    int passMove = getPassValue();
     return lastMove == passMove && previousMove == passMove;
   }
 
@@ -204,11 +203,11 @@ public class GoGame extends Game implements Parcelable {
     this.whiteController = whiteController;
   }
 
-  public Player getBlackPlayer() {
+  public GoPlayer getBlackPlayer() {
     return blackPlayer;
   }
 
-  public Player getWhitePlayer() {
+  public GoPlayer getWhitePlayer() {
     return whitePlayer;
   }
 
@@ -220,15 +219,47 @@ public class GoGame extends Game implements Parcelable {
     return boardSize;
   }
 
+
   public double[] getScores() {
     PlayerController lastController = whiteController;
-    if (! (lastController instanceof AIPlayerController)) {
+    if (!(lastController instanceof AIPlayerController)) {
       lastController = blackController;
-      if (! (lastController instanceof AIPlayerController)) {
+      if (!(lastController instanceof AIPlayerController)) {
         return null;
       }
     }
     AIPlayerController aiController = (AIPlayerController) lastController;
     return aiController.getAi().getScores();
+  }
+
+  public GoPlayer getCurrentPlayer() {
+    return getGoPlayer(getCurrentColor());
+  }
+
+  public GoPlayer getOpponent() {
+    return getGoPlayer(getCurrentColor().getOpponent());
+  }
+
+  private GoPlayer getGoPlayer(StoneColor color) {
+    switch (color) {
+      case Black:
+        return getBlackPlayer();
+      case White:
+        return getWhitePlayer();
+      default:
+        throw new IllegalStateException("Invalid Player Color: " + getCurrentColor());
+    }
+  }
+
+  public boolean isLastMovePass() {
+    return getLastMove() == getPassValue();
+  }
+
+  private int getPassValue() {
+    return boardSize * boardSize;
+  }
+
+  private int getLastMove() {
+    return (moveHistory.isEmpty()) ? NO_MOVE : moveHistory.get(moveHistory.size() - 1);
   }
 }
