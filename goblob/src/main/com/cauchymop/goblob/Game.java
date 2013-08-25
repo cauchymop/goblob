@@ -32,6 +32,7 @@ public abstract class Game {
   }
 
   protected void fireGameChanged() {
+    if (listeners.isEmpty()) return;
     for (Listener listener : listeners) {
       listener.gameChanged(this);
     }
