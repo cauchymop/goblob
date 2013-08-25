@@ -233,33 +233,22 @@ public class GoGame extends Game implements Parcelable {
   }
 
   public GoPlayer getCurrentPlayer() {
-    final GoPlayer currentPlayer;
-    switch (getCurrentColor()) {
-      case Black:
-        currentPlayer = getBlackPlayer();
-        break;
-      case White:
-        currentPlayer = getWhitePlayer();
-        break;
-      default:
-        throw new IllegalStateException("Invalid Player Color: " + getCurrentColor());
-    }
-    return currentPlayer;
+    return getGoPlayer(getCurrentColor());
   }
 
   public GoPlayer getOpponent() {
-    final GoPlayer opponent;
-    switch (getCurrentColor()) {
+    return getGoPlayer(getCurrentColor().getOpponent());
+  }
+
+  private GoPlayer getGoPlayer(StoneColor color) {
+    switch (color) {
       case Black:
-        opponent = getWhitePlayer();
-        break;
+        return getBlackPlayer();
       case White:
-        opponent = getBlackPlayer();
-        break;
+        return getWhitePlayer();
       default:
         throw new IllegalStateException("Invalid Player Color: " + getCurrentColor());
     }
-    return opponent;
   }
 
   public boolean isLastMovePass() {

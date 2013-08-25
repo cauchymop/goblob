@@ -58,10 +58,11 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     titleImage.setImageResource(currentPlayer.getStoneColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
   }
 
+  /**
+   * Display a message if needed (other player has passed...), clean the message area otherwise.
+   */
   private void updateMessageArea() {
-    // Display a message if needed (other player has passed...), clean the message area otherwise
     final String message;
-    // Check for Pass from Previous Player
     if (goGame.isLastMovePass()) {
       message = getString(R.string.opponent_passed_message, goGame.getOpponent().getName());
     } else {
@@ -98,7 +99,6 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
 
   @Override
   public void gameChanged(Game game) {
-    // Check for End of Game
     if (game.isGameEnd()) {
       handleEndOfGameMessage();
       return;
