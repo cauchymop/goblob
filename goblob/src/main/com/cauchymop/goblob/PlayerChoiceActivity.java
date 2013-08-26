@@ -91,7 +91,7 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity {
         break;
       case R.id.opponent_human_local_radio:
       default:
-        opponentType = Player.PlayerType.HUMAN;
+        opponentType = Player.PlayerType.HUMAN_LOCAL;
         opponentDefaultName = getString(R.string.opponent_default_name);
         break;
     }

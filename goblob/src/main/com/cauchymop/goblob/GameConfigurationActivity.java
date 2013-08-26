@@ -62,7 +62,7 @@ public class GameConfigurationActivity extends GoBlobBaseActivity {
       return;
     }
 
-    yourPlayer = new GoPlayer(Player.PlayerType.HUMAN, getString(R.string.your_default_name));
+    yourPlayer = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());

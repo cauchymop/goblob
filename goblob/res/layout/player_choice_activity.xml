@@ -36,17 +36,31 @@
                     android:layout_gravity="left">
 
                 <RadioButton
+                        android:id="@+id/opponent_computer_radio"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/computer_opponent_label"
-                        android:id="@+id/opponent_computer_radio"/>
+                        android:text="@string/computer_opponent_label"/>
 
                 <RadioButton
+                        android:id="@+id/opponent_human_local_radio"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="@string/human_local_opponent_label"
-                        android:id="@+id/opponent_human_local_radio"/>
+                        android:text="@string/human_local_opponent_label"/>
+
+                <RadioButton
+                        android:id="@+id/opponent_human_friend_radio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:text="@string/human_remote_friend_label"/>
+
+                <RadioButton
+                        android:id="@+id/opponent_human_random_radio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:text="@string/human_remote_random_label"/>
             </RadioGroup>
 
             <TextView
