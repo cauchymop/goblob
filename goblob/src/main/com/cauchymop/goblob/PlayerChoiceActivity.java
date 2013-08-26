@@ -1,6 +1,5 @@
 package com.cauchymop.goblob;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,7 +11,7 @@ import android.widget.RadioGroup;
 /**
  * Activity to create a new game.
  */
-public class PlayerChoiceActivity extends Activity {
+public class PlayerChoiceActivity extends GoBlobBaseActivity {
 
   private RadioGroup opponentRadioGroup;
   private RadioGroup boardSizeRadioGroup;
@@ -32,7 +31,6 @@ public class PlayerChoiceActivity extends Activity {
         updateBoardSizes();
       }
     });
-
   }
 
   private void updateBoardSizes() {
@@ -123,5 +121,4 @@ public class PlayerChoiceActivity extends Activity {
     configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_BOARD_SIZE, boardSize);
     startActivity(configureGameIntent);
   }
-
 }
