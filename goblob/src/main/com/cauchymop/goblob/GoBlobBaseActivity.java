@@ -21,7 +21,7 @@ public class GoBlobBaseActivity extends BaseGameActivity {
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
-    boolean signedIn = getGamesClient().isConnected();
+    boolean signedIn = isSignedIn();
     menu.setGroupVisible(R.id.group_signedIn, signedIn);
     menu.setGroupVisible(R.id.group_signedOut, !signedIn);
     return super.onPrepareOptionsMenu(menu);
@@ -48,6 +48,16 @@ public class GoBlobBaseActivity extends BaseGameActivity {
 
   @Override
   public void onSignInSucceeded() {
+    invalidateOptionsMenu();
+  }
+
+  @Override
+  protected void signOut() {
+    super.signOut();
+    onSignOut();
+  }
+
+  public void onSignOut() {
     invalidateOptionsMenu();
   }
 }
