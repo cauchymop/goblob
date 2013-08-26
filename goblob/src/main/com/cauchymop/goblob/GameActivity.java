@@ -14,7 +14,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class GameActivity extends Activity implements Game.Listener, GoBoardView.Listener {
+public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
+    GoBoardView.Listener {
 
   public static final String EXTRA_GAME = "Game";
   private GoGame goGame;
@@ -100,7 +101,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
   @Override
   public void gameChanged(Game game) {
     if (game.isGameEnd()) {
-      handleEndOfGameMessage();
+      handleEndOfGame();
       return;
     }
 
@@ -109,7 +110,7 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
     updateFromCurrentPlayer();
   }
 
-  private void handleEndOfGameMessage() {
+  private void handleEndOfGame() {
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -127,6 +128,26 @@ public class GameActivity extends Activity implements Game.Listener, GoBoardView
             .show();
       }
     });
+    getGamesClient().unlockAchievement(getString(R.string.achievements_gamers));
+    switch (goGame.getBoardSize()) {
+      case 9:
+        getGamesClient().unlockAchievement(getString(R.string.achievements_9x9));
+        break;
+      case 13:
+        getGamesClient().unlockAchievement(getString(R.string.achievements_13x13));
+        break;
+      case 19:
+        getGamesClient().unlockAchievement(getString(R.string.achievements_19x19));
+        break;
+    }
+    switch (goGame.getOpponent().getType()) {
+      case AI:
+        getGamesClient().unlockAchievement(getString(R.string.achievements_ai));
+        break;
+      case HUMAN:
+        getGamesClient().unlockAchievement(getString(R.string.achievements_human));
+        break;
+    }
   }
 
   @Override
