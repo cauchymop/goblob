@@ -67,9 +67,19 @@ public class Player implements Parcelable {
   }
 
   public enum PlayerType {
-    AI,
-    HUMAN_LOCAL,
-    HUMAN_REMOTE_FRIEND,
-    HUMAN_REMOTE_RANDOM
+    AI(false),
+    HUMAN_LOCAL(false),
+    HUMAN_REMOTE_FRIEND(true),
+    HUMAN_REMOTE_RANDOM(true);
+
+    private final boolean remote;
+
+    PlayerType(boolean remote) {
+      this.remote = remote;
+    }
+
+    public boolean isRemote() {
+      return remote;
+    }
   }
 }
