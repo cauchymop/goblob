@@ -1,6 +1,5 @@
 package com.cauchymop.goblob;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,7 +12,7 @@ import android.widget.Spinner;
 /**
  * Activity to create a new game.
  */
-public class GameConfigurationActivity extends Activity {
+public class GameConfigurationActivity extends GoBlobBaseActivity {
 
   public static final String EXTRA_OPPONENT = "opponent";
   public static final String EXTRA_BOARD_SIZE = "board_size";
