@@ -6,11 +6,12 @@ import android.view.MenuItem;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 /**
- * Created by olivierbonal on 8/26/13.
+ * Base Activity implementing common behaviour.
  */
 public class GoBlobBaseActivity extends BaseGameActivity {
 
-  private static final int REQUEST_ACHIEVEMENTS = 1;
+  public static final int REQUEST_ACHIEVEMENTS = 1;
+  public static final int SELECT_PLAYER = 2;
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
