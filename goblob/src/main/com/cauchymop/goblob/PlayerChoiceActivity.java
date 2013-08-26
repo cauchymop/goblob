@@ -2,6 +2,8 @@ package com.cauchymop.goblob;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,7 +12,9 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.Room;
@@ -19,15 +23,16 @@ import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListene
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Activity to create a new game.
  */
-public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpdateListener, RealTimeMessageReceivedListener, RoomStatusUpdateListener {
+public class PlayerChoiceActivity extends GoBlobBaseActivity
+    implements RoomUpdateListener, RealTimeMessageReceivedListener, RoomStatusUpdateListener {
 
   private static final String TAG = PlayerChoiceActivity.class.getName();
-
   private RadioGroup opponentRadioGroup;
   private RadioGroup boardSizeRadioGroup;
   private boolean previousOpponentChoiceHuman;
@@ -105,17 +110,21 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpda
       return;
     }
     GoPlayer opponentPlayer = getOpponent();
-    int boardSize = getBoardSize();
 
     if (opponentPlayer.getType().isRemote()) {
       Intent selectPlayersIntent = getGamesClient().getSelectPlayersIntent(1, 1);
       startActivityForResult(selectPlayersIntent, GoBlobBaseActivity.SELECT_PLAYER);
     } else {
-      Intent configureGameIntent = new Intent(getApplicationContext(), GameConfigurationActivity.class);
-      configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_OPPONENT, opponentPlayer);
-      configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_BOARD_SIZE, boardSize);
-      startActivity(configureGameIntent);
+      startGameConfigurationActivity(opponentPlayer);
     }
+  }
+
+  private void startGameConfigurationActivity(GoPlayer opponentPlayer) {
+    int boardSize = getBoardSize();
+    Intent configureGameIntent = new Intent(getApplicationContext(), GameConfigurationActivity.class);
+    configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_OPPONENT, opponentPlayer);
+    configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_BOARD_SIZE, boardSize);
+    startActivity(configureGameIntent);
   }
 
   @Override
@@ -233,6 +242,35 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpda
   @Override
   public void onRoomCreated(int statusCode, Room room) {
     Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
+    // Only for test purposes.
+    if (!isSignedIn()) {
+      return;
+    }
+    String myId = getGamesClient().getCurrentPlayerId();
+    Participant opponentParticipant = null;
+    ArrayList<Participant> participants = room.getParticipants();
+    Iterator<Participant> it = participants.iterator();
+    while (it.hasNext()) {
+      Participant participant = it.next();
+      if (!participant.getParticipantId().equals(myId)) {
+        opponentParticipant = participant;
+        break;
+      }
+    }
+
+    if (opponentParticipant != null) {
+      final String name = opponentParticipant.getDisplayName();
+      Uri iconImageUriUri = opponentParticipant.getIconImageUri();
+
+      ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
+        @Override
+        public void onImageLoaded(Uri uri, Drawable drawable) {
+          GoPlayer opponent = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, name);
+          opponent.setAvatar(drawable);
+          startGameConfigurationActivity(opponent);
+        }
+      }, iconImageUriUri);
+    }
   }
 
   @Override

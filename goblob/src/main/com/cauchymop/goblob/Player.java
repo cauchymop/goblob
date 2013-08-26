@@ -1,6 +1,8 @@
 package com.cauchymop.goblob;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,6 +11,15 @@ import android.os.Parcelable;
  */
 public class Player implements Parcelable {
 
+  public static final Parcelable.Creator<Player> CREATOR = new Parcelable.Creator<Player>() {
+    public Player createFromParcel(Parcel in) {
+      return new Player(in);
+    }
+
+    public Player[] newArray(int size) {
+      return new Player[size];
+    }
+  };
   private PlayerType type;
   private String name;
   private Bitmap avatar;
@@ -36,16 +47,6 @@ public class Player implements Parcelable {
     dest.writeValue(avatar);
   }
 
-  public static final Parcelable.Creator<Player> CREATOR = new Parcelable.Creator<Player>() {
-    public Player createFromParcel(Parcel in) {
-      return new Player(in);
-    }
-
-    public Player[] newArray(int size) {
-      return new Player[size];
-    }
-  };
-
   public PlayerType getType() {
     return type;
   }
@@ -66,12 +67,21 @@ public class Player implements Parcelable {
     this.avatar = avatar;
   }
 
+  public void setAvatar(Drawable avatar) {
+    final int w = avatar.getIntrinsicWidth();
+    final int h = avatar.getIntrinsicHeight();
+    Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    avatar.setBounds(0, 0, w, h);
+    avatar.draw(canvas);
+    setAvatar(bitmap);
+  }
+
   public enum PlayerType {
     AI(false),
     HUMAN_LOCAL(false),
     HUMAN_REMOTE_FRIEND(true),
     HUMAN_REMOTE_RANDOM(true);
-
     private final boolean remote;
 
     PlayerType(boolean remote) {
