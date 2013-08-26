@@ -127,6 +127,10 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
             .show();
       }
     });
+    updateAchievements();
+  }
+
+  private void updateAchievements() {
     getGamesClient().unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGame.getBoardSize()) {
       case 9:
