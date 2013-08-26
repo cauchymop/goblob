@@ -20,8 +20,6 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
   private GoGame goGame;
   private GoBoardView goBoardView;
   private HumanPlayerController currentPlayerController;
-  private TextView titleView;
-  private ImageView titleImage;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +34,6 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
     goBoardView = new GoBoardView(getApplicationContext(), goGame);
     goBoardView.addListener(this);
     container.addView(goBoardView);
-
-    titleView = (TextView) findViewById(R.id.title);
-    titleImage = (ImageView) findViewById(R.id.titleImage);
     updateFromCurrentPlayer();
   }
 
@@ -53,9 +48,13 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
   }
 
   private void updateTitleArea() {
+    TextView titleView = (TextView) findViewById(R.id.title);
+    ImageView titleImage = (ImageView) findViewById(R.id.titleImage);
+    ImageView avatarImage = (ImageView) findViewById(R.id.avatarImage);
     final GoPlayer currentPlayer = goGame.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
     titleImage.setImageResource(currentPlayer.getStoneColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
+    avatarImage.setImageBitmap(currentPlayer.getAvatar());
   }
 
   /**
