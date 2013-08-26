@@ -45,6 +45,7 @@ public class MainActivity extends BaseGameActivity {
 
   @Override
   public void onSignInFailed() {
+    findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
   }
 
   @Override
