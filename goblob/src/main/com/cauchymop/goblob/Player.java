@@ -68,6 +68,8 @@ public class Player implements Parcelable {
 
   public enum PlayerType {
     AI,
-    HUMAN
+    HUMAN_LOCAL,
+    HUMAN_REMOTE_FRIEND,
+    HUMAN_REMOTE_RANDOM
   }
 }

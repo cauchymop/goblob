@@ -1,6 +1,5 @@
 package com.cauchymop.goblob;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.media.Ringtone;
@@ -78,7 +77,7 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
     if (player.getType() == Player.PlayerType.AI) {
       return new AIPlayerController(goGame);
     }
-    if (player.getType() == Player.PlayerType.HUMAN) {
+    if (player.getType() == Player.PlayerType.HUMAN_LOCAL) {
       return new HumanPlayerController(goGame);
     }
     throw new RuntimeException("Unsupported player type");
@@ -144,7 +143,7 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
       case AI:
         getGamesClient().unlockAchievement(getString(R.string.achievements_ai));
         break;
-      case HUMAN:
+      case HUMAN_LOCAL:
         getGamesClient().unlockAchievement(getString(R.string.achievements_human));
         break;
     }
