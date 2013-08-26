@@ -31,4 +31,10 @@
   <string name="sign_out">Sign out</string>
   <string name="achievements">Achievements</string>
   <string name="sign_in">Sign In</string>
+    <string name="achievements_gamers">CggImpiG6GMQAhAB</string>
+    <string name="achievements_9x9">CggImpiG6GMQAhAC</string>
+    <string name="achievements_13x13">CggImpiG6GMQAhAD</string>
+    <string name="achievements_19x19">CggImpiG6GMQAhAG</string>
+    <string name="achievements_ai">CggImpiG6GMQAhAE</string>
+    <string name="achievements_human">CggImpiG6GMQAhAF</string>
 </resources>
