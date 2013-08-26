@@ -29,4 +29,5 @@
   <string name="opponent_passed_message">"%1$s has passed!"</string>
   <string name="button_continue_label">Continue</string>
   <string name="sign_out">Sign out</string>
+  <string name="achievements">Achievements</string>
 </resources>
