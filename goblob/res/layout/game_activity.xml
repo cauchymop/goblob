@@ -22,6 +22,13 @@
         style="@style/Title"
         android:id="@+id/title"
         android:text="@string/black_label"
+        android:layout_weight="1"
+        android:layout_gravity="left|center_vertical"/>
+
+    <ImageView
+        android:layout_width="44dip"
+        android:layout_height="44dip"
+        android:id="@+id/avatarImage"
         android:layout_gravity="left|center_vertical"/>
   </LinearLayout>
 
