@@ -1,8 +1,8 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 /**
-* Colors which can be used in a {@link GoGame}.
-*/
+ * Colors which can be used in a {@link com.cauchymop.goblob.model.GoGame}.
+ */
 public enum StoneColor {
   Empty,
   Black,
@@ -11,7 +11,7 @@ public enum StoneColor {
   WhiteTerritory;
 
   public StoneColor getOpponent() {
-    switch(this) {
+    switch (this) {
       case White:
         return Black;
       case Black:

@@ -1,11 +1,11 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 import com.google.common.collect.Sets;
 
 import java.util.Set;
 
 /**
- * Interface for a generic game. Implement this to use {@link AlphaBeta}.
+ * Interface for a generic game. Implement this to use {@link com.cauchymop.goblob.model.AlphaBeta}.
  */
 public abstract class Game {
 

@@ -1,17 +1,17 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * Class to convert between a {@link GoBoard} and its text representation.
+ * Class to convert between a {@link com.cauchymop.goblob.model.GoBoard} and its text representation.
  */
 public class TextBoard {
 
   public static String toString(GoBoard board) {
     StringBuilder buf = new StringBuilder();
-    for (int y = 0 ; y < board.getSize() ; y++) {
-      for (int x = 0 ; x < board.getSize() ; x++) {
+    for (int y = 0; y < board.getSize(); y++) {
+      for (int x = 0; x < board.getSize(); x++) {
         buf.append(getChar(board.getColor(x, y)));
       }
       buf.append('\n');
@@ -35,9 +35,9 @@ public class TextBoard {
     int x = 0;
     int y = 0;
     StringReader reader = new StringReader(text);
-    while(true) {
+    while (true) {
       try {
-        switch(reader.read()) {
+        switch (reader.read()) {
           case -1:
             return;
           case '#':

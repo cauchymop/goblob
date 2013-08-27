@@ -2,8 +2,13 @@ package com.cauchymop.goblob;
 
 import android.test.AndroidTestCase;
 
+import com.cauchymop.goblob.model.GenericGoBoard;
+import com.cauchymop.goblob.model.GoBoard;
+import com.cauchymop.goblob.model.StoneColor;
+import com.cauchymop.goblob.model.TextBoard;
+
 /**
- * Class to test {@link TextBoard}.
+ * Class to test {@link com.cauchymop.goblob.model.TextBoard}.
  */
 public class TextBoardTest extends AndroidTestCase {
 

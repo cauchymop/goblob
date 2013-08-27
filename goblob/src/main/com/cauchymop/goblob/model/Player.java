@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -82,6 +82,7 @@ public class Player implements Parcelable {
     HUMAN_LOCAL(false),
     HUMAN_REMOTE_FRIEND(true),
     HUMAN_REMOTE_RANDOM(true);
+
     private final boolean remote;
 
     PlayerType(boolean remote) {

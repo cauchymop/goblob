@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,8 +12,12 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.Player.PlayerType;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
@@ -173,25 +177,25 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity
   }
 
   private GoPlayer getOpponent() {
-    Player.PlayerType opponentType;
+    PlayerType opponentType;
     final String opponentDefaultName;
 
     switch (opponentRadioGroup.getCheckedRadioButtonId()) {
       case R.id.opponent_computer_radio:
-        opponentType = Player.PlayerType.AI;
+        opponentType = PlayerType.AI;
         opponentDefaultName = Build.MODEL;
         break;
       default:
       case R.id.opponent_human_local_radio:
-        opponentType = Player.PlayerType.HUMAN_LOCAL;
+        opponentType = PlayerType.HUMAN_LOCAL;
         opponentDefaultName = getString(R.string.opponent_default_name);
         break;
       case R.id.opponent_human_remote_friend_radio:
-        opponentType = Player.PlayerType.HUMAN_REMOTE_FRIEND;
+        opponentType = PlayerType.HUMAN_REMOTE_FRIEND;
         opponentDefaultName = null;
         break;
       case R.id.opponent_human_remote_random_radio:
-        opponentType = Player.PlayerType.HUMAN_REMOTE_RANDOM;
+        opponentType = PlayerType.HUMAN_REMOTE_RANDOM;
         opponentDefaultName = null;
         break;
     }
@@ -247,25 +251,26 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity
       return;
     }
     String myId = getGamesClient().getCurrentPlayerId();
-    Participant opponentParticipant = null;
+    Player opponent = null;
     ArrayList<Participant> participants = room.getParticipants();
     Iterator<Participant> it = participants.iterator();
     while (it.hasNext()) {
       Participant participant = it.next();
-      if (!participant.getParticipantId().equals(myId)) {
-        opponentParticipant = participant;
+      Player player = participant.getPlayer();
+      if (!myId.equals(participant.getPlayer().getPlayerId())) {
+        opponent = player;
         break;
       }
     }
 
-    if (opponentParticipant != null) {
-      final String name = opponentParticipant.getDisplayName();
-      Uri iconImageUriUri = opponentParticipant.getIconImageUri();
+    if (opponent != null) {
+      final String name = opponent.getDisplayName();
+      Uri iconImageUriUri = opponent.getIconImageUri();
 
       ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
         @Override
         public void onImageLoaded(Uri uri, Drawable drawable) {
-          GoPlayer opponent = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, name);
+          GoPlayer opponent = new GoPlayer(PlayerType.HUMAN_LOCAL, name);
           opponent.setAvatar(drawable);
           startGameConfigurationActivity(opponent);
         }

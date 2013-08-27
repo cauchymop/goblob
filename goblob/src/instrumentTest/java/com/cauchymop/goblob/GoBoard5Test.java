@@ -2,8 +2,12 @@ package com.cauchymop.goblob;
 
 import android.test.AndroidTestCase;
 
+import com.cauchymop.goblob.model.GoBoard;
+import com.cauchymop.goblob.model.GoBoard5;
+import com.cauchymop.goblob.model.StoneColor;
+
 /**
- * Class to test {@link GoBoard5}.
+ * Class to test {@link com.cauchymop.goblob.model.GoBoard5}.
  */
 public class GoBoard5Test extends AndroidTestCase {
 
@@ -29,8 +33,8 @@ public class GoBoard5Test extends AndroidTestCase {
     assertTrue(goBoard.play(StoneColor.White, 0, 1));
     assertTrue(goBoard.play(StoneColor.White, 1, 1));
     assertTrue(goBoard.play(StoneColor.White, 2, 0));
-    assertEquals(StoneColor.Empty, goBoard.getColor(0,0));
-    assertEquals(StoneColor.Empty, goBoard.getColor(1,0));
+    assertEquals(StoneColor.Empty, goBoard.getColor(0, 0));
+    assertEquals(StoneColor.Empty, goBoard.getColor(1, 0));
   }
 
   public void testPlay_suicide() {
