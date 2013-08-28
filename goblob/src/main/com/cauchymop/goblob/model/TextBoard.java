@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * Class to convert between a {@link com.cauchymop.goblob.model.GoBoard} and its text representation.
+ * Class to convert between a {@link GoBoard} and its text representation.
  */
 public class TextBoard {
 

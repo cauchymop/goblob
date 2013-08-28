@@ -7,7 +7,7 @@ import com.cauchymop.goblob.model.GoBoard5;
 import com.cauchymop.goblob.model.StoneColor;
 
 /**
- * Class to test {@link com.cauchymop.goblob.model.GoBoard5}.
+ * Class to test {@link GoBoard5}.
  */
 public class GoBoard5Test extends AndroidTestCase {
 

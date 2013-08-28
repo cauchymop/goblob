@@ -1,7 +1,7 @@
 package com.cauchymop.goblob.model;
 
 /**
- * Colors which can be used in a {@link com.cauchymop.goblob.model.GoGame}.
+ * Colors which can be used in a {@link GoGame}.
  */
 public enum StoneColor {
   Empty,

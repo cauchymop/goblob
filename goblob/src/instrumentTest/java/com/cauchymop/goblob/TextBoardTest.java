@@ -8,7 +8,7 @@ import com.cauchymop.goblob.model.StoneColor;
 import com.cauchymop.goblob.model.TextBoard;
 
 /**
- * Class to test {@link com.cauchymop.goblob.model.TextBoard}.
+ * Class to test {@link TextBoard}.
  */
 public class TextBoardTest extends AndroidTestCase {
 

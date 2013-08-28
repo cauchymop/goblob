@@ -10,7 +10,7 @@ import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 
 /**
- * {@link com.cauchymop.goblob.model.GoBoard} implementation optimized for 5x5.
+ * {@link GoBoard} implementation optimized for 5x5.
  */
 public class GoBoard5 implements GoBoard {
 

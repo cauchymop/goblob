@@ -20,6 +20,7 @@ public class Player implements Parcelable {
       return new Player[size];
     }
   };
+
   private PlayerType type;
   private String name;
   private Bitmap avatar;
