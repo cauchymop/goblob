@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,6 +11,9 @@ import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GoGame;
+import com.cauchymop.goblob.model.StoneColor;
 import com.google.common.collect.Sets;
 
 import java.util.Set;

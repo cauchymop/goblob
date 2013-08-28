@@ -1,7 +1,8 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
@@ -61,30 +62,29 @@ public class GoBoard5 implements GoBoard {
   public void clear() {
     blackField = 0;
     whiteField = 0;
-    for (int i=0 ; i<NUMBER_OF_POSITIONS ; i++) {
+    for (int i = 0; i < NUMBER_OF_POSITIONS; i++) {
       groupByPosition[i] = 0;
     }
-    for (int i=0 ; i<NUMBER_OF_GROUPS ; i++) {
+    for (int i = 0; i < NUMBER_OF_GROUPS; i++) {
       stoneFieldByGroup[i] = 0;
     }
   }
 
   private static int[][] getNeighborPositionsByPosition() {
     int[][] neighborPositionsByPositions = new int[NUMBER_OF_POSITIONS][];
-    for (int x = 0 ; x < BOARD_SIZE ; x++) {
-      for (int y = 0 ; y < BOARD_SIZE ; y++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+      for (int y = 0; y < BOARD_SIZE; y++) {
         ArrayList<Integer> neighbors = Lists.newArrayList();
-        if (x>0) neighbors.add(getPos(x-1, y));
-        if (y>0) neighbors.add(getPos(x, y-1));
-        if (x<BOARD_SIZE-1) neighbors.add(getPos(x+1, y));
-        if (y<BOARD_SIZE-1) neighbors.add(getPos(x, y+1));
+        if (x > 0) neighbors.add(getPos(x - 1, y));
+        if (y > 0) neighbors.add(getPos(x, y - 1));
+        if (x < BOARD_SIZE - 1) neighbors.add(getPos(x + 1, y));
+        if (y < BOARD_SIZE - 1) neighbors.add(getPos(x, y + 1));
         neighborPositionsByPositions[getPos(x, y)] = Ints.toArray(neighbors);
       }
     }
 
     return neighborPositionsByPositions;
   }
-
 
   /**
    * Plays a move.
@@ -117,7 +117,7 @@ public class GoBoard5 implements GoBoard {
           stoneFieldByGroup[group] |= stoneFieldByGroup[friendGroup];
           stoneFieldByGroup[friendGroup] = 0;
           libertyFieldByGroup[group] |= libertyFieldByGroup[friendGroup];
-          for (int pos = 0 ; pos < NUMBER_OF_POSITIONS ; pos++) {
+          for (int pos = 0; pos < NUMBER_OF_POSITIONS; pos++) {
             if (groupByPosition[pos] == friendGroup) {
               groupByPosition[pos] = group;
             }
@@ -152,7 +152,7 @@ public class GoBoard5 implements GoBoard {
 
   private int getAvailableGroup(StoneColor color) {
     int groupStart = (color == StoneColor.Black) ? BLACK_GROUP_START : WHITE_GROUP_START;
-    for (int group = groupStart ; ; group++) {
+    for (int group = groupStart; ; group++) {
       if (stoneFieldByGroup[group] == 0) return group;
     }
   }
@@ -161,7 +161,7 @@ public class GoBoard5 implements GoBoard {
     int groupStoneField = stoneFieldByGroup[group];
     StoneColor foeColor = getColorByGroup(group).getOpponent();
     stoneFieldByGroup[group] = 0;
-    for (int pos = 0, posField = 1 ; pos < NUMBER_OF_POSITIONS ; pos++, posField<<=1) {
+    for (int pos = 0, posField = 1; pos < NUMBER_OF_POSITIONS; pos++, posField <<= 1) {
       if ((posField & groupStoneField) == 0) continue;
 
       // Remove the stone.

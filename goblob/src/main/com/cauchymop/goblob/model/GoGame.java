@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -218,7 +218,6 @@ public class GoGame extends Game implements Parcelable {
   public int getBoardSize() {
     return boardSize;
   }
-
 
   public double[] getScores() {
     PlayerController lastController = whiteController;

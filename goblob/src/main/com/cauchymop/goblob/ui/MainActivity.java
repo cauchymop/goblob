@@ -1,8 +1,10 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+
+import com.cauchymop.goblob.R;
 
 public class MainActivity extends GoBlobBaseActivity {
 

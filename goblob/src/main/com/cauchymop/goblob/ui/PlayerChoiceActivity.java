@@ -1,7 +1,9 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,7 +12,13 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.Player.PlayerType;
+import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.Player;
+import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.Room;
@@ -19,15 +27,16 @@ import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListene
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Activity to create a new game.
  */
-public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpdateListener, RealTimeMessageReceivedListener, RoomStatusUpdateListener {
+public class PlayerChoiceActivity extends GoBlobBaseActivity
+    implements RoomUpdateListener, RealTimeMessageReceivedListener, RoomStatusUpdateListener {
 
   private static final String TAG = PlayerChoiceActivity.class.getName();
-
   private RadioGroup opponentRadioGroup;
   private RadioGroup boardSizeRadioGroup;
   private boolean previousOpponentChoiceHuman;
@@ -105,17 +114,21 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpda
       return;
     }
     GoPlayer opponentPlayer = getOpponent();
-    int boardSize = getBoardSize();
 
     if (opponentPlayer.getType().isRemote()) {
       Intent selectPlayersIntent = getGamesClient().getSelectPlayersIntent(1, 1);
       startActivityForResult(selectPlayersIntent, GoBlobBaseActivity.SELECT_PLAYER);
     } else {
-      Intent configureGameIntent = new Intent(getApplicationContext(), GameConfigurationActivity.class);
-      configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_OPPONENT, opponentPlayer);
-      configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_BOARD_SIZE, boardSize);
-      startActivity(configureGameIntent);
+      startGameConfigurationActivity(opponentPlayer);
     }
+  }
+
+  private void startGameConfigurationActivity(GoPlayer opponentPlayer) {
+    int boardSize = getBoardSize();
+    Intent configureGameIntent = new Intent(getApplicationContext(), GameConfigurationActivity.class);
+    configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_OPPONENT, opponentPlayer);
+    configureGameIntent.putExtra(GameConfigurationActivity.EXTRA_BOARD_SIZE, boardSize);
+    startActivity(configureGameIntent);
   }
 
   @Override
@@ -164,25 +177,25 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpda
   }
 
   private GoPlayer getOpponent() {
-    Player.PlayerType opponentType;
+    PlayerType opponentType;
     final String opponentDefaultName;
 
     switch (opponentRadioGroup.getCheckedRadioButtonId()) {
       case R.id.opponent_computer_radio:
-        opponentType = Player.PlayerType.AI;
+        opponentType = PlayerType.AI;
         opponentDefaultName = Build.MODEL;
         break;
       default:
       case R.id.opponent_human_local_radio:
-        opponentType = Player.PlayerType.HUMAN_LOCAL;
+        opponentType = PlayerType.HUMAN_LOCAL;
         opponentDefaultName = getString(R.string.opponent_default_name);
         break;
       case R.id.opponent_human_remote_friend_radio:
-        opponentType = Player.PlayerType.HUMAN_REMOTE_FRIEND;
+        opponentType = PlayerType.HUMAN_REMOTE_FRIEND;
         opponentDefaultName = null;
         break;
       case R.id.opponent_human_remote_random_radio:
-        opponentType = Player.PlayerType.HUMAN_REMOTE_RANDOM;
+        opponentType = PlayerType.HUMAN_REMOTE_RANDOM;
         opponentDefaultName = null;
         break;
     }
@@ -233,6 +246,36 @@ public class PlayerChoiceActivity extends GoBlobBaseActivity implements RoomUpda
   @Override
   public void onRoomCreated(int statusCode, Room room) {
     Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
+    // Only for test purposes.
+    if (!isSignedIn()) {
+      return;
+    }
+    String myId = getGamesClient().getCurrentPlayerId();
+    Player opponent = null;
+    ArrayList<Participant> participants = room.getParticipants();
+    Iterator<Participant> it = participants.iterator();
+    while (it.hasNext()) {
+      Participant participant = it.next();
+      Player player = participant.getPlayer();
+      if (!myId.equals(participant.getPlayer().getPlayerId())) {
+        opponent = player;
+        break;
+      }
+    }
+
+    if (opponent != null) {
+      final String name = opponent.getDisplayName();
+      Uri iconImageUriUri = opponent.getIconImageUri();
+
+      ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
+        @Override
+        public void onImageLoaded(Uri uri, Drawable drawable) {
+          GoPlayer opponent = new GoPlayer(PlayerType.HUMAN_LOCAL, name);
+          opponent.setAvatar(drawable);
+          startGameConfigurationActivity(opponent);
+        }
+      }, iconImageUriUri);
+    }
   }
 
   @Override

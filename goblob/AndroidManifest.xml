@@ -4,28 +4,30 @@
           android:versionCode="1"
           android:versionName="1.0">
 
-    <uses-sdk
-            android:minSdkVersion="14"
-            android:targetSdkVersion="18"/>
+  <uses-sdk
+      android:minSdkVersion="14"
+      android:targetSdkVersion="18"/>
 
-    <application
-            android:allowBackup="true"
-            android:icon="@drawable/ic_launcher"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme">
-        <meta-data android:name="com.google.android.gms.games.APP_ID"
-                   android:value="@string/app_id" />
-        <activity
-                android:name="com.cauchymop.goblob.MainActivity"
-                android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-        <activity android:name=".PlayerChoiceActivity"/>
-        <activity android:name=".GameConfigurationActivity"/>
-        <activity android:name=".GameActivity"/>
-    </application>
+  <application
+      android:allowBackup="true"
+      android:icon="@drawable/ic_launcher"
+      android:label="@string/app_name"
+      android:theme="@style/AppTheme">
+    <meta-data
+        android:name="com.google.android.gms.games.APP_ID"
+        android:value="@string/app_id"/>
+
+    <activity
+        android:name=".ui.MainActivity"
+        android:label="@string/app_name">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+    <activity android:name=".ui.PlayerChoiceActivity"/>
+    <activity android:name=".ui.GameConfigurationActivity"/>
+    <activity android:name=".ui.GameActivity"/>
+  </application>
 
 </manifest>

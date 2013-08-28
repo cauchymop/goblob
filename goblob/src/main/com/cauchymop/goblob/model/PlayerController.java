@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 /**
  * A class for interactions between a {@link Player} and a {@link Game}.
