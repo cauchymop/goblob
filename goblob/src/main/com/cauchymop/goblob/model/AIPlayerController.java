@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 /**
  * Class representing a {@link Player} playing {@link AlphaBeta} moves.

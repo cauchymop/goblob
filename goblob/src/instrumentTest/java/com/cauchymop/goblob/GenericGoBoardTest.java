@@ -2,6 +2,10 @@ package com.cauchymop.goblob;
 
 import android.test.AndroidTestCase;
 
+import com.cauchymop.goblob.model.GenericGoBoard;
+import com.cauchymop.goblob.model.GoBoard;
+import com.cauchymop.goblob.model.StoneColor;
+
 /**
  * Class to test {@link GenericGoBoard}.
  */
@@ -27,7 +31,7 @@ public class GenericGoBoardTest extends AndroidTestCase {
     assertTrue(goBoard.play(StoneColor.Black, 0, 0));
     assertTrue(goBoard.play(StoneColor.White, 0, 1));
     assertTrue(goBoard.play(StoneColor.White, 1, 0));
-    assertEquals(StoneColor.Empty, goBoard.getColor(0,0));
+    assertEquals(StoneColor.Empty, goBoard.getColor(0, 0));
   }
 
   public void testPlay_capture2() {
@@ -37,8 +41,8 @@ public class GenericGoBoardTest extends AndroidTestCase {
     assertTrue(goBoard.play(StoneColor.White, 0, 1));
     assertTrue(goBoard.play(StoneColor.White, 1, 1));
     assertTrue(goBoard.play(StoneColor.White, 2, 0));
-    assertEquals(StoneColor.Empty, goBoard.getColor(0,0));
-    assertEquals(StoneColor.Empty, goBoard.getColor(1,0));
+    assertEquals(StoneColor.Empty, goBoard.getColor(0, 0));
+    assertEquals(StoneColor.Empty, goBoard.getColor(1, 0));
   }
 
   public void testPlay_suicide() {

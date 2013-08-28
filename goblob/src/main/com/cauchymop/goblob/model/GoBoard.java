@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 import android.os.Parcelable;
 

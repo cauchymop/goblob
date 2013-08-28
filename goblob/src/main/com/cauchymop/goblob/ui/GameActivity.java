@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -12,6 +12,15 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.AIPlayerController;
+import com.cauchymop.goblob.model.Game;
+import com.cauchymop.goblob.model.GoGame;
+import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.Player;
+import com.cauchymop.goblob.model.PlayerController;
+import com.cauchymop.goblob.model.StoneColor;
 
 public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
     GoBoardView.Listener {

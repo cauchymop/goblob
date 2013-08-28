@@ -1,6 +1,8 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.view.View;
@@ -8,6 +10,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GoGame;
+import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.Player.PlayerType;
+import com.cauchymop.goblob.model.StoneColor;
+import com.google.android.gms.common.images.ImageManager;
+import com.google.android.gms.games.Player;
 
 /**
  * Activity to create a new game.
@@ -62,7 +72,7 @@ public class GameConfigurationActivity extends GoBlobBaseActivity {
       return;
     }
 
-    yourPlayer = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
+    yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());
@@ -104,6 +114,21 @@ public class GameConfigurationActivity extends GoBlobBaseActivity {
     Intent startGameIntent = new Intent(getApplicationContext(), GameActivity.class);
     startGameIntent.putExtra(GameActivity.EXTRA_GAME, goGame);
     startActivity(startGameIntent);
+  }
+
+  @Override
+  public void onSignInSucceeded() {
+    super.onSignInSucceeded();
+    final Player currentPlayer = getGamesClient().getCurrentPlayer();
+    final String yourName = currentPlayer.getDisplayName();
+    yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, yourName);
+    yourNameField.setText(yourPlayer.getName());
+    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
+      @Override
+      public void onImageLoaded(Uri uri, Drawable drawable) {
+        yourPlayer.setAvatar(drawable);
+      }
+    }, currentPlayer.getIconImageUri());
   }
 
   private enum PlayerColor {

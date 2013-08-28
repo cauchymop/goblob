@@ -1,8 +1,9 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.ui;
 
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.cauchymop.goblob.R;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 /**

@@ -1,4 +1,4 @@
-package com.cauchymop.goblob;
+package com.cauchymop.goblob.model;
 
 @SuppressWarnings("serial")
 public class InvalidTextBoardException extends Exception {
@@ -15,7 +15,7 @@ public class InvalidTextBoardException extends Exception {
   public ERROR_CODE getErrorCode() {
     return errorCode;
   }
-  
+
   @Override
   public String getMessage() {
     return "Invalid Text Board: " + errorCode;

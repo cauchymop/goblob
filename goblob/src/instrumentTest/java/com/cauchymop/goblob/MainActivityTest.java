@@ -2,6 +2,8 @@ package com.cauchymop.goblob;
 
 import android.test.ActivityInstrumentationTestCase2;
 
+import com.cauchymop.goblob.ui.MainActivity;
+
 /**
  * This is a simple framework for a test of an Application.  See
  * {@link android.test.ApplicationTestCase ApplicationTestCase} for more information on
@@ -17,5 +19,4 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
   public MainActivityTest() {
     super(MainActivity.class);
   }
-
 }
