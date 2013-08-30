@@ -25,9 +25,6 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
-    <activity android:name=".ui.PlayerChoiceActivity"/>
-    <activity android:name=".ui.GameConfigurationActivity"/>
-    <activity android:name=".ui.GameActivity"/>
   </application>
 
 </manifest>
