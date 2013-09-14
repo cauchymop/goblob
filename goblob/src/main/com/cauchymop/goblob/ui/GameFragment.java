@@ -37,7 +37,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   private GoGame goGame;
   private GoBoardView goBoardView;
-  private LocalHumanPlayerController currentPlayerController;
+  private HumanPlayerController currentPlayerController;
 
   public static GameFragment newInstance() {
     return new GameFragment();
@@ -166,6 +166,11 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     // Refresh UI and current controller
     goBoardView.postInvalidate();
     updateFromCurrentPlayer();
+
+    if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
+      int move = goGame.getLastMove();
+      getGoBlobActivity().sendMessage(new byte[] {(byte)move});
+    }
   }
 
   private void handleEndOfGame() {
@@ -215,8 +220,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   @Override
-  public void played(int x, int y) {
-    currentPlayerController.play(x, y);
+  public void played(int move) {
+    currentPlayerController.play(move);
   }
 
   private void setHumanInteractionEnabled(final boolean enabled) {
@@ -236,6 +241,9 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   @Override
   public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
     Log.d(TAG, "onRealTimeMessageReceived(" + realTimeMessage + ")");
+    byte[] messageData = realTimeMessage.getMessageData();
+    int move = messageData[0];
+    currentPlayerController.play(move);
   }
 
   private class LocalHumanPlayerController extends HumanPlayerController {
@@ -248,7 +256,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     public void startTurn() {
       // Enable Interactions for Local Humans
       setHumanInteractionEnabled(true);
-      currentPlayerController = this;
 
       super.startTurn();
 
@@ -290,6 +297,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
     @Override
     public void startTurn() {
+      currentPlayerController = this;
       played = false;
       synchronized (this) {
         while (!played) {
@@ -302,8 +310,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
       }
     }
 
-    public void play(int x, int y) {
-      if (!played && game.play(this, x, y)) {
+    public void play(int move) {
+      if (!played && game.play(this, move)) {
         played = true;
         synchronized (this) {
           this.notifyAll();

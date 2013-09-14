@@ -120,9 +120,21 @@ public class GoGame extends Game implements Parcelable {
   }
 
   public boolean play(PlayerController controller, int x, int y) {
+    return play(controller, getMove(x, y));
+  }
+
+  @Override
+  public boolean play(PlayerController controller, int pos) {
+    if (pos == getPassValue()) {
+      pass(controller);
+      return true;
+    }
     if (controller != getCurrentController()) {
       return false;
     }
+    int x = pos % boardSize;
+    int y = pos / boardSize;
+
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
     if (newBoard.play(currentColor, x, y) && !boardHistory.contains(newBoard)) {
@@ -159,13 +171,8 @@ public class GoGame extends Game implements Parcelable {
     return boardSize * boardSize + 1;
   }
 
-  @Override
-  public boolean play(PlayerController controller, int pos) {
-    if (pos == getPassValue()) {
-      pass(controller);
-      return true;
-    }
-    return play(controller, pos % boardSize, pos / boardSize);
+  public int getMove(int x, int y) {
+    return y * getBoardSize() + x;
   }
 
   @Override
@@ -254,11 +261,11 @@ public class GoGame extends Game implements Parcelable {
     return getLastMove() == getPassValue();
   }
 
-  private int getPassValue() {
+  public int getPassValue() {
     return boardSize * boardSize;
   }
 
-  private int getLastMove() {
+  public int getLastMove() {
     return (moveHistory.isEmpty()) ? NO_MOVE : moveHistory.get(moveHistory.size() - 1);
   }
 }

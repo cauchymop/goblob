@@ -2,8 +2,6 @@ package com.cauchymop.goblob.ui;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -15,7 +13,6 @@ import android.view.WindowManager;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
@@ -26,7 +23,6 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class MainActivity extends BaseGameActivity {
@@ -37,6 +33,7 @@ public class MainActivity extends BaseGameActivity {
   private static final String TAG = MainActivity.class.getName();
   private Room gameRoom;
   private GameFragment gameFragment;
+  private Participant opponent;
 
   private RoomUpdateListener gameRoomUpdateListener = new RoomUpdateListener() {
 
@@ -320,18 +317,21 @@ public class MainActivity extends BaseGameActivity {
       return;
     }
 
-    GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0).getPlayer());
-    GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1).getPlayer());
+    GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0));
+    GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1));
     GoGame goGame = new GoGame(getBoardSize(), blackPlayer, whitePlayer);
     gameFragment.setGoGame(goGame);
   }
 
-  private GoPlayer getGoPlayer(String myId, Player player) {
+  private GoPlayer getGoPlayer(String myId, Participant participant) {
+
+    Player player = participant.getPlayer();
     GoPlayer goPlayer;
     if (myId.equals(player.getPlayerId())) {
       goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_LOCAL, player.getDisplayName());
     } else {
       goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, player.getDisplayName());
+      opponent = participant;
     }
     //    Uri iconImageUriUri = visitorPlayer.getIconImageUri();
 //
@@ -366,5 +366,11 @@ public class MainActivity extends BaseGameActivity {
     return RoomConfig.builder(gameRoomUpdateListener)
         .setMessageReceivedListener(displayGameFragment())
         .setRoomStatusUpdateListener(gameRoomStatusListener);
+  }
+
+  public void sendMessage(byte[] message) {
+    getGamesClient().sendReliableRealTimeMessage(null, message, gameRoom.getRoomId(),
+        opponent.getParticipantId());
+
   }
 }
