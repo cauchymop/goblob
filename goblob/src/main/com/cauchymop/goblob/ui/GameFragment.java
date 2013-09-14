@@ -6,6 +6,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,57 +24,37 @@ import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
+import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
 
 /**
  * Game Page Fragment.
  */
 public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
-    GoBoardView.Listener {
+    GoBoardView.Listener, RealTimeMessageReceivedListener {
 
-  public static final String EXTRA_GAME = "Game";
+  private static final String TAG = GoBlobBaseFragment.class.getName();
+
   private GoGame goGame;
   private GoBoardView goBoardView;
-  private HumanPlayerController currentPlayerController;
+  private LocalHumanPlayerController currentPlayerController;
 
-  public static GameFragment newInstance(GoGame game) {
-    GameFragment instance = new GameFragment();
-
-    Bundle args = new Bundle();
-    args.putParcelable(EXTRA_GAME, game);
-    instance.setArguments(args);
-
-    return instance;
+  public static GameFragment newInstance() {
+    return new GameFragment();
   }
 
   @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game, container, false);
-    FrameLayout boardViewContainer = (FrameLayout) v.findViewById(R.id.boardViewContainer);
-    goGame = getArguments().getParcelable(EXTRA_GAME);
-    goGame.setBlackController(getController(goGame.getBlackPlayer()));
-    goGame.setWhiteController(getController(goGame.getWhitePlayer()));
-    goGame.addListener(this);
-    goGame.runGame();
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
-    goBoardView.addListener(this);
-    boardViewContainer.addView(goBoardView);
-
-    Button passButton = (Button) v.findViewById(R.id.pass_button);
-    passButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        currentPlayerController.pass();
-      }
-    });
-
     return v;
   }
 
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    updateFromCurrentPlayer();
+    if (goGame != null) {
+      initBoardView(goGame);
+    }
   }
 
   @Override
@@ -89,6 +70,36 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   @Override
   public void onSignOut() {
     super.onSignOut();
+  }
+
+  public void setGoGame(GoGame goGame) {
+    this.goGame = goGame;
+    if ( getView() != null) {
+      initBoardView(goGame);
+    }
+  }
+
+  private void initBoardView(GoGame goGame) {
+    FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
+    boardViewContainer.removeAllViews();
+    goGame.setBlackController(getController(goGame.getBlackPlayer()));
+    goGame.setWhiteController(getController(goGame.getWhitePlayer()));
+    goGame.addListener(this);
+    goGame.runGame();
+    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
+    goBoardView.addListener(this);
+    boardViewContainer.addView(goBoardView);
+
+    Button passButton = (Button) getView().findViewById(R.id.pass_button);
+    passButton.setVisibility(View.VISIBLE);
+    passButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        currentPlayerController.pass();
+      }
+    });
+
+    updateFromCurrentPlayer();
   }
 
   private void updateFromCurrentPlayer() {
@@ -127,12 +138,20 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   private PlayerController getController(Player player) {
-    if (player.getType() == Player.PlayerType.AI) {
-      return new AIPlayerController(goGame);
+    switch (player.getType()) {
+      case AI:
+        return new AIPlayerController(goGame);
+      case HUMAN_LOCAL:
+        return new LocalHumanPlayerController(goGame);
+      case HUMAN_REMOTE_FRIEND:
+        return new RemoteHumanPlayerController(goGame);
+      case HUMAN_REMOTE_RANDOM:
+      default:
+        return getPlayerController();
     }
-    if (player.getType() == Player.PlayerType.HUMAN_LOCAL) {
-      return new HumanPlayerController(goGame);
-    }
+  }
+
+  private PlayerController getPlayerController() {
     throw new RuntimeException("Unsupported player type");
   }
 
@@ -213,55 +232,33 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     });
   }
 
-  private class HumanPlayerController extends PlayerController {
-    private boolean played;
-    private GoGame game;
+  @Override
+  public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
+    Log.d(TAG, "onRealTimeMessageReceived(" + realTimeMessage + ")");
+  }
 
-    public HumanPlayerController(GoGame game) {
-      this.game = game;
-    }
+  private class LocalHumanPlayerController extends HumanPlayerController {
 
-    private void play(int x, int y) {
-      if (!played && game.play(this, x, y)) {
-        played = true;
-        synchronized (this) {
-          this.notifyAll();
-        }
-      } else {
-        buzz();
-      }
-    }
-
-    private void pass() {
-      if (!played && game.pass(this)) {
-        played = true;
-        synchronized (this) {
-          this.notifyAll();
-        }
-      } else {
-        buzz();
-      }
+    public LocalHumanPlayerController(GoGame game) {
+      super(game);
     }
 
     @Override
     public void startTurn() {
       // Enable Interactions for Local Humans
       setHumanInteractionEnabled(true);
-
       currentPlayerController = this;
-      played = false;
-      synchronized (this) {
-        while (!played) {
-          try {
-            this.wait();
-          } catch (InterruptedException e) {
-            // Expected.
-          }
-        }
-      }
+
+      super.startTurn();
 
       // Disable Interactions for Local Humans
       setHumanInteractionEnabled(false);
+    }
+
+    @Override
+    protected void handleInvalidMove() {
+      super.handleInvalidMove();
+      buzz();
     }
 
     private void buzz() {
@@ -273,6 +270,60 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
         System.err.println("Exception while buzzing");
         e.printStackTrace();
       }
+    }
+  }
+
+  private class RemoteHumanPlayerController extends HumanPlayerController {
+    public RemoteHumanPlayerController(GoGame goGame) {
+      super(goGame);
+    }
+  }
+
+  public class HumanPlayerController extends PlayerController {
+    protected GoGame game;
+    private boolean played;
+
+    public HumanPlayerController(GoGame game) {
+      this.game = game;
+    }
+
+    @Override
+    public void startTurn() {
+      played = false;
+      synchronized (this) {
+        while (!played) {
+          try {
+            this.wait();
+          } catch (InterruptedException e) {
+            // Expected.
+          }
+        }
+      }
+    }
+
+    public void play(int x, int y) {
+      if (!played && game.play(this, x, y)) {
+        played = true;
+        synchronized (this) {
+          this.notifyAll();
+        }
+      } else {
+        handleInvalidMove();
+      }
+    }
+
+    public void pass() {
+      if (!played && game.pass(this)) {
+        played = true;
+        synchronized (this) {
+          this.notifyAll();
+        }
+      } else {
+        handleInvalidMove();
+      }
+    }
+
+    protected void handleInvalidMove() {
     }
   }
 }

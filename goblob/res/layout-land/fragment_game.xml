@@ -13,7 +13,13 @@
       android:layout_width="0dip"
       android:layout_height="match_parent"
       android:layout_weight="60">
-
+    <TextView
+        android:id="@+id/waiting_textview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:text="@string/please_wait"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
   </FrameLayout>
 
   <LinearLayout
@@ -35,13 +41,11 @@
           android:layout_width="44dip"
           android:layout_height="44dip"
           android:id="@+id/titleImage"
-          android:src="@drawable/black_stone"
           android:layout_gravity="left|center_vertical"/>
 
       <TextView
           style="@style/Title"
           android:id="@+id/title"
-          android:text="@string/black_label"
           android:layout_weight="1"
           android:layout_gravity="left|center_vertical"/>
 
@@ -75,6 +79,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="20dip"
         android:paddingRight="20dip"
+        android:visibility="gone"
         android:text="@string/button_pass_label"/>
 
   </LinearLayout>

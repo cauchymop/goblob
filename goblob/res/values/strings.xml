@@ -39,4 +39,5 @@
   <string name="achievements_human">CggImpiG6GMQAhAF</string>
   <string name="human_remote_friend_label">Human (Google+ Friend)</string>
   <string name="human_remote_random_label">Human (Google+ Random)</string>
+  <string name="please_wait">Please Wait...</string>
 </resources>

@@ -17,6 +17,7 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
+import com.cauchymop.goblob.model.Player.PlayerType;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.Player;
 
@@ -112,7 +113,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     if (isSignedIn()) {
       final Player currentPlayer = getGoBlobActivity().getGamesClient().getCurrentPlayer();
       final String yourName = currentPlayer.getDisplayName();
-      yourPlayer = new GoPlayer(com.cauchymop.goblob.model.Player.PlayerType.HUMAN_LOCAL, yourName);
+      yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, yourName);
       yourNameField.setText(yourPlayer.getName());
       ImageManager.create(getActivity()).loadImage(new ImageManager.OnImageLoadedListener() {
         @Override
@@ -153,7 +154,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     whitePlayer.setStoneColor(StoneColor.White);
     goGame = new GoGame(boardSize, blackPlayer, whitePlayer);
 
-    getGoBlobActivity().startGame(goGame);
+    getGoBlobActivity().startLocalGame(goGame);
   }
 
   private enum PlayerColor {

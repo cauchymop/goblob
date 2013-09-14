@@ -18,8 +18,6 @@ import com.cauchymop.goblob.model.Player;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
@@ -30,13 +28,89 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MainActivity extends BaseGameActivity implements RoomUpdateListener,
-    RealTimeMessageReceivedListener, RoomStatusUpdateListener {
+public class MainActivity extends BaseGameActivity {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
-
+  public static final int WAITING_ROOM = 3;
   private static final String TAG = MainActivity.class.getName();
+  private Room gameRoom;
+  private RoomUpdateListener gameRoomUpdateListener = new RoomUpdateListener() {
+
+    @Override
+    public void onRoomCreated(int statusCode, Room room) {
+      Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
+      MainActivity.this.gameRoom = room;
+      Intent i = getGamesClient().getRealTimeWaitingRoomIntent(room, 1);
+      startActivityForResult(i, WAITING_ROOM);
+    }
+
+    @Override
+    public void onJoinedRoom(int statusCode, Room room) {
+      Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
+    }
+
+    @Override
+    public void onLeftRoom(int statusCode, String roomId) {
+      Log.d(TAG, "onLeftRoom(" + statusCode + ", " + roomId + ")");
+    }
+
+    @Override
+    public void onRoomConnected(int statusCode, Room room) {
+      Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
+    }
+  };
+  private RoomStatusUpdateListener gameRoomStatusListener = new RoomStatusUpdateListener() {
+    @Override
+    public void onRoomConnecting(Room room) {
+      Log.d(TAG, "onRoomConnecting(" + room + ")");
+    }
+
+    @Override
+    public void onRoomAutoMatching(Room room) {
+      Log.d(TAG, "onRoomAutoMatching(" + room + ")");
+    }
+
+    @Override
+    public void onPeerInvitedToRoom(Room room, List<String> strings) {
+      Log.d(TAG, "onPeerInvitedToRoom(" + room + ", " + strings + ")");
+    }
+
+    @Override
+    public void onPeerDeclined(Room room, List<String> strings) {
+      Log.d(TAG, "onPeerDeclined(" + room + ", " + strings + ")");
+    }
+
+    @Override
+    public void onPeerJoined(Room room, List<String> strings) {
+      Log.d(TAG, "onPeerJoined(" + room + ", " + strings + ")");
+    }
+
+    @Override
+    public void onPeerLeft(Room room, List<String> strings) {
+      Log.d(TAG, "onPeerLeft(" + room + ", " + strings + ")");
+    }
+
+    @Override
+    public void onConnectedToRoom(Room room) {
+      Log.d(TAG, "onConnectedToRoom(" + room + ")");
+    }
+
+    @Override
+    public void onDisconnectedFromRoom(Room room) {
+      Log.d(TAG, "onDisconnectedFromRoom(" + room + ")");
+    }
+
+    @Override
+    public void onPeersConnected(Room room, List<String> strings) {
+      Log.d(TAG, "onPeersConnected(" + room + ", " + strings + ")");
+    }
+
+    @Override
+    public void onPeersDisconnected(Room room, List<String> strings) {
+      Log.d(TAG, "onPeersDisconnected(" + room + ", " + strings + ")");
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +123,16 @@ public class MainActivity extends BaseGameActivity implements RoomUpdateListener
   @Override
   protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
     super.onActivityResult(requestCode, responseCode, intent);
+    if (responseCode != Activity.RESULT_OK) {
+      Log.w(TAG, "*** select players UI cancelled, " + responseCode);
+      return;
+    }
     switch (requestCode) {
       case SELECT_PLAYER:
-        handleSelectPlayersResult(responseCode, intent);
+        handleSelectPlayersResult(intent);
+        break;
+      case WAITING_ROOM:
+        handleRoomReady(intent);
         break;
     }
   }
@@ -157,6 +238,7 @@ public class MainActivity extends BaseGameActivity implements RoomUpdateListener
 
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
     if (opponentPlayer.getType().isRemote()) {
+      GameFragment gameFragment = startGame();
       Intent selectPlayersIntent = getGamesClient().getSelectPlayersIntent(1, 1);
       startActivityForResult(selectPlayersIntent, SELECT_PLAYER);
     } else {
@@ -169,16 +251,18 @@ public class MainActivity extends BaseGameActivity implements RoomUpdateListener
     displayFragment(gameConfigurationFragment, true);
   }
 
-  public void startGame(GoGame goGame) {
-    GameFragment gameFragment = GameFragment.newInstance(goGame);
+  public GameFragment startGame() {
+    GameFragment gameFragment = GameFragment.newInstance();
     displayFragment(gameFragment, true);
+    return gameFragment;
   }
 
-  private void handleSelectPlayersResult(int response, Intent intent) {
-    if (response != Activity.RESULT_OK) {
-      Log.w(TAG, "*** select players UI cancelled, " + response);
-      return;
-    }
+  public void startLocalGame(GoGame goGame) {
+    GameFragment gameFragment = startGame();
+    gameFragment.setGoGame(goGame);
+  }
+
+  private void handleSelectPlayersResult(Intent intent) {
 
     Log.d(TAG, "Select players UI succeeded.");
 
@@ -198,10 +282,11 @@ public class MainActivity extends BaseGameActivity implements RoomUpdateListener
 
     // create the room
     Log.d(TAG, "Creating room...");
-    RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(this);
+    RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(gameRoomUpdateListener);
     rtmConfigBuilder.addPlayersToInvite(invitees);
-    rtmConfigBuilder.setMessageReceivedListener(this);
-    rtmConfigBuilder.setRoomStatusUpdateListener(this);
+    GameFragment gameFragment = startGame();
+    rtmConfigBuilder.setMessageReceivedListener(gameFragment);
+    rtmConfigBuilder.setRoomStatusUpdateListener(gameRoomStatusListener);
     if (autoMatchCriteria != null) {
       rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
     }
@@ -209,16 +294,15 @@ public class MainActivity extends BaseGameActivity implements RoomUpdateListener
     Log.d(TAG, "Room created, waiting for it to be ready...");
   }
 
-  @Override
-  public void onRoomCreated(int statusCode, Room room) {
-    Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
-    // Only for test purposes.
-    if (!isSignedIn()) {
+  private void handleRoomReady(Intent intent) {
+    Log.d(TAG, "Back from waiting room!");
+    //    // Only for test purposes.
+    if (!isSignedIn() || gameRoom == null) {
       return;
     }
     String myId = getGamesClient().getCurrentPlayerId();
     com.google.android.gms.games.Player opponent = null;
-    ArrayList<Participant> participants = room.getParticipants();
+    ArrayList<Participant> participants = gameRoom.getParticipants();
     Iterator<Participant> it = participants.iterator();
     while (it.hasNext()) {
       Participant participant = it.next();
@@ -229,102 +313,34 @@ public class MainActivity extends BaseGameActivity implements RoomUpdateListener
       }
     }
 
-    if (opponent != null) {
-      final String name = opponent.getDisplayName();
-      Uri iconImageUriUri = opponent.getIconImageUri();
-
-      ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
-        @Override
-        public void onImageLoaded(Uri uri, Drawable drawable) {
-          GoPlayer opponent = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, name);
-          opponent.setAvatar(drawable);
-          displayGameConfigurationScreen(opponent, getBoardSize());
-        }
-
-        /**
-         * DUMMY FOR TEST ONLY
-         * TODO: Find a clean way to do this
-         *
-         * @return
-         */
-        private int getBoardSize() {
-          GoBlobBaseFragment currentFragment = getCurrentFragment();
-          if (currentFragment instanceof PlayerChoiceFragment) {
-            return ((PlayerChoiceFragment) currentFragment).getBoardSize();
-          }
-          return 9;
-        }
-      }, iconImageUriUri);
+    if (opponent == null) {
+      return;
     }
-  }
 
-  @Override
-  public void onJoinedRoom(int statusCode, Room room) {
-    Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
-  }
+    final String name = opponent.getDisplayName();
+    Uri iconImageUriUri = opponent.getIconImageUri();
 
-  @Override
-  public void onLeftRoom(int statusCode, String roomId) {
-    Log.d(TAG, "onLeftRoom(" + statusCode + ", " + roomId + ")");
-  }
+    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
+      @Override
+      public void onImageLoaded(Uri uri, Drawable drawable) {
+        GoPlayer opponent = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, name);
+        opponent.setAvatar(drawable);
+        displayGameConfigurationScreen(opponent, getBoardSize());
+      }
 
-  @Override
-  public void onRoomConnected(int statusCode, Room room) {
-    Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
-  }
-
-  @Override
-  public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
-    Log.d(TAG, "onRealTimeMessageReceived(" + realTimeMessage + ")");
-  }
-
-  @Override
-  public void onRoomConnecting(Room room) {
-    Log.d(TAG, "onRoomConnecting(" + room + ")");
-  }
-
-  @Override
-  public void onRoomAutoMatching(Room room) {
-    Log.d(TAG, "onRoomAutoMatching(" + room + ")");
-  }
-
-  @Override
-  public void onPeerInvitedToRoom(Room room, List<String> strings) {
-    Log.d(TAG, "onPeerInvitedToRoom(" + room + ", " + strings + ")");
-  }
-
-  @Override
-  public void onPeerDeclined(Room room, List<String> strings) {
-    Log.d(TAG, "onPeerDeclined(" + room + ", " + strings + ")");
-  }
-
-  @Override
-  public void onPeerJoined(Room room, List<String> strings) {
-    Log.d(TAG, "onPeerJoined(" + room + ", " + strings + ")");
-  }
-
-  @Override
-  public void onPeerLeft(Room room, List<String> strings) {
-    Log.d(TAG, "onPeerLeft(" + room + ", " + strings + ")");
-  }
-
-  @Override
-  public void onConnectedToRoom(Room room) {
-    Log.d(TAG, "onConnectedToRoom(" + room + ")");
-  }
-
-  @Override
-  public void onDisconnectedFromRoom(Room room) {
-    Log.d(TAG, "onDisconnectedFromRoom(" + room + ")");
-  }
-
-  @Override
-  public void onPeersConnected(Room room, List<String> strings) {
-    Log.d(TAG, "onPeersConnected(" + room + ", " + strings + ")");
-  }
-
-  @Override
-  public void onPeersDisconnected(Room room, List<String> strings) {
-    Log.d(TAG, "onPeersDisconnected(" + room + ", " + strings + ")");
+      /**
+       * DUMMY FOR TEST ONLY
+       * TODO: Find a clean way to do this
+       *
+       * @return
+       */
+      private int getBoardSize() {
+        GoBlobBaseFragment currentFragment = getCurrentFragment();
+        if (currentFragment instanceof PlayerChoiceFragment) {
+          return ((PlayerChoiceFragment) currentFragment).getBoardSize();
+        }
+        return 9;
+      }
+    }, iconImageUriUri);
   }
 }
