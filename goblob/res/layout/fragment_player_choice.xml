@@ -9,7 +9,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/configure_game_label"
-            android:onClick="configureGame"
             android:padding="12dip"
             android:layout_alignParentBottom="true"
             />

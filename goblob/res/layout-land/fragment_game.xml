@@ -75,8 +75,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="20dip"
         android:paddingRight="20dip"
-        android:text="@string/button_pass_label"
-        android:onClick="pass"/>
+        android:text="@string/button_pass_label"/>
 
   </LinearLayout>
 

@@ -6,8 +6,9 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -21,8 +22,12 @@ import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
+import com.google.android.gms.games.GamesClient;
 
-public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
+/**
+ * Game Page Fragment.
+ */
+public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     GoBoardView.Listener {
 
   public static final String EXTRA_GAME = "Game";
@@ -30,24 +35,64 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
   private GoBoardView goBoardView;
   private HumanPlayerController currentPlayerController;
 
+  public static GameFragment newInstance(GoGame game) {
+    GameFragment instance = new GameFragment();
+
+    Bundle args = new Bundle();
+    args.putParcelable(EXTRA_GAME, game);
+    instance.setArguments(args);
+
+    return instance;
+  }
+
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.game_activity);
-    FrameLayout container = (FrameLayout) findViewById(R.id.boardViewContainer);
-    goGame = getIntent().getParcelableExtra(EXTRA_GAME);
+  public View onCreateView(LayoutInflater inflater, ViewGroup container,
+      Bundle savedInstanceState) {
+    View v = inflater.inflate(R.layout.fragment_game, container, false);
+    FrameLayout boardViewContainer = (FrameLayout) v.findViewById(R.id.boardViewContainer);
+    goGame = getArguments().getParcelable(EXTRA_GAME);
     goGame.setBlackController(getController(goGame.getBlackPlayer()));
     goGame.setWhiteController(getController(goGame.getWhitePlayer()));
     goGame.addListener(this);
     goGame.runGame();
-    goBoardView = new GoBoardView(getApplicationContext(), goGame);
+    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
     goBoardView.addListener(this);
-    container.addView(goBoardView);
+    boardViewContainer.addView(goBoardView);
+
+    Button passButton = (Button) v.findViewById(R.id.pass_button);
+    passButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        currentPlayerController.pass();
+      }
+    });
+
+    return v;
+  }
+
+  @Override
+  public void onViewCreated(View view, Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
     updateFromCurrentPlayer();
   }
 
+  @Override
+  public void onSignInSucceeded() {
+    super.onSignInSucceeded();
+  }
+
+  @Override
+  public void onSignInFailed() {
+    super.onSignInFailed();
+  }
+
+  @Override
+  public void onSignOut() {
+    super.onSignOut();
+  }
+
   private void updateFromCurrentPlayer() {
-    runOnUiThread(new Runnable() {
+    getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
         updateTitleArea();
@@ -57,9 +102,9 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
   }
 
   private void updateTitleArea() {
-    TextView titleView = (TextView) findViewById(R.id.title);
-    ImageView titleImage = (ImageView) findViewById(R.id.titleImage);
-    ImageView avatarImage = (ImageView) findViewById(R.id.avatarImage);
+    TextView titleView = (TextView) getView().findViewById(R.id.title);
+    ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
+    ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
     final GoPlayer currentPlayer = goGame.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
     titleImage.setImageResource(currentPlayer.getStoneColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
@@ -77,7 +122,7 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
       message = null;
     }
 
-    TextView messageView = (TextView) findViewById(R.id.message_textview);
+    TextView messageView = (TextView) getView().findViewById(R.id.message_textview);
     messageView.setText(message);
   }
 
@@ -89,20 +134,6 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
       return new HumanPlayerController(goGame);
     }
     throw new RuntimeException("Unsupported player type");
-  }
-
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
-    getMenuInflater().inflate(R.menu.game_menu, menu);
-    return true;
-  }
-
-  public void pass(View v) {
-    if (v == null || v.getId() != R.id.pass_button) {
-      return;
-    }
-    currentPlayerController.pass();
   }
 
   @Override
@@ -118,45 +149,47 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
   }
 
   private void handleEndOfGame() {
-    runOnUiThread(new Runnable() {
+    updateAchievements();
+    getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        new AlertDialog.Builder(GameActivity.this)
+        new AlertDialog.Builder(getGoBlobActivity())
             .setTitle(getString(R.string.end_of_game_dialog_title))
             .setMessage(getString(R.string.end_of_game_dialog_message))
             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
               @Override
               public void onClick(DialogInterface dialog, int which) {
-                setResult(RESULT_OK);
-                finish();
+                getActivity().getSupportFragmentManager().popBackStackImmediate();
+//                setResult(RESULT_OK);
+//                finish();
               }
             })
             .create()
             .show();
       }
     });
-    updateAchievements();
   }
 
   private void updateAchievements() {
-    getGamesClient().unlockAchievement(getString(R.string.achievements_gamers));
+    final GamesClient gamesClient = getGoBlobActivity().getGamesClient();
+    gamesClient.unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGame.getBoardSize()) {
       case 9:
-        getGamesClient().unlockAchievement(getString(R.string.achievements_9x9));
+        gamesClient.unlockAchievement(getString(R.string.achievements_9x9));
         break;
       case 13:
-        getGamesClient().unlockAchievement(getString(R.string.achievements_13x13));
+        gamesClient.unlockAchievement(getString(R.string.achievements_13x13));
         break;
       case 19:
-        getGamesClient().unlockAchievement(getString(R.string.achievements_19x19));
+        gamesClient.unlockAchievement(getString(R.string.achievements_19x19));
         break;
     }
     switch (goGame.getOpponent().getType()) {
       case AI:
-        getGamesClient().unlockAchievement(getString(R.string.achievements_ai));
+        gamesClient.unlockAchievement(getString(R.string.achievements_ai));
         break;
       case HUMAN_LOCAL:
-        getGamesClient().unlockAchievement(getString(R.string.achievements_human));
+        gamesClient.unlockAchievement(getString(R.string.achievements_human));
         break;
     }
   }
@@ -167,14 +200,14 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
   }
 
   private void setHumanInteractionEnabled(final boolean enabled) {
-    runOnUiThread(new Runnable() {
+    getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
         // Enable or Disable Pass Button for Local Humans
-        final Button pass_button = (Button) findViewById(R.id.pass_button);
+        final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
         pass_button.setEnabled(enabled);
 
-        final View boardContainer = findViewById(R.id.boardViewContainer);
+        final View boardContainer = getView().findViewById(R.id.boardViewContainer);
         goBoardView.setClickable(enabled);
       }
     });
@@ -234,7 +267,7 @@ public class GameActivity extends GoBlobBaseActivity implements Game.Listener,
     private void buzz() {
       try {
         Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+        Ringtone r = RingtoneManager.getRingtone(getActivity().getApplicationContext(), notification);
         r.play();
       } catch (Exception e) {
         System.err.println("Exception while buzzing");

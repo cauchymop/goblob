@@ -65,8 +65,7 @@
         android:paddingRight="20dip"
         android:layout_marginTop="5dip"
         android:layout_marginBottom="15dip"
-        android:text="@string/button_pass_label"
-        android:onClick="pass"/>
+        android:text="@string/button_pass_label"/>
   </LinearLayout>
 
 </LinearLayout>
