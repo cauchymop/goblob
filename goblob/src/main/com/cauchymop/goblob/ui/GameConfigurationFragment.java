@@ -29,12 +29,12 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   public static final String EXTRA_OPPONENT = "opponent";
   public static final String EXTRA_BOARD_SIZE = "board_size";
   private Spinner opponentColorSpinner;
-  private Spinner yourColorSpinner;
-  private EditText yourNameField;
+  private Spinner homePlayerColorSpinner;
+  private EditText homePlayerNameField;
   private EditText opponentNameField;
   private int boardSize;
   private GoPlayer opponentPlayer;
-  private GoPlayer yourPlayer;
+  private GoPlayer homePlayer;
 
   public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
     GameConfigurationFragment instance = new GameConfigurationFragment();
@@ -55,9 +55,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     opponentColorSpinner.setAdapter(new PlayerTypeAdapter());
     opponentColorSpinner.setEnabled(false);
 
-    yourColorSpinner = (Spinner) v.findViewById(R.id.your_player_color_spinner);
-    yourColorSpinner.setAdapter(new PlayerTypeAdapter());
-    yourColorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+    homePlayerColorSpinner = (Spinner) v.findViewById(R.id.home_player_color_spinner);
+    homePlayerColorSpinner.setAdapter(new PlayerTypeAdapter());
+    homePlayerColorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         opponentColorSpinner.setSelection(1 - position);
@@ -68,7 +68,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       }
     });
 
-    yourNameField = (EditText) v.findViewById(R.id.your_player_name);
+    homePlayerNameField = (EditText) v.findViewById(R.id.home_player_name);
     opponentNameField = (EditText) v.findViewById(R.id.opponent_player_name);
 
     final Bundle extras = getArguments();
@@ -82,10 +82,10 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
+    homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, getString(R.string.home_player_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
-    yourNameField.setText(yourPlayer.getName());
+    homePlayerNameField.setText(homePlayer.getName());
 
     Button startGameButton = (Button) v.findViewById(R.id.start_game_button);
     startGameButton.setOnClickListener(new View.OnClickListener() {
@@ -111,15 +111,15 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private void configureCurrentPlayerFromGooglePlusAccount() {
     if (isSignedIn()) {
-      yourPlayer = getHomePlayer();
-      yourNameField.setText(yourPlayer.getName());
+      homePlayer = getHomePlayer();
+      homePlayerNameField.setText(homePlayer.getName());
     }
   }
 
   public GoPlayer getHomePlayer() {
     final Player currentPlayer = getGoBlobActivity().getGamesClient().getCurrentPlayer();
-    final String yourName = currentPlayer.getDisplayName();
-    final GoPlayer homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, yourName);
+    final String homePlayerName = currentPlayer.getDisplayName();
+    final GoPlayer homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, homePlayerName);
     ImageManager.create(getActivity()).loadImage(new ImageManager.OnImageLoadedListener() {
       @Override
       public void onImageLoaded(Uri uri, Drawable drawable) {
@@ -135,23 +135,23 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       opponentPlayer.setName(opponentNameText.toString());
     }
 
-    final Editable yourNameText = yourNameField.getText();
-    if (yourNameText != null) {
-      yourPlayer.setName(yourNameText.toString());
+    final Editable homePayerNameText = homePlayerNameField.getText();
+    if (homePayerNameText != null) {
+      homePlayer.setName(homePayerNameText.toString());
     }
 
     GoGame goGame;
-    final PlayerColor yourPlayerColor = (PlayerColor) yourColorSpinner.getSelectedItem();
+    final PlayerColor homePlayerColor = (PlayerColor) homePlayerColorSpinner.getSelectedItem();
     final GoPlayer blackPlayer, whitePlayer;
-    switch (yourPlayerColor != null ? yourPlayerColor : PlayerColor.BLACK) {
+    switch (homePlayerColor != null ? homePlayerColor : PlayerColor.BLACK) {
       case BLACK:
-        blackPlayer = yourPlayer;
+        blackPlayer = homePlayer;
         whitePlayer = opponentPlayer;
         break;
       case WHITE:
       default:
         blackPlayer = opponentPlayer;
-        whitePlayer = yourPlayer;
+        whitePlayer = homePlayer;
         break;
     }
 
