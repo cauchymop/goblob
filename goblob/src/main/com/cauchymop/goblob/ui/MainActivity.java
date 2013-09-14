@@ -10,13 +10,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.Player;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
@@ -35,19 +36,20 @@ public class MainActivity extends BaseGameActivity {
   public static final int WAITING_ROOM = 3;
   private static final String TAG = MainActivity.class.getName();
   private Room gameRoom;
+  private GameFragment gameFragment;
+
   private RoomUpdateListener gameRoomUpdateListener = new RoomUpdateListener() {
 
     @Override
     public void onRoomCreated(int statusCode, Room room) {
       Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
-      MainActivity.this.gameRoom = room;
-      Intent i = getGamesClient().getRealTimeWaitingRoomIntent(room, 1);
-      startActivityForResult(i, WAITING_ROOM);
+      startWaitingRoomActivity(room);
     }
 
     @Override
     public void onJoinedRoom(int statusCode, Room room) {
       Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
+      startWaitingRoomActivity(room);
     }
 
     @Override
@@ -60,6 +62,13 @@ public class MainActivity extends BaseGameActivity {
       Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
     }
   };
+
+  private void startWaitingRoomActivity(Room room) {
+    this.gameRoom = room;
+    Intent i = getGamesClient().getRealTimeWaitingRoomIntent(room, 1);
+    startActivityForResult(i, WAITING_ROOM);
+  }
+
   private RoomStatusUpdateListener gameRoomStatusListener = new RoomStatusUpdateListener() {
     @Override
     public void onRoomConnecting(Room room) {
@@ -147,6 +156,14 @@ public class MainActivity extends BaseGameActivity {
   public void onSignInSucceeded() {
     invalidateOptionsMenu();
     getCurrentFragment().onSignInSucceeded();
+    if (getInvitationId() != null) {
+      RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
+      roomConfigBuilder.setInvitationIdToAccept(getInvitationId());
+      getGamesClient().joinRoom(roomConfigBuilder.build());
+
+      // prevent screen from sleeping during handshake
+      getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
   }
 
   @Override
@@ -238,7 +255,6 @@ public class MainActivity extends BaseGameActivity {
 
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
     if (opponentPlayer.getType().isRemote()) {
-      GameFragment gameFragment = startGame();
       Intent selectPlayersIntent = getGamesClient().getSelectPlayersIntent(1, 1);
       startActivityForResult(selectPlayersIntent, SELECT_PLAYER);
     } else {
@@ -251,14 +267,14 @@ public class MainActivity extends BaseGameActivity {
     displayFragment(gameConfigurationFragment, true);
   }
 
-  public GameFragment startGame() {
-    GameFragment gameFragment = GameFragment.newInstance();
+  public GameFragment displayGameFragment() {
+    gameFragment = GameFragment.newInstance();
     displayFragment(gameFragment, true);
     return gameFragment;
   }
 
-  public void startLocalGame(GoGame goGame) {
-    GameFragment gameFragment = startGame();
+  public void startGame(GoGame goGame) {
+    GameFragment gameFragment = displayGameFragment();
     gameFragment.setGoGame(goGame);
   }
 
@@ -282,65 +298,73 @@ public class MainActivity extends BaseGameActivity {
 
     // create the room
     Log.d(TAG, "Creating room...");
-    RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(gameRoomUpdateListener);
-    rtmConfigBuilder.addPlayersToInvite(invitees);
-    GameFragment gameFragment = startGame();
-    rtmConfigBuilder.setMessageReceivedListener(gameFragment);
-    rtmConfigBuilder.setRoomStatusUpdateListener(gameRoomStatusListener);
+    RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
+    roomConfigBuilder.addPlayersToInvite(invitees);
     if (autoMatchCriteria != null) {
-      rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
+      roomConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
     }
-    getGamesClient().createRoom(rtmConfigBuilder.build());
+    getGamesClient().createRoom(roomConfigBuilder.build());
     Log.d(TAG, "Room created, waiting for it to be ready...");
   }
 
   private void handleRoomReady(Intent intent) {
     Log.d(TAG, "Back from waiting room!");
-    //    // Only for test purposes.
     if (!isSignedIn() || gameRoom == null) {
       return;
     }
-    String myId = getGamesClient().getCurrentPlayerId();
-    com.google.android.gms.games.Player opponent = null;
-    ArrayList<Participant> participants = gameRoom.getParticipants();
-    Iterator<Participant> it = participants.iterator();
-    while (it.hasNext()) {
-      Participant participant = it.next();
-      com.google.android.gms.games.Player player = participant.getPlayer();
-      if (!myId.equals(participant.getPlayer().getPlayerId())) {
-        opponent = player;
-        break;
-      }
-    }
 
-    if (opponent == null) {
+    String myId = getGamesClient().getCurrentPlayerId();
+    ArrayList<Participant> participants = gameRoom.getParticipants();
+
+    if (participants.size() != 2) {
       return;
     }
 
-    final String name = opponent.getDisplayName();
-    Uri iconImageUriUri = opponent.getIconImageUri();
+    GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0).getPlayer());
+    GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1).getPlayer());
+    GoGame goGame = new GoGame(getBoardSize(), blackPlayer, whitePlayer);
+    gameFragment.setGoGame(goGame);
+  }
 
-    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
-      @Override
-      public void onImageLoaded(Uri uri, Drawable drawable) {
-        GoPlayer opponent = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, name);
-        opponent.setAvatar(drawable);
-        displayGameConfigurationScreen(opponent, getBoardSize());
-      }
+  private GoPlayer getGoPlayer(String myId, Player player) {
+    GoPlayer goPlayer;
+    if (myId.equals(player.getPlayerId())) {
+      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_LOCAL, player.getDisplayName());
+    } else {
+      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, player.getDisplayName());
+    }
+    //    Uri iconImageUriUri = visitorPlayer.getIconImageUri();
+//
+//    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
+//      @Override
+//      public void onImageLoaded(Uri uri, Drawable drawable) {
+//
+//        opponent.setAvatar(drawable);
+//
+//      }
+//
+//
+//    }, iconImageUriUri);
+    return goPlayer;
+  }
 
-      /**
-       * DUMMY FOR TEST ONLY
-       * TODO: Find a clean way to do this
-       *
-       * @return
-       */
-      private int getBoardSize() {
-        GoBlobBaseFragment currentFragment = getCurrentFragment();
-        if (currentFragment instanceof PlayerChoiceFragment) {
-          return ((PlayerChoiceFragment) currentFragment).getBoardSize();
-        }
-        return 9;
-      }
-    }, iconImageUriUri);
+  /**
+   * DUMMY FOR TEST ONLY
+   * TODO: Find a clean way to do thisx
+   *
+   * @return
+   */
+  private int getBoardSize() {
+//    GoBlobBaseFragment currentFragment = getCurrentFragment();
+//    if (currentFragment instanceof PlayerChoiceFragment) {
+//      return ((PlayerChoiceFragment) currentFragment).getBoardSize();
+//    }
+    return 9;
+  }
+
+  private RoomConfig.Builder makeBasicRoomConfigBuilder() {
+    return RoomConfig.builder(gameRoomUpdateListener)
+        .setMessageReceivedListener(displayGameFragment())
+        .setRoomStatusUpdateListener(gameRoomStatusListener);
   }
 }

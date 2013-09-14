@@ -82,7 +82,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    yourPlayer = new GoPlayer(com.cauchymop.goblob.model.Player.PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
+    yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());
@@ -111,17 +111,22 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private void configureCurrentPlayerFromGooglePlusAccount() {
     if (isSignedIn()) {
-      final Player currentPlayer = getGoBlobActivity().getGamesClient().getCurrentPlayer();
-      final String yourName = currentPlayer.getDisplayName();
-      yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, yourName);
+      yourPlayer = getHomePlayer();
       yourNameField.setText(yourPlayer.getName());
-      ImageManager.create(getActivity()).loadImage(new ImageManager.OnImageLoadedListener() {
-        @Override
-        public void onImageLoaded(Uri uri, Drawable drawable) {
-          yourPlayer.setAvatar(drawable);
-        }
-      }, currentPlayer.getIconImageUri());
     }
+  }
+
+  public GoPlayer getHomePlayer() {
+    final Player currentPlayer = getGoBlobActivity().getGamesClient().getCurrentPlayer();
+    final String yourName = currentPlayer.getDisplayName();
+    final GoPlayer homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, yourName);
+    ImageManager.create(getActivity()).loadImage(new ImageManager.OnImageLoadedListener() {
+      @Override
+      public void onImageLoaded(Uri uri, Drawable drawable) {
+        homePlayer.setAvatar(drawable);
+      }
+    }, currentPlayer.getIconImageUri());
+    return homePlayer;
   }
 
   private void startGame() {
@@ -154,7 +159,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     whitePlayer.setStoneColor(StoneColor.White);
     goGame = new GoGame(boardSize, blackPlayer, whitePlayer);
 
-    getGoBlobActivity().startLocalGame(goGame);
+    getGoBlobActivity().startGame(goGame);
   }
 
   private enum PlayerColor {

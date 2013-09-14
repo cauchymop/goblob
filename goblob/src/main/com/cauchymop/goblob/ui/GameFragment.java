@@ -45,8 +45,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.fragment_game, container, false);
-    return v;
+    return inflater.inflate(R.layout.fragment_game, container, false);
   }
 
   @Override
@@ -76,6 +75,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     this.goGame = goGame;
     if ( getView() != null) {
       initBoardView(goGame);
+      // Disable Interactions for Local Humans
+      setHumanInteractionEnabled(false);
     }
   }
 
