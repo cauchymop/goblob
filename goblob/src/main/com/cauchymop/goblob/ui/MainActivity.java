@@ -350,7 +350,7 @@ public class MainActivity extends BaseGameActivity {
 
   /**
    * DUMMY FOR TEST ONLY
-   * TODO: Find a clean way to do thisx
+   * TODO: Find a clean way to do this
    *
    * @return
    */
@@ -371,6 +371,5 @@ public class MainActivity extends BaseGameActivity {
   public void sendMessage(byte[] message) {
     getGamesClient().sendReliableRealTimeMessage(null, message, gameRoom.getRoomId(),
         opponent.getParticipantId());
-
   }
 }
