@@ -17,6 +17,7 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
+import com.cauchymop.goblob.model.Player.PlayerType;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.Player;
 
@@ -81,7 +82,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    yourPlayer = new GoPlayer(com.cauchymop.goblob.model.Player.PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
+    yourPlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, getString(R.string.your_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     yourNameField.setText(yourPlayer.getName());
