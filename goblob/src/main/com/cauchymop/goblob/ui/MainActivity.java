@@ -324,7 +324,6 @@ public class MainActivity extends BaseGameActivity {
   }
 
   private GoPlayer getGoPlayer(String myId, Participant participant) {
-
     Player player = participant.getPlayer();
     GoPlayer goPlayer;
     if (myId.equals(player.getPlayerId())) {
