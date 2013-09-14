@@ -11,7 +11,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/start_game_label"
-            android:onClick="startGame"
             android:padding="12dip"
             android:layout_alignParentBottom="true">
 
