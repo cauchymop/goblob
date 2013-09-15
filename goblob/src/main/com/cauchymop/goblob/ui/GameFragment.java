@@ -168,9 +168,12 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     updateFromCurrentPlayer();
 
     if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
-      int move = goGame.getLastMove();
-      getGoBlobActivity().sendMessage(new byte[] {(byte)move});
+      getGoBlobActivity().sendMessage(getMoveMessage(goGame.getLastMove()));
     }
+  }
+
+  private byte[] getMoveMessage(int move) {
+    return new byte[] {(byte) (move / 256), (byte) (move % 256)};
   }
 
   private void handleEndOfGame() {
@@ -231,8 +234,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
         // Enable or Disable Pass Button for Local Humans
         final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
         pass_button.setEnabled(enabled);
-
-        final View boardContainer = getView().findViewById(R.id.boardViewContainer);
         goBoardView.setClickable(enabled);
       }
     });
@@ -241,9 +242,12 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   @Override
   public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
     Log.d(TAG, "onRealTimeMessageReceived(" + realTimeMessage + ")");
+    currentPlayerController.play(getMove(realTimeMessage));
+  }
+
+  private int getMove(RealTimeMessage realTimeMessage) {
     byte[] messageData = realTimeMessage.getMessageData();
-    int move = messageData[0];
-    currentPlayerController.play(move);
+    return messageData[0] * 256 + messageData[1];
   }
 
   private class LocalHumanPlayerController extends HumanPlayerController {
