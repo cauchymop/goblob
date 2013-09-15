@@ -341,17 +341,7 @@ public class MainActivity extends BaseGameActivity {
     }
 
     goPlayer.setStoneColor(stoneColor);
-
-    // Fetch Avatar
-    Uri iconImageUriUri = player.getIconImageUri();
-    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
-      @Override
-      public void onImageLoaded(Uri uri, Drawable drawable) {
-        if (drawable != null) {
-          goPlayer.setAvatar(drawable);
-        }
-      }
-    }, iconImageUriUri);
+    goPlayer.setAvatarUri(getApplicationContext(), player.getIconImageUri());
 
     return goPlayer;
   }

@@ -1,10 +1,14 @@
 package com.cauchymop.goblob.model;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.google.android.gms.common.images.ImageManager;
 
 /**
  * Interface to represent a player.
@@ -24,6 +28,7 @@ public class Player implements Parcelable {
   private PlayerType type;
   private String name;
   private Bitmap avatar;
+  private Uri avatarUri;
 
   public Player(PlayerType type, String name) {
     this.type = type;
@@ -34,6 +39,7 @@ public class Player implements Parcelable {
     name = in.readString();
     type = PlayerType.valueOf(in.readString());
     avatar = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
+    avatarUri = (Uri) in.readValue(Uri.class.getClassLoader());
   }
 
   @Override
@@ -46,6 +52,7 @@ public class Player implements Parcelable {
     dest.writeString(name);
     dest.writeString(type.name());
     dest.writeValue(avatar);
+    dest.writeValue(avatarUri);
   }
 
   public PlayerType getType() {
@@ -81,6 +88,18 @@ public class Player implements Parcelable {
     avatar.setBounds(0, 0, w, h);
     avatar.draw(canvas);
     setAvatar(bitmap);
+  }
+
+  public void setAvatarUri(Context context, Uri avatarUri) {
+    this.avatarUri = avatarUri;
+
+    // Fetch Avatar drawable from Uri
+    ImageManager.create(context).loadImage(new ImageManager.OnImageLoadedListener() {
+      @Override
+      public void onImageLoaded(Uri uri, Drawable drawable) {
+        setAvatar(drawable);
+      }
+    }, avatarUri);
   }
 
   public enum PlayerType {
