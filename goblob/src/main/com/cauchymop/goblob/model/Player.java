@@ -92,18 +92,16 @@ public class Player implements Parcelable {
 
   public void setAvatarUri(Context context, Uri avatarUri) {
     this.avatarUri = avatarUri;
+    fetchAvatarFromUri(context, avatarUri);
+  }
 
-    // Fetch Avatar drawable from Uri
+  private void fetchAvatarFromUri(Context context, Uri avatarUri) {
     ImageManager.create(context).loadImage(new ImageManager.OnImageLoadedListener() {
       @Override
       public void onImageLoaded(Uri uri, Drawable drawable) {
         setAvatar(drawable);
       }
     }, avatarUri);
-  }
-
-  public Uri getAvatarUri() {
-    return avatarUri;
   }
 
   public enum PlayerType {

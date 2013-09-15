@@ -128,16 +128,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   private void updateAvatar(GoPlayer currentPlayer) {
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
     final Bitmap avatar = currentPlayer.getAvatar();
-    if (avatar != null) {
-      avatarImage.setImageBitmap(avatar);
-    } else {
-      final Uri avatarUri = currentPlayer.getAvatarUri();
-      if (avatarUri != null) {
-        ImageManager.create(getActivity()).loadImage(avatarImage, avatarUri);
-      } else {
-        avatarImage.setImageBitmap(null);
-      }
-    }
+    avatarImage.setImageBitmap(avatar);
   }
 
   /**
