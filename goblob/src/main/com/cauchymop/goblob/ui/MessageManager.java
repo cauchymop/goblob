@@ -17,10 +17,10 @@ public class MessageManager implements RealTimeMessageReceivedListener {
 
   private static final String TAG = MessageManager.class.getName();
   private Set<MovePlayedListener> movePlayedListeners = Sets.newHashSet();
-  private MainActivity mainActivity;
+  private MessageSender messageSender;
 
-  public MessageManager(MainActivity mainActivity) {
-    this.mainActivity = mainActivity;
+  public MessageManager(MessageSender messageSender) {
+    this.messageSender = messageSender;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class MessageManager implements RealTimeMessageReceivedListener {
   }
 
   public void sendMove(int move) {
-    mainActivity.sendMessage(getMoveMessage(move));
+    messageSender.sendMessage(getMoveMessage(move));
   }
 
   private byte[] getMoveMessage(int move) {
@@ -51,5 +51,9 @@ public class MessageManager implements RealTimeMessageReceivedListener {
 
   public static interface MovePlayedListener {
     public void play(int move);
+  }
+
+  public static interface MessageSender {
+    public void sendMessage(byte[] message);
   }
 }

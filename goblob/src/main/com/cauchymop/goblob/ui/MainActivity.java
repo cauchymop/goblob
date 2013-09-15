@@ -30,7 +30,7 @@ import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
 
-public class MainActivity extends BaseGameActivity {
+public class MainActivity extends BaseGameActivity implements MessageManager.MessageSender {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
@@ -277,8 +277,7 @@ public class MainActivity extends BaseGameActivity {
 
     GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0), StoneColor.Black);
     GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1), StoneColor.White);
-    GoGame goGame = new GoGame(gameRoom.getVariant(), blackPlayer, whitePlayer);
-    gameFragment.setGoGame(goGame);
+    startGame(new GoGame(gameRoom.getVariant(), blackPlayer, whitePlayer));
   }
 
   private GoPlayer getGoPlayer(String myId, Participant participant, StoneColor stoneColor) {
