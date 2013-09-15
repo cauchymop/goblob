@@ -21,8 +21,9 @@ import java.util.Set;
 @SuppressLint("DrawAllocation")
 public class GoBoardView extends View {
 
-  private static final Paint lineColor = createPaint(0xFF000000);
-  private static final Paint textColor = createTextPaint(0xFFFF0000, 20);
+  private static final Paint lastMovePaint = createLinePaint(0xFFFF0000, 5);
+  private static final Paint linePaint = createLinePaint(0xFF000000, 1);
+  private static final Paint textPaint = createTextPaint(0xFFFF0000, 20);
 
   private static final double STONE_RATIO = 0.95;
 
@@ -44,14 +45,17 @@ public class GoBoardView extends View {
     whiteStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.white_stone);
   }
 
-  private static Paint createPaint(int color) {
-    Paint p = new Paint();
-    p.setColor(color);
-    return p;
+  private static Paint createLinePaint(int color, int width) {
+    Paint paint = new Paint();
+    paint.setColor(color);
+    paint.setStyle(Paint.Style.STROKE);
+    paint.setStrokeWidth(width);
+    return paint;
   }
 
   private static Paint createTextPaint(int color, int size) {
-    Paint textPaint = createPaint(color);
+    Paint textPaint = new Paint();
+    textPaint.setColor(color);
     textPaint.setTextSize(size);
     return textPaint;
   }
@@ -129,12 +133,13 @@ public class GoBoardView extends View {
     int lineLength = cellSizeInPixels * (game.getBoardSize() - 1);
     for (int x = 0; x < game.getBoardSize(); x++) {
       canvas.drawLine(startLineX, startLineY + cellSizeInPixels * x,
-          startLineX + lineLength, startLineY + cellSizeInPixels * x, lineColor);
+          startLineX + lineLength, startLineY + cellSizeInPixels * x, linePaint);
       canvas.drawLine(startLineX + cellSizeInPixels * x, startLineY,
-          startLineX + cellSizeInPixels * x, startLineY + lineLength, lineColor);
+          startLineX + cellSizeInPixels * x, startLineY + lineLength, linePaint);
     }
     double[] scores = game.getScores();
     Rect rect = new Rect();
+    int lastMove = game.getLastMove();
     for (int x = 0; x < game.getBoardSize(); x++) {
       for (int y = 0; y < game.getBoardSize(); y++) {
         StoneColor contentColor = game.getColor(x, y);
@@ -144,12 +149,16 @@ public class GoBoardView extends View {
           rect.set(marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * y,
               marginX + cellSizeInPixels * (x + 1), marginY + cellSizeInPixels * (y + 1));
           canvas.drawBitmap(stoneBitmap, null, rect, null);
+          if (lastMove == game.getMove(x, y)) {
+            canvas.drawCircle(startLineX + cellSizeInPixels * x, startLineY + cellSizeInPixels * y,
+                (float) (cellSizeInPixels / 2), lastMovePaint);
+          }
         }
         int pos = y * game.getBoardSize() + x;
         if (scores != null && !Double.isNaN(scores[pos])) {
           double score = scores[pos];
           canvas.drawText(Double.toString(score), startLineX + cellSizeInPixels * x,
-              startLineY + cellSizeInPixels * y, textColor);
+              startLineY + cellSizeInPixels * y, textPaint);
         }
       }
     }
