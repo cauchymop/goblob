@@ -20,15 +20,17 @@ import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
+import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
+import com.google.common.primitives.UnsignedBytes;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
 
-public class MainActivity extends BaseGameActivity {
+public class MainActivity extends BaseGameActivity implements MessageManager.MessageSender {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
@@ -38,8 +40,8 @@ public class MainActivity extends BaseGameActivity {
   private Room gameRoom;
   private GameFragment gameFragment;
   private Participant opponent;
-
   private RoomStatusUpdateListener gameRoomStatusListener = new BaseRoomStatusUpdateListener();
+  private MessageManager messageManager = new MessageManager(this);
 
   private RoomUpdateListener gameRoomUpdateListener = new RoomUpdateListener() {
 
@@ -275,8 +277,7 @@ public class MainActivity extends BaseGameActivity {
 
     GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0), StoneColor.Black);
     GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1), StoneColor.White);
-    GoGame goGame = new GoGame(gameRoom.getVariant(), blackPlayer, whitePlayer);
-    gameFragment.setGoGame(goGame);
+    startGame(new GoGame(gameRoom.getVariant(), blackPlayer, whitePlayer));
   }
 
   private GoPlayer getGoPlayer(String myId, Participant participant, StoneColor stoneColor) {
@@ -297,13 +298,17 @@ public class MainActivity extends BaseGameActivity {
 
   private RoomConfig.Builder makeBasicRoomConfigBuilder() {
     return RoomConfig.builder(gameRoomUpdateListener)
-        .setMessageReceivedListener(displayGameFragment())
+        .setMessageReceivedListener(messageManager)
         .setRoomStatusUpdateListener(gameRoomStatusListener);
   }
 
+  @Override
   public void sendMessage(byte[] message) {
     getGamesClient().sendReliableRealTimeMessage(null, message, gameRoom.getRoomId(),
         opponent.getParticipantId());
   }
 
+  public MessageManager getMessageManager() {
+    return messageManager;
+  }
 }
