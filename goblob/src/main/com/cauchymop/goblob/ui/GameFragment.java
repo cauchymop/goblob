@@ -2,6 +2,7 @@ package com.cauchymop.goblob.ui;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -23,6 +24,7 @@ import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
+import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 
 /**
@@ -114,11 +116,16 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   private void updateTitleArea() {
     TextView titleView = (TextView) getView().findViewById(R.id.title);
     ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
-    ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
     final GoPlayer currentPlayer = goGame.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
     titleImage.setImageResource(currentPlayer.getStoneColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
-    avatarImage.setImageBitmap(currentPlayer.getAvatar());
+    updateAvatar(currentPlayer);
+  }
+
+  private void updateAvatar(GoPlayer currentPlayer) {
+    ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
+    final Bitmap avatar = currentPlayer.getAvatar();
+    avatarImage.setImageBitmap(avatar);
   }
 
   /**
