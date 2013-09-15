@@ -302,6 +302,7 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
         .setRoomStatusUpdateListener(gameRoomStatusListener);
   }
 
+  @Override
   public void sendMessage(byte[] message) {
     getGamesClient().sendReliableRealTimeMessage(null, message, gameRoom.getRoomId(),
         opponent.getParticipantId());
