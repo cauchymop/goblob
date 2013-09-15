@@ -24,15 +24,12 @@ import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.GamesClient;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
-import com.google.common.primitives.UnsignedBytes;
 
 /**
  * Game Page Fragment.
  */
 public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
-    GoBoardView.Listener, RealTimeMessageReceivedListener {
+    GoBoardView.Listener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
 
@@ -146,7 +143,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
       case HUMAN_LOCAL:
         return new LocalHumanPlayerController(goGame);
       case HUMAN_REMOTE_FRIEND:
-        return new RemoteHumanPlayerController(goGame);
+        return new RemoteHumanPlayerController(goGame, getGoBlobActivity().getMessageManager());
       case HUMAN_REMOTE_RANDOM:
       default:
         return getPlayerController();
@@ -169,13 +166,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     updateFromCurrentPlayer();
 
     if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
-      getGoBlobActivity().sendMessage(getMoveMessage(goGame.getLastMove()));
+      getGoBlobActivity().getMessageManager().sendMove(goGame.getLastMove());
     }
-  }
-
-  private byte[] getMoveMessage(int move) {
-    return new byte[] {UnsignedBytes.checkedCast(move / 256),
-        UnsignedBytes.checkedCast(move % 256)};
   }
 
   private void handleEndOfGame() {
@@ -241,17 +233,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     });
   }
 
-  @Override
-  public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
-    Log.d(TAG, "onRealTimeMessageReceived(" + realTimeMessage + ")");
-    currentPlayerController.play(getMove(realTimeMessage));
-  }
-
-  private int getMove(RealTimeMessage realTimeMessage) {
-    byte[] messageData = realTimeMessage.getMessageData();
-    return UnsignedBytes.toInt(messageData[0]) * 256 + UnsignedBytes.toInt(messageData[1]);
-  }
-
   private class LocalHumanPlayerController extends HumanPlayerController {
 
     public LocalHumanPlayerController(GoGame game) {
@@ -287,9 +268,11 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     }
   }
 
-  private class RemoteHumanPlayerController extends HumanPlayerController {
-    public RemoteHumanPlayerController(GoGame goGame) {
+  private class RemoteHumanPlayerController extends HumanPlayerController
+      implements MessageManager.MovePlayedListener {
+    public RemoteHumanPlayerController(GoGame goGame, MessageManager messageManager) {
       super(goGame);
+      messageManager.addMovePlayedListener(this);
     }
   }
 
