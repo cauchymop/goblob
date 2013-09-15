@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 @SuppressLint("DrawAllocation")
-public class GoBoardView extends View {
+public class GoGameView extends View {
 
   private static final Paint lineColor = createPaint(0xFF000000);
   private static final Paint textColor = createTextPaint(0xFFFF0000, 20);
@@ -36,7 +36,7 @@ public class GoBoardView extends View {
 
   private Set<Listener> listeners = Sets.newHashSet();
 
-  public GoBoardView(Context context, GoGame game) {
+  public GoGameView(Context context, GoGame game) {
     super(context, null);
     this.game = game;
     setClickable(true);

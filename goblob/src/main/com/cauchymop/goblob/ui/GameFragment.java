@@ -31,12 +31,12 @@ import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceived
  * Game Page Fragment.
  */
 public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
-    GoBoardView.Listener, RealTimeMessageReceivedListener {
+    GoGameView.Listener, RealTimeMessageReceivedListener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
 
   private GoGame goGame;
-  private GoBoardView goBoardView;
+  private GoGameView goGameView;
   private HumanPlayerController currentPlayerController;
 
   public static GameFragment newInstance() {
@@ -87,9 +87,9 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     goGame.setWhiteController(getController(goGame.getWhitePlayer()));
     goGame.addListener(this);
     goGame.runGame();
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
-    goBoardView.addListener(this);
-    boardViewContainer.addView(goBoardView);
+    goGameView = new GoGameView(getActivity().getApplicationContext(), goGame);
+    goGameView.addListener(this);
+    boardViewContainer.addView(goGameView);
 
     Button passButton = (Button) getView().findViewById(R.id.pass_button);
     passButton.setVisibility(View.VISIBLE);
@@ -164,7 +164,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     }
 
     // Refresh UI and current controller
-    goBoardView.postInvalidate();
+    goGameView.postInvalidate();
     updateFromCurrentPlayer();
 
     if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
@@ -234,7 +234,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
         // Enable or Disable Pass Button for Local Humans
         final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
         pass_button.setEnabled(enabled);
-        goBoardView.setClickable(enabled);
+        goGameView.setClickable(enabled);
       }
     });
   }
