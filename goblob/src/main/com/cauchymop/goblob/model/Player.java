@@ -102,6 +102,10 @@ public class Player implements Parcelable {
     }, avatarUri);
   }
 
+  public Uri getAvatarUri() {
+    return avatarUri;
+  }
+
   public enum PlayerType {
     AI(false),
     HUMAN_LOCAL(false),
