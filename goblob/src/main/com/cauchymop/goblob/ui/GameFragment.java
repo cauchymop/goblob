@@ -75,8 +75,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     this.goGame = goGame;
     if ( getView() != null) {
       initBoardView(goGame);
-      // Disable Interactions for Local Humans
-      setHumanInteractionEnabled(false);
     }
   }
 
@@ -89,10 +87,15 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     goGame.runGame();
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
     goBoardView.addListener(this);
+
+    // Disable Interactions for Local Humans
+    setHumanInteractionEnabled(false);
+
     boardViewContainer.addView(goBoardView);
 
     Button passButton = (Button) getView().findViewById(R.id.pass_button);
     passButton.setVisibility(View.VISIBLE);
+
     passButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -163,6 +166,11 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   @Override
   public void gameChanged(Game game) {
+
+    if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
+      getGoBlobActivity().getMessageManager().sendMove(goGame.getLastMove());
+    }
+
     if (game.isGameEnd()) {
       handleEndOfGame();
       return;
@@ -171,10 +179,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     // Refresh UI and current controller
     goBoardView.postInvalidate();
     updateFromCurrentPlayer();
-
-    if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
-      getGoBlobActivity().getMessageManager().sendMove(goGame.getLastMove());
-    }
   }
 
   private void handleEndOfGame() {
@@ -189,8 +193,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
               @Override
               public void onClick(DialogInterface dialog, int which) {
                 getActivity().getSupportFragmentManager().popBackStackImmediate();
-//                setResult(RESULT_OK);
-//                finish();
               }
             })
             .create()
@@ -277,9 +279,16 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   private class RemoteHumanPlayerController extends HumanPlayerController
       implements MessageManager.MovePlayedListener {
+
     public RemoteHumanPlayerController(GoGame goGame, MessageManager messageManager) {
       super(goGame);
       messageManager.addMovePlayedListener(this);
+    }
+
+    @Override
+    public void opponentPlayed(int move) {
+//      getGoBlobActivity().getMessageManager().sendMove(move);
+      Log.d(TAG, "opponentPlayer: " + move);
     }
   }
 

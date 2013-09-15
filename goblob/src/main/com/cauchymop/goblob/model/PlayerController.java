@@ -5,4 +5,7 @@ package com.cauchymop.goblob.model;
  */
 public abstract class PlayerController {
   public abstract void startTurn();
+
+  public void opponentPlayed(int move) {
+  }
 }
