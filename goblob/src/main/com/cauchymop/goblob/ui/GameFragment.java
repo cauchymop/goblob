@@ -26,6 +26,7 @@ import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
+import com.google.common.primitives.UnsignedBytes;
 
 /**
  * Game Page Fragment.
@@ -173,7 +174,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   private byte[] getMoveMessage(int move) {
-    return new byte[] {(byte) (move / 256), (byte) (move % 256)};
+    return new byte[] {UnsignedBytes.checkedCast(move / 256),
+        UnsignedBytes.checkedCast(move % 256)};
   }
 
   private void handleEndOfGame() {
@@ -247,7 +249,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   private int getMove(RealTimeMessage realTimeMessage) {
     byte[] messageData = realTimeMessage.getMessageData();
-    return messageData[0] * 256 + messageData[1];
+    return UnsignedBytes.toInt(messageData[0]) * 256 + UnsignedBytes.toInt(messageData[1]);
   }
 
   private class LocalHumanPlayerController extends HumanPlayerController {
