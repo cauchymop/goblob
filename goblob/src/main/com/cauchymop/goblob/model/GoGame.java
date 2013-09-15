@@ -90,6 +90,14 @@ public class GoGame extends Game implements Parcelable {
     }
   }
 
+  private PlayerController getOpponentController() {
+    if (currentColor == StoneColor.Black) {
+      return whiteController;
+    } else {
+      return blackController;
+    }
+  }
+
   private GoBoard getNewBoard() {
     if (boardPoolSize == 0) {
       return boardSize == 5 ? new GoBoard5() : new GenericGoBoard(boardSize);
@@ -106,17 +114,7 @@ public class GoGame extends Game implements Parcelable {
   }
 
   public boolean pass(PlayerController controller) {
-    if (controller != getCurrentController()) {
-      return false;
-    }
-    GoBoard newBoard = getNewBoard();
-    newBoard.copyFrom(board);
-    boardHistory.add(newBoard);
-    moveHistory.add(getPassValue());
-    board = newBoard;
-    currentColor = currentColor.getOpponent();
-    fireGameChanged();
-    return true;
+    return play(controller, getPassValue());
   }
 
   public boolean play(PlayerController controller, int x, int y) {
@@ -124,29 +122,37 @@ public class GoGame extends Game implements Parcelable {
   }
 
   @Override
-  public boolean play(PlayerController controller, int pos) {
-    if (pos == getPassValue()) {
-      pass(controller);
-      return true;
-    }
+  public boolean play(PlayerController controller, int move) {
     if (controller != getCurrentController()) {
       return false;
     }
-    int x = pos % boardSize;
-    int y = pos / boardSize;
 
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
-    if (newBoard.play(currentColor, x, y) && !boardHistory.contains(newBoard)) {
-      boardHistory.add(newBoard);
-      moveHistory.add(y * boardSize + x);
-      board = newBoard;
-      currentColor = currentColor.getOpponent();
-      fireGameChanged();
+
+    if (move == getPassValue()) {
+      applyMove(newBoard, move);
       return true;
     }
+
+    int x = move % boardSize;
+    int y = move / boardSize;
+    if (newBoard.play(currentColor, x, y) && !boardHistory.contains(newBoard)) {
+      applyMove(newBoard, move);
+      return true;
+    }
+
     recycleBoard(newBoard);
     return false;
+  }
+
+  private void applyMove(GoBoard newBoard, int move) {
+    boardHistory.add(newBoard);
+    moveHistory.add(move);
+    board = newBoard;
+    currentColor = currentColor.getOpponent();
+    getOpponentController().opponentPlayed(move);
+    fireGameChanged();
   }
 
   @Override
