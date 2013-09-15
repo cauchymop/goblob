@@ -26,17 +26,18 @@ import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
+import com.google.common.primitives.UnsignedBytes;
 
 /**
  * Game Page Fragment.
  */
 public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
-    GoBoardView.Listener, RealTimeMessageReceivedListener {
+    GoGameView.Listener, RealTimeMessageReceivedListener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
 
   private GoGame goGame;
-  private GoBoardView goBoardView;
+  private GoGameView goGameView;
   private HumanPlayerController currentPlayerController;
 
   public static GameFragment newInstance() {
@@ -87,9 +88,9 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     goGame.setWhiteController(getController(goGame.getWhitePlayer()));
     goGame.addListener(this);
     goGame.runGame();
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
-    goBoardView.addListener(this);
-    boardViewContainer.addView(goBoardView);
+    goGameView = new GoGameView(getActivity().getApplicationContext(), goGame);
+    goGameView.addListener(this);
+    boardViewContainer.addView(goGameView);
 
     Button passButton = (Button) getView().findViewById(R.id.pass_button);
     passButton.setVisibility(View.VISIBLE);
@@ -164,7 +165,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     }
 
     // Refresh UI and current controller
-    goBoardView.postInvalidate();
+    goGameView.postInvalidate();
     updateFromCurrentPlayer();
 
     if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
@@ -173,7 +174,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   private byte[] getMoveMessage(int move) {
-    return new byte[] {(byte) (move / 256), (byte) (move % 256)};
+    return new byte[] {UnsignedBytes.checkedCast(move / 256),
+        UnsignedBytes.checkedCast(move % 256)};
   }
 
   private void handleEndOfGame() {
@@ -234,7 +236,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
         // Enable or Disable Pass Button for Local Humans
         final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
         pass_button.setEnabled(enabled);
-        goBoardView.setClickable(enabled);
+        goGameView.setClickable(enabled);
       }
     });
   }
@@ -247,7 +249,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   private int getMove(RealTimeMessage realTimeMessage) {
     byte[] messageData = realTimeMessage.getMessageData();
-    return messageData[0] * 256 + messageData[1];
+    return UnsignedBytes.toInt(messageData[0]) * 256 + UnsignedBytes.toInt(messageData[1]);
   }
 
   private class LocalHumanPlayerController extends HumanPlayerController {
