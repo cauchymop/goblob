@@ -69,6 +69,11 @@ public class Player implements Parcelable {
   }
 
   public void setAvatar(Drawable avatar) {
+    if (avatar == null) {
+      setAvatar((Bitmap)null);
+      return;
+    }
+
     final int w = avatar.getIntrinsicWidth();
     final int h = avatar.getIntrinsicHeight();
     Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);

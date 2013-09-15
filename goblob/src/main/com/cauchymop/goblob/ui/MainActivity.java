@@ -2,6 +2,8 @@ package com.cauchymop.goblob.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -13,6 +15,8 @@ import android.view.WindowManager;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.StoneColor;
+import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
@@ -31,6 +35,7 @@ public class MainActivity extends BaseGameActivity {
   public static final int SELECT_PLAYER = 2;
   public static final int WAITING_ROOM = 3;
   private static final String TAG = MainActivity.class.getName();
+  private int boardSize = 9;
   private Room gameRoom;
   private GameFragment gameFragment;
   private Participant opponent;
@@ -251,6 +256,7 @@ public class MainActivity extends BaseGameActivity {
   }
 
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
+    this.boardSize = boardSize;
     if (opponentPlayer.getType().isRemote()) {
       Intent selectPlayersIntent = getGamesClient().getSelectPlayersIntent(1, 1);
       startActivityForResult(selectPlayersIntent, SELECT_PLAYER);
@@ -297,6 +303,7 @@ public class MainActivity extends BaseGameActivity {
     Log.d(TAG, "Creating room...");
     RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
     roomConfigBuilder.addPlayersToInvite(invitees);
+    roomConfigBuilder.setVariant(boardSize);
     if (autoMatchCriteria != null) {
       roomConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
     }
@@ -317,48 +324,36 @@ public class MainActivity extends BaseGameActivity {
       return;
     }
 
-    GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0));
-    GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1));
-    GoGame goGame = new GoGame(getBoardSize(), blackPlayer, whitePlayer);
+    GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0), StoneColor.Black);
+    GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1), StoneColor.White);
+    GoGame goGame = new GoGame(gameRoom.getVariant(), blackPlayer, whitePlayer);
     gameFragment.setGoGame(goGame);
   }
 
-  private GoPlayer getGoPlayer(String myId, Participant participant) {
+  private GoPlayer getGoPlayer(String myId, Participant participant, StoneColor stoneColor) {
     Player player = participant.getPlayer();
-    GoPlayer goPlayer;
+    final GoPlayer goPlayer;
     if (myId.equals(player.getPlayerId())) {
       goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_LOCAL, player.getDisplayName());
     } else {
       goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, player.getDisplayName());
       opponent = participant;
     }
-    //    Uri iconImageUriUri = visitorPlayer.getIconImageUri();
-//
-//    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
-//      @Override
-//      public void onImageLoaded(Uri uri, Drawable drawable) {
-//
-//        opponent.setAvatar(drawable);
-//
-//      }
-//
-//
-//    }, iconImageUriUri);
-    return goPlayer;
-  }
 
-  /**
-   * DUMMY FOR TEST ONLY
-   * TODO: Find a clean way to do this
-   *
-   * @return
-   */
-  private int getBoardSize() {
-//    GoBlobBaseFragment currentFragment = getCurrentFragment();
-//    if (currentFragment instanceof PlayerChoiceFragment) {
-//      return ((PlayerChoiceFragment) currentFragment).getBoardSize();
-//    }
-    return 9;
+    goPlayer.setStoneColor(stoneColor);
+
+    // Fetch Avatar
+    Uri iconImageUriUri = player.getIconImageUri();
+    ImageManager.create(this).loadImage(new ImageManager.OnImageLoadedListener() {
+      @Override
+      public void onImageLoaded(Uri uri, Drawable drawable) {
+        if (drawable != null) {
+          goPlayer.setAvatar(drawable);
+        }
+      }
+    }, iconImageUriUri);
+
+    return goPlayer;
   }
 
   private RoomConfig.Builder makeBasicRoomConfigBuilder() {
