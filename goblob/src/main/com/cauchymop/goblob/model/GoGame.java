@@ -151,7 +151,9 @@ public class GoGame extends Game implements Parcelable {
     moveHistory.add(move);
     board = newBoard;
     currentColor = currentColor.getOpponent();
-    getOpponentController().opponentPlayed(move);
+    if (getOpponentController() != null) {
+      getOpponentController().opponentPlayed(move);
+    }
     fireGameChanged();
   }
 
