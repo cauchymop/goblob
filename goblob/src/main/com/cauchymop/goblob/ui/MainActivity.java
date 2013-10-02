@@ -21,6 +21,7 @@ import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
+import com.google.android.gms.games.multiplayer.realtime.RealTimeReliableMessageSentListener;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
@@ -29,8 +30,10 @@ import com.google.common.primitives.UnsignedBytes;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class MainActivity extends BaseGameActivity implements MessageManager.MessageSender {
+public class MainActivity extends BaseGameActivity implements MessageManager.MessageSender,
+    RealTimeReliableMessageSentListener {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
@@ -304,11 +307,17 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
 
   @Override
   public void sendMessage(byte[] message) {
-    getGamesClient().sendReliableRealTimeMessage(null, message, gameRoom.getRoomId(),
+    int sendResult = getGamesClient().sendReliableRealTimeMessage(this, message, gameRoom.getRoomId(),
         opponent.getParticipantId());
+    Log.d(TAG, "sendMessage: message = " + Arrays.asList(message) + " - returned: " + sendResult);
   }
 
   public MessageManager getMessageManager() {
     return messageManager;
+  }
+
+  @Override
+  public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
+    Log.d(TAG, "onRealTimeMessageSent: statusCode = " + statusCode + " - tokenId = " + tokenId + " - recipientParticipantId = " + recipientParticipantId);
   }
 }

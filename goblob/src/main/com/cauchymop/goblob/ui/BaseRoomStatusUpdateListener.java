@@ -63,4 +63,14 @@ class BaseRoomStatusUpdateListener implements RoomStatusUpdateListener {
   public void onPeersDisconnected(Room room, List<String> strings) {
     Log.d(TAG, "onPeersDisconnected(" + room + ", " + strings + ")");
   }
+
+  @Override
+  public void onP2PConnected(String s) {
+    Log.d(TAG, "onP2PConnected(" + s + ")");
+  }
+
+  @Override
+  public void onP2PDisconnected(String s) {
+    Log.d(TAG, "onP2PDisconnected(" + s + ")");
+  }
 }
