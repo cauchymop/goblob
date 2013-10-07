@@ -146,7 +146,7 @@ public class GoGame extends Game implements Parcelable {
     return false;
   }
 
-  private void applyMove(GoBoard newBoard, int move) {
+  private synchronized void applyMove(GoBoard newBoard, int move) {
     boardHistory.add(newBoard);
     moveHistory.add(move);
     board = newBoard;
@@ -158,7 +158,7 @@ public class GoGame extends Game implements Parcelable {
   }
 
   @Override
-  public void undo() {
+  public synchronized void undo() {
     currentColor = currentColor.getOpponent();
     recycleBoard(boardHistory.remove(boardHistory.size() - 1));
     moveHistory.remove(moveHistory.size() - 1);
@@ -166,7 +166,7 @@ public class GoGame extends Game implements Parcelable {
   }
 
   @Override
-  public Game copy() {
+  public synchronized Game copy() {
     GoGame copy = new GoGame(boardSize, blackPlayer, whitePlayer);
     for (Integer move : moveHistory) {
       copy.play(copy.getCurrentController(), move);

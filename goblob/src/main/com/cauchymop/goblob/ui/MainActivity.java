@@ -81,8 +81,10 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    HomeFragment homeFragment = new HomeFragment();
-    displayFragment(homeFragment, false);
+    if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
+      HomeFragment homeFragment = new HomeFragment();
+      displayFragment(homeFragment, false);
+    }
   }
 
   @Override
