@@ -287,6 +287,6 @@ public class GoGame extends Game implements Parcelable {
 
   public void resume() {
     Log.d(TAG, "resume - starting thread");
-   runGame();
+    runGame();
   }
 }
