@@ -24,7 +24,6 @@ import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
-import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 
 /**
@@ -40,8 +39,20 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   private GoBoardView goBoardView;
   private HumanPlayerController currentPlayerController;
 
-  public static GameFragment newInstance() {
-    return new GameFragment();
+  public static GameFragment newInstance(GoGame goGame) {
+    GameFragment fragment = new GameFragment();
+    Bundle args = new Bundle();
+    args.putParcelable(EXTRA_GO_GAME, goGame);
+    fragment.setArguments(args);
+    return fragment;
+  }
+
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGame == null) {
+      this.goGame = getArguments().getParcelable(EXTRA_GO_GAME);
+    }
   }
 
   @Override
@@ -52,18 +63,30 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_GO_GAME) && goGame == null) {
-         goGame = savedInstanceState.getParcelable(EXTRA_GO_GAME);
-    }
+    initBoardView();
+
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    cleanBoardView();
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
     if (goGame != null) {
-      initBoardView(goGame);
+      goGame.pause();
     }
   }
 
   @Override
-  public void onSaveInstanceState(Bundle outState) {
-    super.onSaveInstanceState(outState);
-    outState.putParcelable(EXTRA_GO_GAME, goGame);
+  public void onResume() {
+    super.onResume();
+    if (goGame != null) {
+      goGame.resume();
+    }
   }
 
   @Override
@@ -81,14 +104,11 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     super.onSignOut();
   }
 
-  public void setGoGame(GoGame goGame) {
-    this.goGame = goGame;
-    if ( getView() != null) {
-      initBoardView(goGame);
+  private void initBoardView() {
+    if (goGame == null) {
+      return;
     }
-  }
 
-  private void initBoardView(GoGame goGame) {
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     boardViewContainer.removeAllViews();
     goGame.setBlackController(getController(goGame.getBlackPlayer()));
@@ -116,16 +136,24 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
     updateFromCurrentPlayer();
   }
 
-  private void updateFromCurrentPlayer() {
-    if (getActivity() != null) {
-      getActivity().runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          updateTitleArea();
-          updateMessageArea();
-        }
-      });
+  private void cleanBoardView() {
+    if (goBoardView != null) {
+      goBoardView.removeListener(this);
     }
+
+    if (goGame != null) {
+      goGame.removeListener(this);
+    }
+  }
+
+  private void updateFromCurrentPlayer() {
+    getActivity().runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        updateTitleArea();
+        updateMessageArea();
+      }
+    });
   }
 
   private void updateTitleArea() {
@@ -194,9 +222,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   private void handleEndOfGame() {
-    if (getActivity() == null) {
-      return;
-    }
     updateAchievements();
     getActivity().runOnUiThread(new Runnable() {
       @Override
@@ -217,9 +242,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   private void updateAchievements() {
-    if (getGoBlobActivity() == null) {
-      return;
-    }
     final GamesClient gamesClient = getGoBlobActivity().getGamesClient();
     gamesClient.unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGame.getBoardSize()) {
@@ -249,17 +271,15 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   private void setHumanInteractionEnabled(final boolean enabled) {
-    if (getActivity() != null) {
-      getActivity().runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          // Enable or Disable Pass Button for Local Humans
-          final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
-          pass_button.setEnabled(enabled);
-          goBoardView.setClickable(enabled);
-        }
-      });
-    }
+    getActivity().runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        // Enable or Disable Pass Button for Local Humans
+        final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
+        pass_button.setEnabled(enabled);
+        goBoardView.setClickable(enabled);
+      }
+    });
   }
 
   private class LocalHumanPlayerController extends HumanPlayerController {

@@ -2,8 +2,6 @@ package com.cauchymop.goblob.ui;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -16,17 +14,14 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
-import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeReliableMessageSentListener;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
-import com.google.common.primitives.UnsignedBytes;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
@@ -226,15 +221,9 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
     displayFragment(gameConfigurationFragment, true);
   }
 
-  public GameFragment displayGameFragment() {
-    gameFragment = GameFragment.newInstance();
-    displayFragment(gameFragment, true);
-    return gameFragment;
-  }
-
   public void startGame(GoGame goGame) {
-    GameFragment gameFragment = displayGameFragment();
-    gameFragment.setGoGame(goGame);
+    GameFragment gameFragment = GameFragment.newInstance(goGame);
+    displayFragment(gameFragment, true);
   }
 
   private void handleSelectPlayersResult(Intent intent) {

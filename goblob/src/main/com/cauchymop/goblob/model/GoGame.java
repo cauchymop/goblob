@@ -37,6 +37,7 @@ public class GoGame extends Game implements Parcelable {
   // Instance pool management.
   private GoBoard[] boardPool = new GoBoard[10];
   private int boardPoolSize = 0;
+  private Thread thread;
 
   public GoGame(int boardSize, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     this.boardSize = boardSize;
@@ -69,7 +70,7 @@ public class GoGame extends Game implements Parcelable {
   }
 
   public void runGame() {
-    Thread thread = new Thread("Game") {
+    thread = new Thread("Game") {
 
       @Override
       public void run() {
@@ -146,7 +147,7 @@ public class GoGame extends Game implements Parcelable {
     return false;
   }
 
-  private synchronized void applyMove(GoBoard newBoard, int move) {
+  private void applyMove(GoBoard newBoard, int move) {
     boardHistory.add(newBoard);
     moveHistory.add(move);
     board = newBoard;
@@ -158,7 +159,7 @@ public class GoGame extends Game implements Parcelable {
   }
 
   @Override
-  public synchronized void undo() {
+  public void undo() {
     currentColor = currentColor.getOpponent();
     recycleBoard(boardHistory.remove(boardHistory.size() - 1));
     moveHistory.remove(moveHistory.size() - 1);
@@ -166,7 +167,7 @@ public class GoGame extends Game implements Parcelable {
   }
 
   @Override
-  public synchronized Game copy() {
+  public Game copy() {
     GoGame copy = new GoGame(boardSize, blackPlayer, whitePlayer);
     for (Integer move : moveHistory) {
       copy.play(copy.getCurrentController(), move);
@@ -275,5 +276,17 @@ public class GoGame extends Game implements Parcelable {
 
   public int getLastMove() {
     return (moveHistory.isEmpty()) ? NO_MOVE : moveHistory.get(moveHistory.size() - 1);
+  }
+
+  public void pause() {
+    Log.d(TAG, "pause - killing thread");
+    if (thread != null) {
+      thread.interrupt();
+    }
+  }
+
+  public void resume() {
+    Log.d(TAG, "resume - starting thread");
+   runGame();
   }
 }
