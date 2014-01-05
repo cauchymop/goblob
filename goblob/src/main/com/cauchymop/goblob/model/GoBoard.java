@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 /**
- * Generic {@link GoBoard} implementation that works for any size.
+ * Class to represent the state of a Go board, and apply the logic of playing a move.
  */
 public class GoBoard implements Parcelable {
 
