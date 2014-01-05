@@ -101,7 +101,7 @@ public class GoGame extends Game implements Parcelable {
 
   private GoBoard getNewBoard() {
     if (boardPoolSize == 0) {
-      return boardSize == 5 ? new GoBoard5() : new GenericGoBoard(boardSize);
+      return new GoBoard(boardSize);
     }
     boardPoolSize--;
     GoBoard board = boardPool[boardPoolSize];

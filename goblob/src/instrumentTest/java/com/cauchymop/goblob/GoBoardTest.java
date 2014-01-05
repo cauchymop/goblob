@@ -2,17 +2,16 @@ package com.cauchymop.goblob;
 
 import android.test.AndroidTestCase;
 
-import com.cauchymop.goblob.model.GenericGoBoard;
 import com.cauchymop.goblob.model.GoBoard;
 import com.cauchymop.goblob.model.StoneColor;
 
 /**
- * Class to test {@link GenericGoBoard}.
+ * Class to test {@link com.cauchymop.goblob.model.GoBoard}.
  */
-public class GenericGoBoardTest extends AndroidTestCase {
+public class GoBoardTest extends AndroidTestCase {
 
   public void testPlay() {
-    GoBoard goBoard = new GenericGoBoard(5);
+    GoBoard goBoard = new GoBoard(5);
     assertTrue(goBoard.play(StoneColor.Black, 0, 0));
     assertTrue(goBoard.play(StoneColor.White, 1, 1));
     assertEquals(StoneColor.Black, goBoard.getColor(0, 0));
@@ -20,14 +19,14 @@ public class GenericGoBoardTest extends AndroidTestCase {
   }
 
   public void testPlay_nonEmptyCell() {
-    GoBoard goBoard = new GenericGoBoard(5);
+    GoBoard goBoard = new GoBoard(5);
     assertTrue(goBoard.play(StoneColor.Black, 0, 0));
     assertFalse(goBoard.play(StoneColor.White, 0, 0));
     assertEquals(StoneColor.Black, goBoard.getColor(0, 0));
   }
 
   public void testPlay_capture() {
-    GoBoard goBoard = new GenericGoBoard(5);
+    GoBoard goBoard = new GoBoard(5);
     assertTrue(goBoard.play(StoneColor.Black, 0, 0));
     assertTrue(goBoard.play(StoneColor.White, 0, 1));
     assertTrue(goBoard.play(StoneColor.White, 1, 0));
@@ -35,7 +34,7 @@ public class GenericGoBoardTest extends AndroidTestCase {
   }
 
   public void testPlay_capture2() {
-    GoBoard goBoard = new GenericGoBoard(5);
+    GoBoard goBoard = new GoBoard(5);
     assertTrue(goBoard.play(StoneColor.Black, 0, 0));
     assertTrue(goBoard.play(StoneColor.Black, 1, 0));
     assertTrue(goBoard.play(StoneColor.White, 0, 1));
@@ -46,7 +45,7 @@ public class GenericGoBoardTest extends AndroidTestCase {
   }
 
   public void testPlay_suicide() {
-    GoBoard goBoard = new GenericGoBoard(5);
+    GoBoard goBoard = new GoBoard(5);
     assertTrue(goBoard.play(StoneColor.White, 0, 1));
     assertTrue(goBoard.play(StoneColor.White, 1, 1));
     assertTrue(goBoard.play(StoneColor.White, 2, 0));
@@ -55,7 +54,7 @@ public class GenericGoBoardTest extends AndroidTestCase {
   }
 
   public void testPlay_connectAndCapture() {
-    GoBoard goBoard = new GenericGoBoard(5);
+    GoBoard goBoard = new GoBoard(5);
     assertTrue(goBoard.play(StoneColor.White, 4, 4));
     assertTrue(goBoard.play(StoneColor.Black, 4, 3));
     assertTrue(goBoard.play(StoneColor.Black, 3, 3));
