@@ -9,20 +9,20 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:13.0.+'
-    compile 'com.android.support:support-v13:13.0.+'
-    compile 'com.android.support:gridlayout-v7:13.0.+'
+    compile 'com.android.support:support-v4:19.0.0'
+    compile 'com.android.support:gridlayout-v7:19.0.0'
+    compile 'com.android.support:appcompat-v7:19.0.0'
     compile 'com.google.guava:guava:14.0.1'
     compile project(":BaseGameUtils")
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.0.1"
+    compileSdkVersion 19
+    buildToolsVersion "19.0.1"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 18
+        targetSdkVersion 19
     }
     sourceSets {
         main {
