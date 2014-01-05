@@ -42,7 +42,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   public static GameFragment newInstance(GoGame goGame) {
     GameFragment fragment = new GameFragment();
     Bundle args = new Bundle();
-    args.putParcelable(EXTRA_GO_GAME, goGame);
+    args.putSerializable(EXTRA_GO_GAME, goGame);
     fragment.setArguments(args);
     return fragment;
   }
@@ -51,7 +51,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGame == null) {
-      this.goGame = getArguments().getParcelable(EXTRA_GO_GAME);
+      this.goGame = (GoGame) getArguments().getSerializable(EXTRA_GO_GAME);
     }
   }
 
@@ -167,7 +167,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
 
   private void updateAvatar(GoPlayer currentPlayer) {
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
-    final Bitmap avatar = currentPlayer.getAvatar();
+    final Bitmap avatar = getGoBlobActivity().getAvatarManager().getAvatar(currentPlayer);
     avatarImage.setImageBitmap(avatar);
   }
 

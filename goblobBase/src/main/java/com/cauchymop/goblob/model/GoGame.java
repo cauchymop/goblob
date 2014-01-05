@@ -1,43 +1,31 @@
 package com.cauchymop.goblob.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.Log;
-
 import com.google.common.collect.Lists;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
  */
-public class GoGame extends Game implements Parcelable {
+public class GoGame extends Game implements Serializable {
 
   public static final int NO_MOVE = -1;
-  public static final Parcelable.Creator<GoGame> CREATOR = new Parcelable.Creator<GoGame>() {
-    public GoGame createFromParcel(Parcel in) {
-      return new GoGame(in);
-    }
 
-    public GoGame[] newArray(int size) {
-      return new GoGame[size];
-    }
-  };
-
-  private static final String TAG = GoGame.class.getName();
   private final GoPlayer blackPlayer;
   private final GoPlayer whitePlayer;
   private int boardSize;
   private GoBoard board;
-  private PlayerController blackController;
-  private PlayerController whiteController;
+  private transient PlayerController blackController;
+  private transient PlayerController whiteController;
   private StoneColor currentColor;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
   // Instance pool management.
   private GoBoard[] boardPool = new GoBoard[10];
   private int boardPoolSize = 0;
-  private Thread thread;
+
+  private transient Thread thread;
 
   public GoGame(int boardSize, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     this.boardSize = boardSize;
@@ -48,34 +36,13 @@ public class GoGame extends Game implements Parcelable {
     this.whitePlayer = whitePlayer;
   }
 
-  private GoGame(Parcel in) {
-    boardSize = in.readInt();
-    board = in.readParcelable(GoBoard.class.getClassLoader());
-    blackPlayer = in.readParcelable(Player.class.getClassLoader());
-    whitePlayer = in.readParcelable(Player.class.getClassLoader());
-    currentColor = StoneColor.values()[in.readInt()];
-    boardHistory = in.readArrayList(GoBoard.class.getClassLoader());
-    moveHistory = in.readArrayList(Integer.class.getClassLoader());
-  }
-
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeInt(boardSize);
-    dest.writeParcelable(board, 0);
-    dest.writeParcelable(blackPlayer, 0);
-    dest.writeParcelable(whitePlayer, 0);
-    dest.writeInt(currentColor.ordinal());
-    dest.writeList(boardHistory);
-    dest.writeList(moveHistory);
-  }
-
   public void runGame() {
     thread = new Thread("Game") {
 
       @Override
       public void run() {
         while (!isGameEnd()) {
-          Log.d(TAG, currentColor + ".startTurn()");
+          System.out.println(currentColor + ".startTurn()");
           getCurrentController().startTurn();
         }
       }
@@ -204,18 +171,13 @@ public class GoGame extends Game implements Parcelable {
     return board.getColor(x, y);
   }
 
-  @Override
-  public int describeContents() {
-    return 0;
-  }
-
   public void setBlackController(PlayerController blackController) {
-    Log.d(TAG, "setBlackController: " + blackController);
+    System.out.println("setBlackController: " + blackController);
     this.blackController = blackController;
   }
 
   public void setWhiteController(PlayerController whiteController) {
-    Log.d(TAG, "setWhiteController: " + whiteController);
+    System.out.println("setWhiteController: " + whiteController);
     this.whiteController = whiteController;
   }
 
@@ -279,14 +241,14 @@ public class GoGame extends Game implements Parcelable {
   }
 
   public void pause() {
-    Log.d(TAG, "pause - killing thread");
+    System.out.println("pause - killing thread");
     if (thread != null) {
       thread.interrupt();
     }
   }
 
   public void resume() {
-    Log.d(TAG, "resume - starting thread");
+    System.out.println("resume - starting thread");
     runGame();
   }
 }

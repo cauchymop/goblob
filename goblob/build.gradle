@@ -14,6 +14,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:19.0.0'
     compile 'com.google.guava:guava:14.0.1'
     compile project(":BaseGameUtils")
+    compile project(":goblobBase")
 }
 
 android {
