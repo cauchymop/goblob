@@ -103,9 +103,7 @@ public class GoGame extends Game implements Serializable {
       return true;
     }
 
-    int x = move % boardSize;
-    int y = move / boardSize;
-    if (newBoard.play(currentColor, x, y) && !boardHistory.contains(newBoard)) {
+    if (newBoard.play(currentColor, move) && !boardHistory.contains(newBoard)) {
       applyMove(newBoard, move);
       return true;
     }

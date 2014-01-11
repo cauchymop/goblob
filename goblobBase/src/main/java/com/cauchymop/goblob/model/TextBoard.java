@@ -52,12 +52,12 @@ public class TextBoard {
             break;
           case '●':
           case 'X':
-            board.play(StoneColor.Black, x, y);
+            board.play(StoneColor.Black, board.getPos(x, y));
             x++;
             break;
           case '○':
           case 'O':
-            board.play(StoneColor.White, x, y);
+            board.play(StoneColor.White, board.getPos(x, y));
             x++;
             break;
         }
