@@ -86,7 +86,7 @@ public class GoGame extends Game implements Serializable {
   }
 
   public boolean play(PlayerController controller, int x, int y) {
-    return play(controller, getMove(x, y));
+    return play(controller, getPos(x, y));
   }
 
   @Override
@@ -145,7 +145,7 @@ public class GoGame extends Game implements Serializable {
     return boardSize * boardSize + 1;
   }
 
-  public int getMove(int x, int y) {
+  public int getPos(int x, int y) {
     return y * getBoardSize() + x;
   }
 
