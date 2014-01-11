@@ -38,7 +38,7 @@ public abstract class Game {
     }
   }
 
-  public interface Listener {
-    public void gameChanged(Game game);
+  public interface Listener <G extends Game> {
+    public void gameChanged(G game);
   }
 }
