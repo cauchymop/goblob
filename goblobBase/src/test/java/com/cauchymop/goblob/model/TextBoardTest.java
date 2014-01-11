@@ -17,14 +17,14 @@ public class TextBoardTest {
   @Test
   public void testToString_white() {
     GoBoard board = new GoBoard(2);
-    board.play(StoneColor.White, 1, 1);
+    board.play(StoneColor.White, board.getPos(1, 1));
     Assert.assertEquals("..\n.○\n", TextBoard.toString(board));
   }
 
   @Test
   public void testToString_black() {
     GoBoard board = new GoBoard(2);
-    board.play(StoneColor.Black, 1, 1);
+    board.play(StoneColor.Black, board.getPos(1, 1));
     Assert.assertEquals("..\n.●\n", TextBoard.toString(board));
   }
 

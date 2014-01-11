@@ -97,8 +97,7 @@ public class GoBoard implements Serializable {
    *
    * @return whether the move was valid and played (if it was not, this instance can't be used anymore)
    */
-  public boolean play(StoneColor color, int x, int y) {
-    int move = getPos(x, y);
+  public boolean play(StoneColor color, int move) {
     if (groupByPosition[move] != 0) {
       return false;
     }
@@ -196,7 +195,7 @@ public class GoBoard implements Serializable {
     populateFromGroups();
   }
 
-  private int getPos(int x, int y) {
+  public int getPos(int x, int y) {
     return y * size + x;
   }
 
