@@ -29,7 +29,7 @@ import com.google.android.gms.games.GamesClient;
 /**
  * Game Page Fragment.
  */
-public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
+public class GameFragment extends GoBlobBaseFragment implements Game.Listener<GoGame>,
     GoBoardView.Listener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
@@ -205,10 +205,10 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener,
   }
 
   @Override
-  public void gameChanged(Game game) {
+  public void gameChanged(GoGame game) {
 
-    if (goGame.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
-      getGoBlobActivity().getMessageManager().sendMove(goGame.getLastMove());
+    if (game.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
+      getGoBlobActivity().getMessageManager().sendMove(game.getLastMove());
     }
 
     if (game.isGameEnd()) {
