@@ -16,8 +16,8 @@ import android.widget.Spinner;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.StoneColor;
 import com.cauchymop.goblob.model.Player.PlayerType;
+import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.Player;
 
@@ -40,7 +40,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     GameConfigurationFragment instance = new GameConfigurationFragment();
 
     Bundle args = new Bundle();
-    args.putParcelable(EXTRA_OPPONENT, opponent);
+    args.putSerializable(EXTRA_OPPONENT, opponent);
     args.putInt(EXTRA_BOARD_SIZE, boardSize);
     instance.setArguments(args);
 
@@ -74,7 +74,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     final Bundle extras = getArguments();
     if (extras != null) {
       boardSize = extras.getInt(EXTRA_BOARD_SIZE);
-      opponentPlayer = extras.getParcelable(EXTRA_OPPONENT);
+      opponentPlayer = (GoPlayer) extras.getSerializable(EXTRA_OPPONENT);
     } else {
       // This should never happen: if extras are null, it means previous activity has not
       // provided the necessary data we need to create a Game => we finish to go back to
@@ -123,7 +123,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     ImageManager.create(getActivity()).loadImage(new ImageManager.OnImageLoadedListener() {
       @Override
       public void onImageLoaded(Uri uri, Drawable drawable) {
-        homePlayer.setAvatar(drawable);
+        getGoBlobActivity().getAvatarManager().setAvatar(homePlayer, drawable);
       }
     }, currentPlayer.getIconImageUri());
     return homePlayer;

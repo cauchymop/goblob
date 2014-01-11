@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
@@ -40,6 +41,7 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
   private Participant opponent;
   private RoomStatusUpdateListener gameRoomStatusListener = new BaseRoomStatusUpdateListener();
   private MessageManager messageManager = new MessageManager(this);
+  private AvatarManager avatarManager = new AvatarManager();
 
   private RoomUpdateListener gameRoomUpdateListener = new RoomUpdateListener() {
 
@@ -226,6 +228,10 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
     displayFragment(gameFragment, true);
   }
 
+  public AvatarManager getAvatarManager() {
+    return avatarManager;
+  }
+
   private void handleSelectPlayersResult(Intent intent) {
 
     Log.d(TAG, "Select players UI succeeded.");
@@ -275,17 +281,17 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
   }
 
   private GoPlayer getGoPlayer(String myId, Participant participant, StoneColor stoneColor) {
-    Player player = participant.getPlayer();
+    Player playServicesPlayer = participant.getPlayer();
     final GoPlayer goPlayer;
-    if (myId.equals(player.getPlayerId())) {
-      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_LOCAL, player.getDisplayName());
+    if (myId.equals(playServicesPlayer.getPlayerId())) {
+      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_LOCAL, playServicesPlayer.getDisplayName());
     } else {
-      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, player.getDisplayName());
+      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, playServicesPlayer.getDisplayName());
       opponent = participant;
     }
 
     goPlayer.setStoneColor(stoneColor);
-    goPlayer.setAvatarUri(getApplicationContext(), player.getIconImageUri());
+    avatarManager.setAvatarUri(getApplicationContext(), goPlayer, playServicesPlayer.getIconImageUri());
 
     return goPlayer;
   }

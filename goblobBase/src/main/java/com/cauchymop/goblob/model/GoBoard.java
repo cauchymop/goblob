@@ -1,12 +1,10 @@
 package com.cauchymop.goblob.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -14,7 +12,7 @@ import java.util.BitSet;
 /**
  * Class to represent the state of a Go board, and apply the logic of playing a move.
  */
-public class GoBoard implements Parcelable {
+public class GoBoard implements Serializable {
 
   private static final int BLACK_GROUP_START = 1;
 
@@ -49,12 +47,6 @@ public class GoBoard implements Parcelable {
     }
   }
 
-  private GoBoard(Parcel in) {
-    this(in.readInt());
-    groupByPosition = in.createIntArray();
-    populateFromGroups();
-  }
-
   private void populateFromGroups() {
     for (BitSet libertyField : libertyFieldByGroup) {
       libertyField.clear();
@@ -75,22 +67,6 @@ public class GoBoard implements Parcelable {
       }
     }
   }
-
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeInt(size);
-    dest.writeIntArray(groupByPosition);
-  }
-
-  public static final Parcelable.Creator<GoBoard> CREATOR = new Parcelable.Creator<GoBoard>() {
-    public GoBoard createFromParcel(Parcel in) {
-      return new GoBoard(in);
-    }
-
-    public GoBoard[] newArray(int size) {
-      return new GoBoard[size];
-    }
-  };
 
   public void clear() {
     blackField.clear();
@@ -222,11 +198,6 @@ public class GoBoard implements Parcelable {
 
   private int getPos(int x, int y) {
     return y * size + x;
-  }
-
-  @Override
-  public int describeContents() {
-    return 0;
   }
 
   @Override

@@ -9,7 +9,7 @@ import java.util.Set;
  */
 public abstract class Game {
 
-  private Set<Listener> listeners = Sets.newHashSet();
+  private transient Set<Listener> listeners = Sets.newHashSet();
 
   public abstract void undo();
 
