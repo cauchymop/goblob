@@ -36,6 +36,7 @@ public class GoBoardView extends View {
   private Bitmap blackStoneBitmap;
 
   private Set<Listener> listeners = Sets.newHashSet();
+  private Rect rect = new Rect();  // For draw() usage.
 
   public GoBoardView(Context context, GoGame game) {
     super(context, null);
@@ -98,7 +99,7 @@ public class GoBoardView extends View {
         // Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
         if (lastClickedCellCoord != null && lastClickedCellCoord.x == x
             && lastClickedCellCoord.y == y) {
-          firePlayed(game.getMove(x, y));
+          firePlayed(game.getPos(x, y));
           lastClickedCellCoord = null;
           return true;
         }
@@ -130,37 +131,50 @@ public class GoBoardView extends View {
     int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
     int startLineX = marginX + cellSizeInPixels / 2;
     int startLineY = marginY + cellSizeInPixels / 2;
+    drawBoardLines(canvas, startLineX, startLineY);
+    drawBoardContent(canvas, startLineX, startLineY);
+  }
+
+  private void drawBoardContent(Canvas canvas, int startLineX, int startLineY) {
+    double[] scores = game.getScores();
+    int radius = cellSizeInPixels / 2;
+    int lastMove = game.getLastMove();
+    for (int x = 0; x < game.getBoardSize(); x++) {
+      for (int y = 0; y < game.getBoardSize(); y++) {
+        int centerX = startLineX + cellSizeInPixels * x;
+        int centerY = startLineY + cellSizeInPixels * y;
+        drawStone(canvas, radius, game.getColor(x, y), centerX, centerY);
+        int pos = game.getPos(x, y);
+        // Last move
+        if (lastMove == pos) {
+          canvas.drawCircle(centerX, centerY, (float) radius, lastMovePaint);
+        }
+        // Debug score information
+        if (scores != null && !Double.isNaN(scores[pos])) {
+          double score = scores[pos];
+          canvas.drawText(Double.toString(score), centerX, centerY, textPaint);
+        }
+      }
+    }
+  }
+
+  private void drawStone(Canvas canvas, int radius, StoneColor contentColor,
+      int centerX, int centerY) {
+    if (contentColor != StoneColor.Empty) {
+      Bitmap stoneBitmap = (contentColor == StoneColor.Black)
+          ? blackStoneBitmap : whiteStoneBitmap;
+      rect.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+      canvas.drawBitmap(stoneBitmap, null, rect, null);
+    }
+  }
+
+  private void drawBoardLines(Canvas canvas, int startLineX, int startLineY) {
     int lineLength = cellSizeInPixels * (game.getBoardSize() - 1);
     for (int x = 0; x < game.getBoardSize(); x++) {
       canvas.drawLine(startLineX, startLineY + cellSizeInPixels * x,
           startLineX + lineLength, startLineY + cellSizeInPixels * x, linePaint);
       canvas.drawLine(startLineX + cellSizeInPixels * x, startLineY,
           startLineX + cellSizeInPixels * x, startLineY + lineLength, linePaint);
-    }
-    double[] scores = game.getScores();
-    Rect rect = new Rect();
-    int lastMove = game.getLastMove();
-    for (int x = 0; x < game.getBoardSize(); x++) {
-      for (int y = 0; y < game.getBoardSize(); y++) {
-        StoneColor contentColor = game.getColor(x, y);
-        if (contentColor != StoneColor.Empty) {
-          Bitmap stoneBitmap = (contentColor == StoneColor.Black)
-              ? blackStoneBitmap : whiteStoneBitmap;
-          rect.set(marginX + cellSizeInPixels * x, marginY + cellSizeInPixels * y,
-              marginX + cellSizeInPixels * (x + 1), marginY + cellSizeInPixels * (y + 1));
-          canvas.drawBitmap(stoneBitmap, null, rect, null);
-          if (lastMove == game.getMove(x, y)) {
-            canvas.drawCircle(startLineX + cellSizeInPixels * x, startLineY + cellSizeInPixels * y,
-                (float) (cellSizeInPixels / 2), lastMovePaint);
-          }
-        }
-        int pos = y * game.getBoardSize() + x;
-        if (scores != null && !Double.isNaN(scores[pos])) {
-          double score = scores[pos];
-          canvas.drawText(Double.toString(score), startLineX + cellSizeInPixels * x,
-              startLineY + cellSizeInPixels * y, textPaint);
-        }
-      }
     }
   }
 
