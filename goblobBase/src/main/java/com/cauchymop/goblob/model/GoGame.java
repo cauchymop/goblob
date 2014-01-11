@@ -238,6 +238,14 @@ public class GoGame extends Game implements Serializable {
     return (moveHistory.isEmpty()) ? NO_MOVE : moveHistory.get(moveHistory.size() - 1);
   }
 
+  public StoneColor getTerritory(int pos) {
+    return board.getTerritory(pos);
+  }
+
+  public void mark(int pos, StoneColor color) {
+    board.mark(pos, color);
+  }
+
   public void pause() {
     System.out.println("pause - killing thread");
     if (thread != null) {
