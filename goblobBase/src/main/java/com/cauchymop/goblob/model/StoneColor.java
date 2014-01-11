@@ -8,9 +8,7 @@ import java.io.Serializable;
 public enum StoneColor implements Serializable {
   Empty,
   Black,
-  White,
-  BlackTerritory,
-  WhiteTerritory;
+  White;
 
   public StoneColor getOpponent() {
     switch (this) {
@@ -21,20 +19,5 @@ public enum StoneColor implements Serializable {
       default:
         throw new RuntimeException("Invalid color");
     }
-  }
-
-  public StoneColor getPlayerColor() {
-    switch (this) {
-      case BlackTerritory:
-        return Black;
-      case WhiteTerritory:
-        return White;
-      default:
-        return this;
-    }
-  }
-
-  public boolean isEmpty() {
-    return this == Empty || this == BlackTerritory || this == WhiteTerritory;
   }
 }
