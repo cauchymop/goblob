@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -15,15 +17,33 @@ import static org.junit.Assert.assertNotNull;
  * Tests for {@link GoGame}.
  */
 public class GoGameTest {
-  @Test
-  public void test_Serializable() {
+
+  private GoGame goGame;
+
+  @Before
+  public void setupGoGame() {
     GoPlayer blackPlayer = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, "blackPlayer");
     GoPlayer whitePlayer = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, "whitePlayer");
-    GoGame goGame = new GoGame(9, blackPlayer, whitePlayer);
+    goGame = new GoGame(9, blackPlayer, whitePlayer);
+  }
 
+  @Test
+  public void test_Serializable() {
     GoGame goGameAfterSerialization = reserialize(goGame);
 
-    assertEquals(9, goGame.getBoardSize());
+    assertEquals(9, goGameAfterSerialization.getBoardSize());
+  }
+
+  @Test
+  public void test_GetMoveHistory_noMoves() {
+    assertThat(goGame.getMoveHistory()).isEmpty();
+  }
+
+  @Test
+  public void test_GetMoveHistory() {
+    goGame.play(null, 11);
+    goGame.play(null, 17);
+    assertThat(goGame.getMoveHistory()).containsExactly(11, 17);
   }
 
   /**
