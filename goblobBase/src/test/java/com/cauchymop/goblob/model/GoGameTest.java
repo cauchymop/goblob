@@ -31,7 +31,7 @@ public class GoGameTest {
   public void test_Serializable() {
     GoGame goGameAfterSerialization = reserialize(goGame);
 
-    assertEquals(9, goGameAfterSerialization.getBoardSize());
+    assertThat(goGameAfterSerialization.getBoardSize()).isEqualTo(9);
   }
 
   @Test

@@ -12,7 +12,7 @@ dependencies {
     compile 'com.android.support:support-v4:19.0.0'
     compile 'com.android.support:gridlayout-v7:19.0.0'
     compile 'com.android.support:appcompat-v7:19.0.0'
-    compile 'com.google.guava:guava:14.0.1'
+    compile 'com.google.guava:guava:16.+'
     compile project(":BaseGameUtils")
     compile project(":goblobBase")
 }
