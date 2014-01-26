@@ -120,12 +120,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     final Player currentPlayer = getGoBlobActivity().getGamesClient().getCurrentPlayer();
     final String homePlayerName = currentPlayer.getDisplayName();
     final GoPlayer homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, homePlayerName);
-    ImageManager.create(getActivity()).loadImage(new ImageManager.OnImageLoadedListener() {
-      @Override
-      public void onImageLoaded(Uri uri, Drawable drawable) {
-        getGoBlobActivity().getAvatarManager().setAvatar(homePlayer, drawable);
-      }
-    }, currentPlayer.getIconImageUri());
+    getGoBlobActivity().getAvatarManager().setAvatarUri(getActivity(), homePlayer,
+        currentPlayer.getIconImageUri());
     return homePlayer;
   }
 
