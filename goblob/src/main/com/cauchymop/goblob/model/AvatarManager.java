@@ -46,8 +46,9 @@ public class AvatarManager {
 
   private void fetchAvatarFromUri(Context context, final Player player, Uri avatarUri) {
     ImageManager.create(context).loadImage(new ImageManager.OnImageLoadedListener() {
+
       @Override
-      public void onImageLoaded(Uri uri, Drawable drawable) {
+      public void onImageLoaded(Uri uri, Drawable drawable, boolean isRequestedDrawable) {
         setAvatar(player, drawable);
       }
     }, avatarUri);
