@@ -24,7 +24,7 @@ public abstract class Game {
 
   public abstract double getScore();
 
-  public abstract List getMoveHistory();
+  public abstract List<Integer> getMoveHistory();
 
   public void addListener(Listener listener) {
     listeners.add(listener);

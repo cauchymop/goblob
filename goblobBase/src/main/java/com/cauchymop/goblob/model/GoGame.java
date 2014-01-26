@@ -260,7 +260,7 @@ public class GoGame extends Game implements Serializable {
   }
 
   @Override
-  public List getMoveHistory() {
+  public List<Integer> getMoveHistory() {
     return moveHistory;
   }
 }
