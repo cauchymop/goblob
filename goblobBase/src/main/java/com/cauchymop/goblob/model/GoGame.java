@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
@@ -256,5 +257,10 @@ public class GoGame extends Game implements Serializable {
   public void resume() {
     System.out.println("resume - starting thread");
     runGame();
+  }
+
+  @Override
+  public List getMoveHistory() {
+    return moveHistory;
   }
 }

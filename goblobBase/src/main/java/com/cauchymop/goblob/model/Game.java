@@ -2,6 +2,7 @@ package com.cauchymop.goblob.model;
 
 import com.google.common.collect.Sets;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,6 +23,8 @@ public abstract class Game {
   public abstract boolean isGameEnd();
 
   public abstract double getScore();
+
+  public abstract List getMoveHistory();
 
   public void addListener(Listener listener) {
     listeners.add(listener);
