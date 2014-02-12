@@ -22,9 +22,7 @@ public class GoGameTest {
 
   @Before
   public void setupGoGame() {
-    GoPlayer blackPlayer = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, "blackPlayer");
-    GoPlayer whitePlayer = new GoPlayer(Player.PlayerType.HUMAN_LOCAL, "whitePlayer");
-    goGame = new GoGame(9, blackPlayer, whitePlayer);
+    goGame = new GoGame(9);
   }
 
   @Test

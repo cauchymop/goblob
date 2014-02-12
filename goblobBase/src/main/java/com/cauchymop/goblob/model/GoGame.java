@@ -13,8 +13,8 @@ public class GoGame extends Game implements Serializable {
 
   public static final int NO_MOVE = -1;
 
-  private final GoPlayer blackPlayer;
-  private final GoPlayer whitePlayer;
+  private GoPlayer blackPlayer;
+  private GoPlayer whitePlayer;
   private int boardSize;
   private GoBoard board;
   private transient PlayerController blackController;
@@ -28,13 +28,11 @@ public class GoGame extends Game implements Serializable {
 
   private transient Thread thread;
 
-  public GoGame(int boardSize, GoPlayer blackPlayer, GoPlayer whitePlayer) {
+  public GoGame(int boardSize) {
     this.boardSize = boardSize;
     currentColor = StoneColor.Black;
     board = getNewBoard();
     boardHistory.add(board);
-    this.blackPlayer = blackPlayer;
-    this.whitePlayer = whitePlayer;
   }
 
   public void runGame() {
@@ -134,7 +132,7 @@ public class GoGame extends Game implements Serializable {
 
   @Override
   public Game copy() {
-    GoGame copy = new GoGame(boardSize, blackPlayer, whitePlayer);
+    GoGame copy = new GoGame(boardSize);
     for (Integer move : moveHistory) {
       copy.play(copy.getCurrentController(), move);
     }
@@ -262,5 +260,13 @@ public class GoGame extends Game implements Serializable {
   @Override
   public List<Integer> getMoveHistory() {
     return moveHistory;
+  }
+
+  public void setBlackPlayer(GoPlayer blackPlayer) {
+    this.blackPlayer = blackPlayer;
+  }
+
+  public void setWhitePlayer(GoPlayer whitePlayer) {
+    this.whitePlayer = whitePlayer;
   }
 }

@@ -151,9 +151,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
         break;
     }
 
-    blackPlayer.setStoneColor(StoneColor.Black);
-    whitePlayer.setStoneColor(StoneColor.White);
-    goGame = new GoGame(boardSize, blackPlayer, whitePlayer);
+    goGame = new GoGame(boardSize);
+    goGame.setBlackPlayer(blackPlayer);
+    goGame.setWhitePlayer(whitePlayer);
 
     getGoBlobActivity().startGame(goGame);
   }
