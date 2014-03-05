@@ -19,6 +19,7 @@ import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchInitiatedListener;
+import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdateReceivedListener;
 import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdatedListener;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
@@ -28,7 +29,8 @@ import java.util.ArrayList;
 
 import static com.cauchymop.goblob.model.Player.PlayerType;
 
-public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchInitiatedListener, OnTurnBasedMatchUpdatedListener{
+public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchInitiatedListener,
+    OnTurnBasedMatchUpdatedListener, OnTurnBasedMatchUpdateReceivedListener {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
@@ -79,7 +81,9 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
       turnBasedMatch = mHelper.getTurnBasedMatch();
+      startGame(createGoGame(turnBasedMatch));
     }
+    getGamesClient().registerMatchUpdateListener(this);
   }
 
   @Override
@@ -218,6 +222,7 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
     // create game
     TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
         .addInvitedPlayers(invitees)
+        .setVariant(boardSize)
         .setAutoMatchCriteria(autoMatchCriteria).build();
 
     // kick the match off
@@ -295,6 +300,18 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   public void onTurnBasedMatchUpdated(int statusCode, TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchUpdated " + statusCode);
     this.turnBasedMatch = turnBasedMatch;
+    if (turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+      startGame(createGoGame(turnBasedMatch));
+    }
+  }
+
+  @Override
+  public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
+    Log.d(TAG, "onTurnBasedMatchReceived");
     startGame(createGoGame(turnBasedMatch));
+  }
+
+  @Override
+  public void onTurnBasedMatchRemoved(String s) {
   }
 }
