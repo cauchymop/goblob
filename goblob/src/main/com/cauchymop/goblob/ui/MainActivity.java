@@ -34,9 +34,10 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
+  public static final int CHECK_MATCHES = 3;
+
   private static final String TAG = MainActivity.class.getName();
   private int boardSize = 9;
-  private GameFragment gameFragment;
   private AvatarManager avatarManager = new AvatarManager();
   private GameMoveSerializer<GoGame> gameMoveSerializer = new GameMoveSerializer<GoGame>();
   private TurnBasedMatch turnBasedMatch;
@@ -62,7 +63,16 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
       case SELECT_PLAYER:
         handleSelectPlayersResult(intent);
         break;
+      case CHECK_MATCHES:
+        handleMatchSelected(intent);
+        break;
     }
+  }
+
+  private void handleMatchSelected(Intent intent) {
+    Log.d(TAG, "handleMatchSelected.");
+    turnBasedMatch = intent.getParcelableExtra(GamesClient.EXTRA_TURN_BASED_MATCH);
+    startGame(turnBasedMatch);
   }
 
   @Override
@@ -173,6 +183,11 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
     displayFragment(playerChoiceFragment, true);
   }
 
+  public void checkMatches(View v) {
+    Intent checkMatchesIntent = getGamesClient().getMatchInboxIntent();
+    startActivityForResult(checkMatchesIntent, CHECK_MATCHES);
+  }
+
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
     this.boardSize = boardSize;
     if (opponentPlayer.getType().isRemote()) {
@@ -186,6 +201,10 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   public void displayGameConfigurationScreen(GoPlayer opponentPlayer, int boardSize) {
     GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(opponentPlayer, boardSize);
     displayFragment(gameConfigurationFragment, true);
+  }
+
+  public void startGame(TurnBasedMatch turnBasedMatch) {
+    startGame(createGoGame(turnBasedMatch));
   }
 
   public void startGame(GoGame goGame) {
@@ -299,16 +318,15 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   @Override
   public void onTurnBasedMatchUpdated(int statusCode, TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchUpdated " + statusCode);
-    this.turnBasedMatch = turnBasedMatch;
     if (turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-      startGame(createGoGame(turnBasedMatch));
+      startGame(turnBasedMatch);
     }
   }
 
   @Override
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
-    startGame(createGoGame(turnBasedMatch));
+    startGame(turnBasedMatch);
   }
 
   @Override

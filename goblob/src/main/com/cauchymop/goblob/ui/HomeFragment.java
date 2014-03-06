@@ -31,6 +31,7 @@ public class HomeFragment extends GoBlobBaseFragment {
     super.onSignInSucceeded();
     getView().findViewById(R.id.sign_in_button).setVisibility(View.GONE);
     getView().findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+    getView().findViewById(R.id.check_matches_button).setVisibility(View.VISIBLE);
   }
 
   @Override
@@ -44,5 +45,6 @@ public class HomeFragment extends GoBlobBaseFragment {
     super.onSignOut();
     getView().findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
     getView().findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+    getView().findViewById(R.id.check_matches_button).setVisibility(View.GONE);
   }
 }

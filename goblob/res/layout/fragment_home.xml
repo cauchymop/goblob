@@ -9,7 +9,7 @@
       android:layout_height="wrap_content"
       android:text="@string/button_label_challenges"
       android:onClick="startChallenges"
-      android:id="@+id/button"
+      android:id="@+id/start_challenges_button"
       android:layout_gravity="center"/>
 
   <Button
@@ -17,8 +17,16 @@
       android:layout_height="wrap_content"
       android:text="@string/button_label_free_game"
       android:onClick="startFreeGame"
-      android:id="@+id/button1"
+      android:id="@+id/free_game_button"
       android:layout_gravity="center"/>
+
+  <Button
+      android:id="@+id/check_matches_button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/button_label_check_matches"
+      android:onClick="checkMatches"
+      android:visibility="gone"/>
 
   <com.google.android.gms.common.SignInButton
       android:id="@+id/sign_in_button"

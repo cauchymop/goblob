@@ -208,7 +208,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
   public void gameChanged(GoGame game) {
 
     if (game.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
-//      getGoBlobActivity().getMessageManager().sendMove(game.getLastMove());
       getGoBlobActivity().giveTurn(game);
     }
 
@@ -328,7 +327,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
 
     @Override
     public void opponentPlayed(int move) {
-//      getGoBlobActivity().getMessageManager().sendMove(move);
       Log.d(TAG, "opponentPlayer: " + move);
     }
   }
