@@ -19,6 +19,9 @@ public class GameMoveSerializer<T extends Game> {
   }
 
   public void deserializeTo(byte[] bytes, T game) {
+    if (bytes == null || bytes.length == 0) {
+      return;
+    }
     List<Integer> importedMoves = Lists.transform(
         ImmutableList.copyOf(new String(bytes).split(TOKEN_SEPARATOR)), Ints.stringConverter());
     List<Integer> existingMoves = game.getMoveHistory();

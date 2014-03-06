@@ -161,7 +161,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
     ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
     final GoPlayer currentPlayer = goGame.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
-    titleImage.setImageResource(currentPlayer.getStoneColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
+    titleImage.setImageResource(goGame.getCurrentColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
     updateAvatar(currentPlayer);
   }
 
@@ -193,7 +193,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
       case HUMAN_LOCAL:
         return new LocalHumanPlayerController(goGame);
       case HUMAN_REMOTE_FRIEND:
-        return new RemoteHumanPlayerController(goGame, getGoBlobActivity().getMessageManager());
+        return new RemoteHumanPlayerController(goGame);
       case HUMAN_REMOTE_RANDOM:
       default:
         return getPlayerController();
@@ -208,7 +208,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
   public void gameChanged(GoGame game) {
 
     if (game.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
-      getGoBlobActivity().getMessageManager().sendMove(game.getLastMove());
+//      getGoBlobActivity().getMessageManager().sendMove(game.getLastMove());
+      getGoBlobActivity().giveTurn(game);
     }
 
     if (game.isGameEnd()) {
@@ -320,9 +321,9 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
   private class RemoteHumanPlayerController extends HumanPlayerController
       implements MessageManager.MovePlayedListener {
 
-    public RemoteHumanPlayerController(GoGame goGame, MessageManager messageManager) {
+    public RemoteHumanPlayerController(GoGame goGame) {
       super(goGame);
-      messageManager.addMovePlayedListener(this);
+//      messageManager.addMovePlayedListener(this);
     }
 
     @Override

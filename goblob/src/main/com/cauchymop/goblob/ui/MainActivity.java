@@ -12,67 +12,34 @@ import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
+import com.cauchymop.goblob.model.GameMoveSerializer;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeReliableMessageSentListener;
-import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
-import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListener;
-import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
+import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchInitiatedListener;
+import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdateReceivedListener;
+import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdatedListener;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class MainActivity extends BaseGameActivity implements MessageManager.MessageSender,
-    RealTimeReliableMessageSentListener {
+import static com.cauchymop.goblob.model.Player.PlayerType;
+
+public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchInitiatedListener,
+    OnTurnBasedMatchUpdatedListener, OnTurnBasedMatchUpdateReceivedListener {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
-  public static final int WAITING_ROOM = 3;
   private static final String TAG = MainActivity.class.getName();
   private int boardSize = 9;
-  private Room gameRoom;
   private GameFragment gameFragment;
-  private Participant opponent;
-  private RoomStatusUpdateListener gameRoomStatusListener = new BaseRoomStatusUpdateListener();
-  private MessageManager messageManager = new MessageManager(this);
   private AvatarManager avatarManager = new AvatarManager();
-
-  private RoomUpdateListener gameRoomUpdateListener = new RoomUpdateListener() {
-
-    @Override
-    public void onRoomCreated(int statusCode, Room room) {
-      Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
-      startWaitingRoomActivity(room);
-    }
-
-    @Override
-    public void onJoinedRoom(int statusCode, Room room) {
-      Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
-      startWaitingRoomActivity(room);
-    }
-
-    @Override
-    public void onLeftRoom(int statusCode, String roomId) {
-      Log.d(TAG, "onLeftRoom(" + statusCode + ", " + roomId + ")");
-    }
-
-    @Override
-    public void onRoomConnected(int statusCode, Room room) {
-      Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
-    }
-  };
-
-  private void startWaitingRoomActivity(Room room) {
-    this.gameRoom = room;
-    Intent i = getGamesClient().getRealTimeWaitingRoomIntent(room, 1);
-    startActivityForResult(i, WAITING_ROOM);
-  }
+  private GameMoveSerializer<GoGame> gameMoveSerializer = new GameMoveSerializer<GoGame>();
+  private TurnBasedMatch turnBasedMatch;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -95,9 +62,6 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
       case SELECT_PLAYER:
         handleSelectPlayersResult(intent);
         break;
-      case WAITING_ROOM:
-        handleRoomReady(intent);
-        break;
     }
   }
 
@@ -111,14 +75,15 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
   public void onSignInSucceeded() {
     invalidateOptionsMenu();
     getCurrentFragment().onSignInSucceeded();
-    if (getInvitationId() != null) {
-      RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
-      roomConfigBuilder.setInvitationIdToAccept(getInvitationId());
-      getGamesClient().joinRoom(roomConfigBuilder.build());
+    if (mHelper.getTurnBasedMatch() != null) {
+      Log.d(TAG, "Found match");
 
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      turnBasedMatch = mHelper.getTurnBasedMatch();
+      startGame(createGoGame(turnBasedMatch));
     }
+    getGamesClient().registerMatchUpdateListener(this);
   }
 
   @Override
@@ -228,12 +193,16 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
     displayFragment(gameFragment, true);
   }
 
+  public void giveTurn(GoGame gogame) {
+    getGamesClient().takeTurn(this, turnBasedMatch.getMatchId(),
+        gameMoveSerializer.serialize(gogame), getOpponentId(turnBasedMatch, getMyId(turnBasedMatch)));
+  }
+
   public AvatarManager getAvatarManager() {
     return avatarManager;
   }
 
   private void handleSelectPlayersResult(Intent intent) {
-
     Log.d(TAG, "Select players UI succeeded.");
 
     // get the invitee list
@@ -250,71 +219,99 @@ public class MainActivity extends BaseGameActivity implements MessageManager.Mes
       Log.d(TAG, "Automatch criteria: " + autoMatchCriteria);
     }
 
-    // create the room
-    Log.d(TAG, "Creating room...");
-    RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
-    roomConfigBuilder.addPlayersToInvite(invitees);
-    roomConfigBuilder.setVariant(boardSize);
-    if (autoMatchCriteria != null) {
-      roomConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
-    }
-    getGamesClient().createRoom(roomConfigBuilder.build());
-    Log.d(TAG, "Room created, waiting for it to be ready...");
+    // create game
+    TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
+        .addInvitedPlayers(invitees)
+        .setVariant(boardSize)
+        .setAutoMatchCriteria(autoMatchCriteria).build();
+
+    // kick the match off
+    getGamesClient().createTurnBasedMatch(this, tbmc);
   }
 
-  private void handleRoomReady(Intent intent) {
-    Log.d(TAG, "Back from waiting room!");
-    if (!isSignedIn() || gameRoom == null) {
+  @Override
+  public void onTurnBasedMatchInitiated(int statusCode, TurnBasedMatch turnBasedMatch) {
+    Log.d(TAG, "onTurnBasedMatchInitiated " + statusCode);
+    if (statusCode != GamesClient.STATUS_OK) {
       return;
     }
+    this.turnBasedMatch = turnBasedMatch;
 
-    String myId = getGamesClient().getCurrentPlayerId();
-    ArrayList<Participant> participants = gameRoom.getParticipants();
-
-    if (participants.size() != 2) {
-      return;
+    GoGame gogame = createGoGame(turnBasedMatch);
+    if (turnBasedMatch.getData() == null) {
+      Log.d(TAG, "getData is null, saving a new game");
+      getGamesClient().takeTurn(this, turnBasedMatch.getMatchId(),
+          gameMoveSerializer.serialize(gogame), getMyId(turnBasedMatch));
     }
 
-    GoPlayer blackPlayer = getGoPlayer(myId, participants.get(0), StoneColor.Black);
-    GoPlayer whitePlayer = getGoPlayer(myId, participants.get(1), StoneColor.White);
-    startGame(new GoGame(gameRoom.getVariant(), blackPlayer, whitePlayer));
+    // TODO: start activity
+    Log.d(TAG, "Game created, starting game activity...");
+    startGame(gogame);
   }
 
-  private GoPlayer getGoPlayer(String myId, Participant participant, StoneColor stoneColor) {
-    Player playServicesPlayer = participant.getPlayer();
-    final GoPlayer goPlayer;
-    if (myId.equals(playServicesPlayer.getPlayerId())) {
-      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_LOCAL, playServicesPlayer.getDisplayName());
+  private GoGame createGoGame(TurnBasedMatch turnBasedMatch) {
+    String myId = getMyId(turnBasedMatch);
+    String opponentId = getOpponentId(turnBasedMatch, myId);
+
+    for (String participantId : turnBasedMatch.getParticipantIds()) {
+      Log.i(TAG, String.format(" participant %s: player %s", participantId,
+          turnBasedMatch.getParticipant(participantId).getPlayer().getPlayerId()));
+    }
+
+    GoGame gogame = new GoGame(turnBasedMatch.getVariant());
+    gameMoveSerializer.deserializeTo(turnBasedMatch.getData(), gogame);
+
+    GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.HUMAN_LOCAL);
+    GoPlayer opponentPlayer =
+        createGoPlayer(turnBasedMatch, opponentId, PlayerType.HUMAN_REMOTE_FRIEND);
+    if (gogame.getMoveHistory().size() % 2 == 0) {
+      gogame.setBlackPlayer(myPlayer);
+      gogame.setWhitePlayer(opponentPlayer);
     } else {
-      goPlayer = new GoPlayer(GoPlayer.PlayerType.HUMAN_REMOTE_FRIEND, playServicesPlayer.getDisplayName());
-      opponent = participant;
+      gogame.setBlackPlayer(opponentPlayer);
+      gogame.setWhitePlayer(myPlayer);
     }
 
-    goPlayer.setStoneColor(stoneColor);
-    avatarManager.setAvatarUri(getApplicationContext(), goPlayer, playServicesPlayer.getIconImageUri());
+    return gogame;
+  }
 
+  private String getOpponentId(TurnBasedMatch turnBasedMatch, String id) {
+    for (String participantId : turnBasedMatch.getParticipantIds()) {
+      if (!participantId.equals(id)) {
+        return participantId;
+      }
+    }
+    return null;
+  }
+
+  private String getMyId(TurnBasedMatch turnBasedMatch) {
+    return turnBasedMatch.getParticipantId(getGamesClient().getCurrentPlayerId());
+  }
+
+  private GoPlayer createGoPlayer(TurnBasedMatch turnBasedMatch, String creatorId,
+      PlayerType humanLocal) {
+    Player player = turnBasedMatch.getParticipant(creatorId).getPlayer();
+    GoPlayer goPlayer = new GoPlayer(humanLocal, player.getDisplayName());
+    avatarManager.setAvatarUri(getApplicationContext(), goPlayer, player.getIconImageUri());
     return goPlayer;
   }
 
-  private RoomConfig.Builder makeBasicRoomConfigBuilder() {
-    return RoomConfig.builder(gameRoomUpdateListener)
-        .setMessageReceivedListener(messageManager)
-        .setRoomStatusUpdateListener(gameRoomStatusListener);
+  @Override
+  public void onTurnBasedMatchUpdated(int statusCode, TurnBasedMatch turnBasedMatch) {
+    Log.d(TAG, "onTurnBasedMatchUpdated " + statusCode);
+    this.turnBasedMatch = turnBasedMatch;
+    if (turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+      startGame(createGoGame(turnBasedMatch));
+    }
   }
 
   @Override
-  public void sendMessage(byte[] message) {
-    int sendResult = getGamesClient().sendReliableRealTimeMessage(this, message, gameRoom.getRoomId(),
-        opponent.getParticipantId());
-    Log.d(TAG, "sendMessage: message = " + Arrays.asList(message) + " - returned: " + sendResult);
-  }
-
-  public MessageManager getMessageManager() {
-    return messageManager;
+  public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
+    Log.d(TAG, "onTurnBasedMatchReceived");
+    startGame(createGoGame(turnBasedMatch));
   }
 
   @Override
-  public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
-    Log.d(TAG, "onRealTimeMessageSent: statusCode = " + statusCode + " - tokenId = " + tokenId + " - recipientParticipantId = " + recipientParticipantId);
+  public void onTurnBasedMatchRemoved(String s) {
   }
 }
