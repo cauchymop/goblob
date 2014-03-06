@@ -71,7 +71,7 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
 
   private void handleMatchSelected(Intent intent) {
     Log.d(TAG, "handleMatchSelected.");
-    TurnBasedMatch turnBasedMatch = intent.getParcelableExtra(GamesClient.EXTRA_TURN_BASED_MATCH);
+    turnBasedMatch = intent.getParcelableExtra(GamesClient.EXTRA_TURN_BASED_MATCH);
     startGame(turnBasedMatch);
   }
 
