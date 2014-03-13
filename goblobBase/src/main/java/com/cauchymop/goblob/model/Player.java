@@ -27,6 +27,11 @@ public class Player implements Serializable {
     this.name = name;
   }
 
+  @Override
+  public String toString() {
+    return String.format("Player(type=%s, name=%s)", getType(), getName());
+  }
+
   public enum PlayerType {
     AI(false),
     HUMAN_LOCAL(false),
