@@ -47,9 +47,15 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
     return fragment;
   }
 
+  public void setGame(GoGame gogame) {
+    this.goGame = gogame;
+    initBoardView();
+  }
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    Log.d(TAG, "onCreate: " + getArguments());
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGame == null) {
       this.goGame = (GoGame) getArguments().getSerializable(EXTRA_GO_GAME);
     }
@@ -64,12 +70,12 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     initBoardView();
-
   }
 
   @Override
   public void onDestroyView() {
     super.onDestroyView();
+    Log.d(TAG, "onDestroyView");
     cleanBoardView();
   }
 

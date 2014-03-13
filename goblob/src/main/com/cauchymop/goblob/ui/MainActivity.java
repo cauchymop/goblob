@@ -41,6 +41,7 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   private AvatarManager avatarManager = new AvatarManager();
   private GameMoveSerializer<GoGame> gameMoveSerializer = new GameMoveSerializer<GoGame>();
   private TurnBasedMatch turnBasedMatch;
+  private GameFragment gameFragment;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -208,8 +209,12 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   }
 
   public void startGame(GoGame goGame) {
-    GameFragment gameFragment = GameFragment.newInstance(goGame);
-    displayFragment(gameFragment, true);
+    if (gameFragment == null || !gameFragment.isVisible()) {  // TODO: || isDifferentGame()
+      gameFragment = GameFragment.newInstance(goGame);
+      displayFragment(gameFragment, true);
+    } else {
+      gameFragment.setGame(goGame);
+    }
   }
 
   public void giveTurn(GoGame gogame) {

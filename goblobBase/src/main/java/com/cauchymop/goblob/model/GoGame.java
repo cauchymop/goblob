@@ -269,4 +269,10 @@ public class GoGame extends Game implements Serializable {
   public void setWhitePlayer(GoPlayer whitePlayer) {
     this.whitePlayer = whitePlayer;
   }
+
+  @Override
+  public String toString() {
+    return String.format("GoGame(size=%d, white=%s, black=%s, moves=%s)", getBoardSize(),
+        getWhitePlayer(), getBlackPlayer(), getMoveHistory());
+  }
 }
