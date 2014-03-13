@@ -218,8 +218,15 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   }
 
   public void giveTurn(GoGame gogame) {
-    getGamesClient().takeTurn(this, turnBasedMatch.getMatchId(),
-        gameMoveSerializer.serialize(gogame), getOpponentId(turnBasedMatch, getMyId(turnBasedMatch)));
+    String matchId = turnBasedMatch.getMatchId();
+    String myId = getMyId(turnBasedMatch);
+    if (gogame.isGameEnd()) {
+      getGamesClient().takeTurn(this, matchId, gameMoveSerializer.serialize(gogame), myId);
+      getGamesClient().finishTurnBasedMatch(this, matchId);
+    } else {
+      getGamesClient().takeTurn(this, matchId, gameMoveSerializer.serialize(gogame),
+          getOpponentId(turnBasedMatch, myId));
+    }
   }
 
   public AvatarManager getAvatarManager() {
@@ -274,6 +281,11 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   }
 
   private GoGame createGoGame(TurnBasedMatch turnBasedMatch) {
+    if (turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE
+        && turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+      getGamesClient().finishTurnBasedMatch(this, turnBasedMatch.getMatchId());
+    }
+
     String myId = getMyId(turnBasedMatch);
     String opponentId = getOpponentId(turnBasedMatch, myId);
 

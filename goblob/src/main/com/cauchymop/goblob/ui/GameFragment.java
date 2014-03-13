@@ -1,7 +1,5 @@
 package com.cauchymop.goblob.ui;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -139,7 +137,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
       }
     });
 
-    updateFromCurrentPlayer();
+    updateFromGameState();
   }
 
   private void cleanBoardView() {
@@ -152,12 +150,13 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
     }
   }
 
-  private void updateFromCurrentPlayer() {
+  private void updateFromGameState() {
     getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
         updateTitleArea();
         updateMessageArea();
+        updateAchievements();
       }
     });
   }
@@ -182,7 +181,9 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
    */
   private void updateMessageArea() {
     final String message;
-    if (goGame.isLastMovePass()) {
+    if (goGame.isGameEnd()) {
+      message = getString(R.string.end_of_game_message);
+    } else if (goGame.isLastMovePass()) {
       message = getString(R.string.opponent_passed_message, goGame.getOpponent().getName());
     } else {
       message = null;
@@ -212,39 +213,13 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
 
   @Override
   public void gameChanged(GoGame game) {
-
     if (game.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
       getGoBlobActivity().giveTurn(game);
     }
 
-    if (game.isGameEnd()) {
-      handleEndOfGame();
-      return;
-    }
-
     // Refresh UI and current controller
     goBoardView.postInvalidate();
-    updateFromCurrentPlayer();
-  }
-
-  private void handleEndOfGame() {
-    updateAchievements();
-    getActivity().runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        new AlertDialog.Builder(getGoBlobActivity())
-            .setTitle(getString(R.string.end_of_game_dialog_title))
-            .setMessage(getString(R.string.end_of_game_dialog_message))
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-              @Override
-              public void onClick(DialogInterface dialog, int which) {
-                getActivity().getSupportFragmentManager().popBackStackImmediate();
-              }
-            })
-            .create()
-            .show();
-      }
-    });
+    updateFromGameState();
   }
 
   private void updateAchievements() {
