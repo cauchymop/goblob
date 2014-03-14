@@ -24,8 +24,7 @@
   <string name="opponent_label">Opponent</string>
   <string name="home_player_default_name">Player 1</string>
   <string name="opponent_default_name">Player 2</string>
-  <string name="end_of_game_dialog_title">"End of game"</string>
-  <string name="end_of_game_dialog_message">"I really should tell you who has won here, but not just yet…"</string>
+  <string name="end_of_game_message">"Game finished"</string>
   <string name="opponent_passed_message">"%1$s has passed!"</string>
   <string name="button_continue_label">Continue</string>
   <string name="sign_out">Sign out</string>
