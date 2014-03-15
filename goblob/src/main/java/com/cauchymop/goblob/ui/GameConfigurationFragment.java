@@ -1,7 +1,5 @@
 package com.cauchymop.goblob.ui;
 
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.view.LayoutInflater;
@@ -17,8 +15,6 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.Player.PlayerType;
-import com.cauchymop.goblob.model.StoneColor;
-import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.Player;
 
 /**

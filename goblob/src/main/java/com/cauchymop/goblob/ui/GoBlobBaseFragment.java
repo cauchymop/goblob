@@ -2,8 +2,6 @@ package com.cauchymop.goblob.ui;
 
 import android.support.v4.app.Fragment;
 
-import com.google.android.gms.games.GamesClient;
-
 /**
  * Base Fragment implementing common behaviour.
  */
