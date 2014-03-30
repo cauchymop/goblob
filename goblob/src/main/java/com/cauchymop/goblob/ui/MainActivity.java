@@ -15,22 +15,25 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameMoveSerializer;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
-import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchInitiatedListener;
 import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdateReceivedListener;
-import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdatedListener;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
 
 import static com.cauchymop.goblob.model.Player.PlayerType;
+import static com.google.android.gms.games.Games.Achievements;
+import static com.google.android.gms.games.Games.Players;
+import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 
-public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchInitiatedListener,
-    OnTurnBasedMatchUpdatedListener, OnTurnBasedMatchUpdateReceivedListener {
+public class MainActivity extends BaseGameActivity
+    implements OnTurnBasedMatchUpdateReceivedListener {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
@@ -94,7 +97,7 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
       turnBasedMatch = mHelper.getTurnBasedMatch();
       startGame(createGoGame(turnBasedMatch));
     }
-    getGamesClient().registerMatchUpdateListener(this);
+    TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
   }
 
   @Override
@@ -106,11 +109,6 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   @Override
   protected boolean isSignedIn() {
     return super.isSignedIn();
-  }
-
-  @Override
-  protected GamesClient getGamesClient() {
-    return super.getGamesClient();
   }
 
   private GoBlobBaseFragment getCurrentFragment() {
@@ -152,7 +150,7 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
     if (id == R.id.menu_achievements) {
-      startActivityForResult(getGamesClient().getAchievementsIntent(), REQUEST_ACHIEVEMENTS);
+      startActivityForResult(Achievements.getAchievementsIntent(getApiClient()), REQUEST_ACHIEVEMENTS);
       return true;
     } else if (id == R.id.menu_signout) {
       signOut();
@@ -185,15 +183,13 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   }
 
   public void checkMatches(View v) {
-    Intent checkMatchesIntent = getGamesClient().getMatchInboxIntent();
-    startActivityForResult(checkMatchesIntent, CHECK_MATCHES);
+    startActivityForResult(TurnBasedMultiplayer.getInboxIntent(getApiClient()), CHECK_MATCHES);
   }
 
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
     this.boardSize = boardSize;
     if (opponentPlayer.getType().isRemote()) {
-      Intent selectPlayersIntent = getGamesClient().getSelectPlayersIntent(1, 1);
-      startActivityForResult(selectPlayersIntent, SELECT_PLAYER);
+      startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(getApiClient(), 1, 1), SELECT_PLAYER);
     } else {
       displayGameConfigurationScreen(opponentPlayer, boardSize);
     }
@@ -221,10 +217,10 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
     String matchId = turnBasedMatch.getMatchId();
     String myId = getMyId(turnBasedMatch);
     if (gogame.isGameEnd()) {
-      getGamesClient().takeTurn(this, matchId, gameMoveSerializer.serialize(gogame), myId);
-      getGamesClient().finishTurnBasedMatch(this, matchId);
+      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.serialize(gogame), myId);
+      TurnBasedMultiplayer.finishMatch(getApiClient(), matchId);
     } else {
-      getGamesClient().takeTurn(this, matchId, gameMoveSerializer.serialize(gogame),
+      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.serialize(gogame),
           getOpponentId(turnBasedMatch, myId));
     }
   }
@@ -251,39 +247,40 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
     }
 
     // create game
-    TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
+    TurnBasedMatchConfig turnBasedMatchConfig = TurnBasedMatchConfig.builder()
         .addInvitedPlayers(invitees)
         .setVariant(boardSize)
         .setAutoMatchCriteria(autoMatchCriteria).build();
 
     // kick the match off
-    getGamesClient().createTurnBasedMatch(this, tbmc);
-  }
+    TurnBasedMultiplayer.createMatch(getApiClient(), turnBasedMatchConfig)
+        .setResultCallback(new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
+          @Override
+          public void onResult(TurnBasedMultiplayer.InitiateMatchResult initiateMatchResult) {
+            Log.d(TAG, "InitiateMatchResult " + initiateMatchResult);
+            if (!initiateMatchResult.getStatus().isSuccess()) {
+              return;
+            }
+            turnBasedMatch = initiateMatchResult.getMatch();
 
-  @Override
-  public void onTurnBasedMatchInitiated(int statusCode, TurnBasedMatch turnBasedMatch) {
-    Log.d(TAG, "onTurnBasedMatchInitiated " + statusCode);
-    if (statusCode != GamesClient.STATUS_OK) {
-      return;
-    }
-    this.turnBasedMatch = turnBasedMatch;
+            GoGame gogame = createGoGame(turnBasedMatch);
+            if (turnBasedMatch.getData() == null) {
+              Log.d(TAG, "getData is null, saving a new game");
+              TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(),
+                  gameMoveSerializer.serialize(gogame), getMyId(turnBasedMatch));
+            }
 
-    GoGame gogame = createGoGame(turnBasedMatch);
-    if (turnBasedMatch.getData() == null) {
-      Log.d(TAG, "getData is null, saving a new game");
-      getGamesClient().takeTurn(this, turnBasedMatch.getMatchId(),
-          gameMoveSerializer.serialize(gogame), getMyId(turnBasedMatch));
-    }
-
-    // TODO: start activity
-    Log.d(TAG, "Game created, starting game activity...");
-    startGame(gogame);
+            // TODO: start activity
+            Log.d(TAG, "Game created, starting game activity...");
+            startGame(gogame);
+          }
+        });
   }
 
   private GoGame createGoGame(TurnBasedMatch turnBasedMatch) {
     if (turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE
         && turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-      getGamesClient().finishTurnBasedMatch(this, turnBasedMatch.getMatchId());
+      TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
     }
 
     String myId = getMyId(turnBasedMatch);
@@ -321,7 +318,7 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   }
 
   private String getMyId(TurnBasedMatch turnBasedMatch) {
-    return turnBasedMatch.getParticipantId(getGamesClient().getCurrentPlayerId());
+    return turnBasedMatch.getParticipantId(Players.getCurrentPlayerId(getApiClient()));
   }
 
   private GoPlayer createGoPlayer(TurnBasedMatch turnBasedMatch, String creatorId,
@@ -333,14 +330,6 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
   }
 
   @Override
-  public void onTurnBasedMatchUpdated(int statusCode, TurnBasedMatch turnBasedMatch) {
-    Log.d(TAG, "onTurnBasedMatchUpdated " + statusCode);
-    if (turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
-      startGame(turnBasedMatch);
-    }
-  }
-
-  @Override
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
     startGame(turnBasedMatch);
@@ -348,5 +337,14 @@ public class MainActivity extends BaseGameActivity implements OnTurnBasedMatchIn
 
   @Override
   public void onTurnBasedMatchRemoved(String s) {
+    Log.d(TAG, "onTurnBasedMatchRemoved: " + s);
+  }
+
+  public void unlockAchievement(String achievementId) {
+    Achievements.unlock(getApiClient(), achievementId);
+  }
+
+  public Player getLocalPlayer() {
+    return Players.getCurrentPlayer(getApiClient());
   }
 }

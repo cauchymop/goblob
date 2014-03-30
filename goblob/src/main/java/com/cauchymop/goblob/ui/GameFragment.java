@@ -22,7 +22,6 @@ import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
-import com.google.android.gms.games.GamesClient;
 
 /**
  * Game Page Fragment.
@@ -223,25 +222,24 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
   }
 
   private void updateAchievements() {
-    final GamesClient gamesClient = getGoBlobActivity().getGamesClient();
-    gamesClient.unlockAchievement(getString(R.string.achievements_gamers));
+    getGoBlobActivity().unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGame.getBoardSize()) {
       case 9:
-        gamesClient.unlockAchievement(getString(R.string.achievements_9x9));
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_9x9));
         break;
       case 13:
-        gamesClient.unlockAchievement(getString(R.string.achievements_13x13));
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_13x13));
         break;
       case 19:
-        gamesClient.unlockAchievement(getString(R.string.achievements_19x19));
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_19x19));
         break;
     }
     switch (goGame.getOpponent().getType()) {
       case AI:
-        gamesClient.unlockAchievement(getString(R.string.achievements_ai));
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_ai));
         break;
       case HUMAN_LOCAL:
-        gamesClient.unlockAchievement(getString(R.string.achievements_human));
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_human));
         break;
     }
   }
