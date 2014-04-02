@@ -31,7 +31,7 @@ public class GoBoardTest {
     Assert.assertTrue(goBoard.play(StoneColor.Black, goBoard.getPos(0, 0)));
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(0, 1)));
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(1, 0)));
-    Assert.assertEquals(StoneColor.Empty, goBoard.getColor(0, 0));
+    Assert.assertNull(goBoard.getColor(0, 0));
   }
 
   @Test
@@ -42,8 +42,8 @@ public class GoBoardTest {
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(0, 1)));
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(1, 1)));
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(2, 0)));
-    Assert.assertEquals(StoneColor.Empty, goBoard.getColor(0, 0));
-    Assert.assertEquals(StoneColor.Empty, goBoard.getColor(1, 0));
+    Assert.assertNull(goBoard.getColor(0, 0));
+    Assert.assertNull(goBoard.getColor(1, 0));
   }
 
   @Test

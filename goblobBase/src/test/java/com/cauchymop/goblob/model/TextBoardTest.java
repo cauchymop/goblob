@@ -32,9 +32,9 @@ public class TextBoardTest {
   public void testFillBoard() {
     GoBoard board = new GoBoard(2);
     TextBoard.fillBoard(board, ".●\n○.\n");
-    Assert.assertEquals(StoneColor.Empty, board.getColor(0, 0));
+    Assert.assertNull(board.getColor(0, 0));
+    Assert.assertNull(board.getColor(1, 1));
     Assert.assertEquals(StoneColor.Black, board.getColor(1, 0));
-    Assert.assertEquals(StoneColor.Empty, board.getColor(1, 1));
     Assert.assertEquals(StoneColor.White, board.getColor(0, 1));
   }
 
@@ -43,8 +43,8 @@ public class TextBoardTest {
     GoBoard board = new GoBoard(2);
     TextBoard.fillBoard(board, "# .●\n○");
     Assert.assertEquals(StoneColor.White, board.getColor(0, 0));
-    Assert.assertEquals(StoneColor.Empty, board.getColor(1, 0));
-    Assert.assertEquals(StoneColor.Empty, board.getColor(1, 1));
-    Assert.assertEquals(StoneColor.Empty, board.getColor(0, 1));
+    Assert.assertNull(board.getColor(1, 0));
+    Assert.assertNull(board.getColor(1, 1));
+    Assert.assertNull(board.getColor(0, 1));
   }
 }

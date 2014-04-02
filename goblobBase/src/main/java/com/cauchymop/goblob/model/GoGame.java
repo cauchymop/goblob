@@ -1,10 +1,12 @@
 package com.cauchymop.goblob.model;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
@@ -13,8 +15,7 @@ public class GoGame extends Game implements Serializable {
 
   public static final int NO_MOVE = -1;
 
-  private GoPlayer blackPlayer;
-  private GoPlayer whitePlayer;
+  private Map<StoneColor, GoPlayer> players = Maps.newHashMap();
   private int boardSize;
   private GoBoard board;
   private transient PlayerController blackController;
@@ -178,14 +179,6 @@ public class GoGame extends Game implements Serializable {
     this.whiteController = whiteController;
   }
 
-  public GoPlayer getBlackPlayer() {
-    return blackPlayer;
-  }
-
-  public GoPlayer getWhitePlayer() {
-    return whitePlayer;
-  }
-
   public StoneColor getCurrentColor() {
     return currentColor;
   }
@@ -214,15 +207,8 @@ public class GoGame extends Game implements Serializable {
     return getGoPlayer(getCurrentColor().getOpponent());
   }
 
-  private GoPlayer getGoPlayer(StoneColor color) {
-    switch (color) {
-      case Black:
-        return getBlackPlayer();
-      case White:
-        return getWhitePlayer();
-      default:
-        throw new IllegalStateException("Invalid Player Color: " + getCurrentColor());
-    }
+  public GoPlayer getGoPlayer(StoneColor color) {
+    return players.get(color);
   }
 
   public boolean isLastMovePass() {
@@ -262,17 +248,13 @@ public class GoGame extends Game implements Serializable {
     return moveHistory;
   }
 
-  public void setBlackPlayer(GoPlayer blackPlayer) {
-    this.blackPlayer = blackPlayer;
-  }
-
-  public void setWhitePlayer(GoPlayer whitePlayer) {
-    this.whitePlayer = whitePlayer;
+  public void setGoPlayer(StoneColor color, GoPlayer player) {
+    players.put(color, player);
   }
 
   @Override
   public String toString() {
-    return String.format("GoGame(size=%d, white=%s, black=%s, moves=%s)", getBoardSize(),
-        getWhitePlayer(), getBlackPlayer(), getMoveHistory());
+    return String.format("GoGame(size=%d, black=%s, white=%s, moves=%s)", getBoardSize(),
+        getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), getMoveHistory());
   }
 }

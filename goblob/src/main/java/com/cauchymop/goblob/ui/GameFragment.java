@@ -114,8 +114,8 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
 
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     boardViewContainer.removeAllViews();
-    goGame.setBlackController(getController(goGame.getBlackPlayer()));
-    goGame.setWhiteController(getController(goGame.getWhitePlayer()));
+    goGame.setBlackController(getController(goGame.getGoPlayer(StoneColor.Black)));
+    goGame.setWhiteController(getController(goGame.getGoPlayer(StoneColor.White)));
     goGame.addListener(this);
     goGame.runGame();
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);

@@ -174,7 +174,7 @@ public class GoBoard implements Serializable {
   }
 
   private StoneColor getColorByGroup(int group) {
-    if (group == 0) return StoneColor.Empty;
+    if (group == 0) return null;
     return (group < whiteGroupStart) ? StoneColor.Black : StoneColor.White;
   }
 

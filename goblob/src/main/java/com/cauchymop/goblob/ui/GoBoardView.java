@@ -160,7 +160,7 @@ public class GoBoardView extends View {
 
   private void drawStone(Canvas canvas, int radius, StoneColor contentColor,
       int centerX, int centerY) {
-    if (contentColor != StoneColor.Empty) {
+    if (contentColor != null) {
       Bitmap stoneBitmap = (contentColor == StoneColor.Black)
           ? blackStoneBitmap : whiteStoneBitmap;
       rect.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
