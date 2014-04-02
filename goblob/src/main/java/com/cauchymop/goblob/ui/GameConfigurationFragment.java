@@ -15,6 +15,7 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.Player.PlayerType;
+import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.Player;
 
 /**
@@ -132,37 +133,19 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       homePlayer.setName(homePayerNameText.toString());
     }
 
-    GoGame goGame;
-    final PlayerColor homePlayerColor = (PlayerColor) homePlayerColorSpinner.getSelectedItem();
-    final GoPlayer blackPlayer, whitePlayer;
-    switch (homePlayerColor != null ? homePlayerColor : PlayerColor.BLACK) {
-      case BLACK:
-        blackPlayer = homePlayer;
-        whitePlayer = opponentPlayer;
-        break;
-      case WHITE:
-      default:
-        blackPlayer = opponentPlayer;
-        whitePlayer = homePlayer;
-        break;
-    }
+    final StoneColor homePlayerColor = (StoneColor) homePlayerColorSpinner.getSelectedItem();
 
-    goGame = new GoGame(boardSize);
-    goGame.setBlackPlayer(blackPlayer);
-    goGame.setWhitePlayer(whitePlayer);
+    GoGame goGame = new GoGame(boardSize);
+    goGame.setGoPlayer(homePlayerColor, homePlayer);
+    goGame.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
 
     getGoBlobActivity().startGame(goGame);
   }
 
-  private enum PlayerColor {
-    BLACK,
-    WHITE
-  }
-
-  private class PlayerTypeAdapter extends ArrayAdapter<PlayerColor> {
+  private class PlayerTypeAdapter extends ArrayAdapter<StoneColor> {
 
     public PlayerTypeAdapter() {
-      super(getGoBlobActivity(), android.R.layout.simple_spinner_item, PlayerColor.values());
+      super(getGoBlobActivity(), android.R.layout.simple_spinner_item, StoneColor.values());
     }
   }
 }

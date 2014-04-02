@@ -15,6 +15,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameMoveSerializer;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.Player;
@@ -278,8 +279,8 @@ public class MainActivity extends BaseGameActivity
   }
 
   private GoGame createGoGame(TurnBasedMatch turnBasedMatch) {
-    if (turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE
-        && turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN) {
+    boolean myTurn = turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN;
+    if (myTurn && turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
       TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
     }
 
@@ -291,19 +292,19 @@ public class MainActivity extends BaseGameActivity
           turnBasedMatch.getParticipant(participantId).getPlayer().getPlayerId()));
     }
 
-    GoGame gogame = new GoGame(turnBasedMatch.getVariant());
+    int boardSize = turnBasedMatch.getVariant();
+    GoGame gogame = new GoGame(boardSize);
     gameMoveSerializer.deserializeTo(turnBasedMatch.getData(), gogame);
 
     GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.HUMAN_LOCAL);
     GoPlayer opponentPlayer =
         createGoPlayer(turnBasedMatch, opponentId, PlayerType.HUMAN_REMOTE_FRIEND);
-    if (gogame.getMoveHistory().size() % 2 == 0) {
-      gogame.setBlackPlayer(myPlayer);
-      gogame.setWhitePlayer(opponentPlayer);
-    } else {
-      gogame.setBlackPlayer(opponentPlayer);
-      gogame.setWhitePlayer(myPlayer);
-    }
+
+    StoneColor turnColor = (gogame.getMoveHistory().size() % 2 == 0)
+        ? StoneColor.Black : StoneColor.White;
+
+    gogame.setGoPlayer(myTurn ? turnColor : turnColor.getOpponent(), myPlayer);
+    gogame.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
 
     return gogame;
   }

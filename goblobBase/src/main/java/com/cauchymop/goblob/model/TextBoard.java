@@ -20,9 +20,10 @@ public class TextBoard {
   }
 
   private static char getChar(StoneColor color) {
+    if (color == null) {
+      return '.';
+    }
     switch (color) {
-      case Empty:
-        return '.';
       case Black:
         return '●';
       case White:
