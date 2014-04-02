@@ -155,7 +155,6 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
       public void run() {
         updateTitleArea();
         updateMessageArea();
-        updateAchievements();
       }
     });
   }
@@ -219,6 +218,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
     // Refresh UI and current controller
     goBoardView.postInvalidate();
     updateFromGameState();
+    updateAchievements();
   }
 
   private void updateAchievements() {
