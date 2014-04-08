@@ -14,7 +14,7 @@ import android.widget.Spinner;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.Player.PlayerType;
+import com.cauchymop.goblob.model.GoPlayer.PlayerType;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.Player;
 
@@ -79,7 +79,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, getString(R.string.home_player_default_name));
+    homePlayer = new GoPlayer(PlayerType.LOCAL, getString(R.string.home_player_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
@@ -116,7 +116,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   public GoPlayer getHomePlayer() {
     final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
     final String homePlayerName = currentPlayer.getDisplayName();
-    final GoPlayer homePlayer = new GoPlayer(PlayerType.HUMAN_LOCAL, homePlayerName);
+    final GoPlayer homePlayer = new GoPlayer(PlayerType.LOCAL, homePlayerName);
     getGoBlobActivity().getAvatarManager().setAvatarUri(getActivity(), homePlayer,
         currentPlayer.getIconImageUri());
     return homePlayer;

@@ -15,18 +15,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.AIPlayerController;
-import com.cauchymop.goblob.model.Game;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.Player;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
 
 /**
  * Game Page Fragment.
  */
-public class GameFragment extends GoBlobBaseFragment implements Game.Listener<GoGame>,
+public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
     GoBoardView.Listener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
@@ -191,17 +188,14 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
     messageView.setText(message);
   }
 
-  private PlayerController getController(Player player) {
+  private PlayerController getController(GoPlayer player) {
     switch (player.getType()) {
-      case AI:
-        return new AIPlayerController(goGame);
-      case HUMAN_LOCAL:
+      case LOCAL:
         return new LocalHumanPlayerController(goGame);
-      case HUMAN_REMOTE_FRIEND:
+      case REMOTE:
         return new RemoteHumanPlayerController(goGame);
-      case HUMAN_REMOTE_RANDOM:
       default:
-        return getPlayerController();
+        throw new RuntimeException("Invalid PlayerControler type");
     }
   }
 
@@ -211,7 +205,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
 
   @Override
   public void gameChanged(GoGame game) {
-    if (game.getCurrentPlayer().getType() == Player.PlayerType.HUMAN_REMOTE_FRIEND) {
+    if (game.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
       getGoBlobActivity().giveTurn(game);
     }
 
@@ -235,10 +229,7 @@ public class GameFragment extends GoBlobBaseFragment implements Game.Listener<Go
         break;
     }
     switch (goGame.getOpponent().getType()) {
-      case AI:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_ai));
-        break;
-      case HUMAN_LOCAL:
+      case LOCAL:
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_human));
         break;
     }
