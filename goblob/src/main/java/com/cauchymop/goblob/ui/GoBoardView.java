@@ -23,7 +23,6 @@ public class GoBoardView extends View {
 
   private static final Paint lastMovePaint = createLinePaint(0xFFFF0000, 5);
   private static final Paint linePaint = createLinePaint(0xFF000000, 1);
-  private static final Paint textPaint = createTextPaint(0xFFFF0000, 20);
 
   private static final double STONE_RATIO = 0.95;
 

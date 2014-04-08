@@ -193,14 +193,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
       case LOCAL:
         return new LocalHumanPlayerController(goGame);
       case REMOTE:
-        return new RemoteHumanPlayerController(goGame);
+        return new HumanPlayerController(goGame);
       default:
         throw new RuntimeException("Invalid PlayerControler type");
     }
-  }
-
-  private PlayerController getPlayerController() {
-    throw new RuntimeException("Unsupported player type");
   }
 
   @Override
@@ -284,20 +280,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
         System.err.println("Exception while buzzing");
         e.printStackTrace();
       }
-    }
-  }
-
-  private class RemoteHumanPlayerController extends HumanPlayerController
-      implements MessageManager.MovePlayedListener {
-
-    public RemoteHumanPlayerController(GoGame goGame) {
-      super(goGame);
-//      messageManager.addMovePlayedListener(this);
-    }
-
-    @Override
-    public void opponentPlayed(int move) {
-      Log.d(TAG, "opponentPlayer: " + move);
     }
   }
 

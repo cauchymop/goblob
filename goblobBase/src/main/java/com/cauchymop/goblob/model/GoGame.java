@@ -140,10 +140,6 @@ public class GoGame implements Serializable {
     return copy;
   }
 
-  public int getPosCount() {
-    return boardSize * boardSize + 1;
-  }
-
   public int getPos(int x, int y) {
     return y * getBoardSize() + x;
   }
