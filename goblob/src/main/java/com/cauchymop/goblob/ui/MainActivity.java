@@ -17,8 +17,9 @@ import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.games.GamesClient;
+import com.google.android.gms.games.Games;
 import com.google.android.gms.games.Player;
+import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdateReceivedListener;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
@@ -76,7 +77,7 @@ public class MainActivity extends BaseGameActivity
 
   private void handleMatchSelected(Intent intent) {
     Log.d(TAG, "handleMatchSelected.");
-    turnBasedMatch = intent.getParcelableExtra(GamesClient.EXTRA_TURN_BASED_MATCH);
+    turnBasedMatch = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
     startGame(turnBasedMatch);
   }
 
@@ -234,13 +235,13 @@ public class MainActivity extends BaseGameActivity
     Log.d(TAG, "Select players UI succeeded.");
 
     // get the invitee list
-    final ArrayList<String> invitees = intent.getStringArrayListExtra(GamesClient.EXTRA_PLAYERS);
+    final ArrayList<String> invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
     Log.d(TAG, "Invitee count: " + invitees.size());
 
     // get the automatch criteria
     Bundle autoMatchCriteria = null;
-    int minAutoMatchPlayers = intent.getIntExtra(GamesClient.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
-    int maxAutoMatchPlayers = intent.getIntExtra(GamesClient.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
+    int minAutoMatchPlayers = intent.getIntExtra(Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
+    int maxAutoMatchPlayers = intent.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
     if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
       autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
           minAutoMatchPlayers, maxAutoMatchPlayers, 0);
