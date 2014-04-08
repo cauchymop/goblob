@@ -29,7 +29,7 @@ import com.google.example.games.basegameutils.BaseGameActivity;
 
 import java.util.ArrayList;
 
-import static com.cauchymop.goblob.model.Player.PlayerType;
+import static com.cauchymop.goblob.model.GoPlayer.PlayerType;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.Players;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
@@ -44,7 +44,7 @@ public class MainActivity extends BaseGameActivity
   private static final String TAG = MainActivity.class.getName();
   private int boardSize = 9;
   private AvatarManager avatarManager = new AvatarManager();
-  private GameMoveSerializer<GoGame> gameMoveSerializer = new GameMoveSerializer<GoGame>();
+  private GameMoveSerializer gameMoveSerializer = new GameMoveSerializer();
   private TurnBasedMatch turnBasedMatch;
   private GameFragment gameFragment;
 
@@ -190,7 +190,7 @@ public class MainActivity extends BaseGameActivity
 
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
     this.boardSize = boardSize;
-    if (opponentPlayer.getType().isRemote()) {
+    if (opponentPlayer.getType() == PlayerType.REMOTE) {
       startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(getApiClient(), 1, 1), SELECT_PLAYER);
     } else {
       displayGameConfigurationScreen(opponentPlayer, boardSize);
@@ -297,9 +297,9 @@ public class MainActivity extends BaseGameActivity
     GoGame gogame = new GoGame(boardSize);
     gameMoveSerializer.deserializeTo(turnBasedMatch.getData(), gogame);
 
-    GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.HUMAN_LOCAL);
+    GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
     GoPlayer opponentPlayer =
-        createGoPlayer(turnBasedMatch, opponentId, PlayerType.HUMAN_REMOTE_FRIEND);
+        createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE);
 
     StoneColor turnColor = (gogame.getMoveHistory().size() % 2 == 0)
         ? StoneColor.Black : StoneColor.White;

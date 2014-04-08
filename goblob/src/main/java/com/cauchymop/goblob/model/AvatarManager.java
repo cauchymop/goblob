@@ -12,20 +12,20 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 
 /**
- * Class storing avatars for {@link Player}s.
+ * Class storing avatars for {@link GoPlayer}s.
  */
 public class AvatarManager {
-  private Map<Player, Bitmap> avatars = Maps.newHashMap();
+  private Map<GoPlayer, Bitmap> avatars = Maps.newHashMap();
 
-  public Bitmap getAvatar(Player player) {
+  public Bitmap getAvatar(GoPlayer player) {
     return avatars.get(player);
   }
 
-  public void setAvatar(Player player, Bitmap avatar) {
+  public void setAvatar(GoPlayer player, Bitmap avatar) {
     avatars.put(player, avatar);
   }
 
-  public void setAvatar(Player player, Drawable avatar) {
+  public void setAvatar(GoPlayer player, Drawable avatar) {
     if (avatar == null) {
       setAvatar(player, (Bitmap)null);
       return;
@@ -40,11 +40,11 @@ public class AvatarManager {
     setAvatar(player, bitmap);
   }
 
-  public void setAvatarUri(Context context, Player player, Uri avatarUri) {
+  public void setAvatarUri(Context context, GoPlayer player, Uri avatarUri) {
     fetchAvatarFromUri(context, player, avatarUri);
   }
 
-  private void fetchAvatarFromUri(Context context, final Player player, Uri avatarUri) {
+  private void fetchAvatarFromUri(Context context, final GoPlayer player, Uri avatarUri) {
     ImageManager.create(context).loadImage(new ImageManager.OnImageLoadedListener() {
 
       @Override

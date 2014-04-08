@@ -2,16 +2,18 @@ package com.cauchymop.goblob.model;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
  */
-public class GoGame extends Game implements Serializable {
+public class GoGame implements Serializable {
 
   public static final int NO_MOVE = -1;
 
@@ -28,6 +30,7 @@ public class GoGame extends Game implements Serializable {
   private int boardPoolSize = 0;
 
   private transient Thread thread;
+  private transient Set<Listener> listeners = Sets.newHashSet();
 
   public GoGame(int boardSize) {
     this.boardSize = boardSize;
@@ -89,7 +92,6 @@ public class GoGame extends Game implements Serializable {
     return play(controller, getPos(x, y));
   }
 
-  @Override
   public boolean play(PlayerController controller, int move) {
     if (controller != getCurrentController()) {
       return false;
@@ -123,7 +125,6 @@ public class GoGame extends Game implements Serializable {
     fireGameChanged();
   }
 
-  @Override
   public void undo() {
     currentColor = currentColor.getOpponent();
     recycleBoard(boardHistory.remove(boardHistory.size() - 1));
@@ -131,8 +132,7 @@ public class GoGame extends Game implements Serializable {
     board = boardHistory.get(boardHistory.size() - 1);
   }
 
-  @Override
-  public Game copy() {
+  public GoGame copy() {
     GoGame copy = new GoGame(boardSize);
     for (Integer move : moveHistory) {
       copy.play(copy.getCurrentController(), move);
@@ -140,7 +140,6 @@ public class GoGame extends Game implements Serializable {
     return copy;
   }
 
-  @Override
   public int getPosCount() {
     return boardSize * boardSize + 1;
   }
@@ -149,7 +148,6 @@ public class GoGame extends Game implements Serializable {
     return y * getBoardSize() + x;
   }
 
-  @Override
   public boolean isGameEnd() {
     if (moveHistory.size() < 2) {
       return false;
@@ -160,7 +158,6 @@ public class GoGame extends Game implements Serializable {
     return lastMove == passMove && previousMove == passMove;
   }
 
-  @Override
   public double getScore() {
     return board.getScore(currentColor);
   }
@@ -185,18 +182,6 @@ public class GoGame extends Game implements Serializable {
 
   public int getBoardSize() {
     return boardSize;
-  }
-
-  public double[] getScores() {
-    PlayerController lastController = whiteController;
-    if (!(lastController instanceof AIPlayerController)) {
-      lastController = blackController;
-      if (!(lastController instanceof AIPlayerController)) {
-        return null;
-      }
-    }
-    AIPlayerController aiController = (AIPlayerController) lastController;
-    return aiController.getAi().getScores();
   }
 
   public GoPlayer getCurrentPlayer() {
@@ -243,7 +228,6 @@ public class GoGame extends Game implements Serializable {
     runGame();
   }
 
-  @Override
   public List<Integer> getMoveHistory() {
     return moveHistory;
   }
@@ -256,5 +240,24 @@ public class GoGame extends Game implements Serializable {
   public String toString() {
     return String.format("GoGame(size=%d, black=%s, white=%s, moves=%s)", getBoardSize(),
         getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), getMoveHistory());
+  }
+
+  public void addListener(Listener listener) {
+    listeners.add(listener);
+  }
+
+  public void removeListener(Listener listener) {
+    listeners.remove(listener);
+  }
+
+  protected void fireGameChanged() {
+    if (listeners.isEmpty()) return;
+    for (Listener listener : listeners) {
+      listener.gameChanged(this);
+    }
+  }
+
+  public interface Listener {
+    public void gameChanged(GoGame game);
   }
 }

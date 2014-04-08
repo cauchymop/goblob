@@ -136,7 +136,6 @@ public class GoBoardView extends View {
   }
 
   private void drawBoardContent(Canvas canvas, int startLineX, int startLineY) {
-    double[] scores = game.getScores();
     int radius = cellSizeInPixels / 2;
     int lastMove = game.getLastMove();
     for (int x = 0; x < game.getBoardSize(); x++) {
@@ -148,11 +147,6 @@ public class GoBoardView extends View {
         // Last move
         if (lastMove == pos) {
           canvas.drawCircle(centerX, centerY, (float) radius, lastMovePaint);
-        }
-        // Debug score information
-        if (scores != null && !Double.isNaN(scores[pos])) {
-          double score = scores[pos];
-          canvas.drawText(Double.toString(score), centerX, centerY, textPaint);
         }
       }
     }

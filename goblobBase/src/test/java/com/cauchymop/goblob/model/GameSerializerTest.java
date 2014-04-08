@@ -11,7 +11,7 @@ import static org.fest.assertions.Assertions.assertThat;
 public class GameSerializerTest {
 
   private GoGame goGame;
-  private GameMoveSerializer<GoGame> serializer;
+  private GameMoveSerializer serializer;
 
   @Before
   public void setupGoGame() {
@@ -20,7 +20,7 @@ public class GameSerializerTest {
 
   @Before
   public void setupSerializer() {
-    serializer = new GameMoveSerializer<GoGame>();
+    serializer = new GameMoveSerializer();
   }
 
   @Test

@@ -8,17 +8,17 @@ import com.google.common.primitives.Ints;
 import java.util.List;
 
 /**
- * A serializer for the moves of a {@link Game}.
+ * A serializer for the moves of a {@link GoGame}.
  */
-public class GameMoveSerializer<T extends Game> {
+public class GameMoveSerializer {
 
   protected static final String TOKEN_SEPARATOR = " ";
 
-  public byte[] serialize(T game) {
+  public byte[] serialize(GoGame game) {
     return Joiner.on(TOKEN_SEPARATOR).join(game.getMoveHistory()).getBytes();
   }
 
-  public void deserializeTo(byte[] bytes, T game) {
+  public void deserializeTo(byte[] bytes, GoGame game) {
     if (bytes == null || bytes.length == 0) {
       return;
     }
@@ -31,14 +31,14 @@ public class GameMoveSerializer<T extends Game> {
     play(game, importedMoves.subList(commonMoveLength, importedMoves.size()));
   }
 
-  private void play(T game, List<Integer> movesToPlay) {
+  private void play(GoGame game, List<Integer> movesToPlay) {
     for (Integer move : movesToPlay) {
       game.play(null, move);
     }
 
   }
 
-  private void undo(T game, int undoCount) {
+  private void undo(GoGame game, int undoCount) {
     for (int undoIndex = 0; undoIndex < undoCount; undoIndex++) {
       game.undo();
     }
