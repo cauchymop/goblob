@@ -14,6 +14,7 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameMoveSerializer;
 import com.cauchymop.goblob.model.GoGame;
+import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.common.api.ResultCallback;
@@ -97,7 +98,7 @@ public class MainActivity extends BaseGameActivity
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
       turnBasedMatch = mHelper.getTurnBasedMatch();
-      startGame(createGoGame(turnBasedMatch));
+      startGame(createGoGameController(turnBasedMatch));
     }
     TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
   }
@@ -203,15 +204,15 @@ public class MainActivity extends BaseGameActivity
   }
 
   public void startGame(TurnBasedMatch turnBasedMatch) {
-    startGame(createGoGame(turnBasedMatch));
+    startGame(createGoGameController(turnBasedMatch));
   }
 
-  public void startGame(GoGame goGame) {
+  public void startGame(GoGameController goGameController) {
     if (gameFragment == null || !gameFragment.isVisible()) {  // TODO: || isDifferentGame()
-      gameFragment = GameFragment.newInstance(goGame);
+      gameFragment = GameFragment.newInstance(goGameController);
       displayFragment(gameFragment, true);
     } else {
-      gameFragment.setGame(goGame);
+      gameFragment.setGameController(goGameController);
     }
   }
 
@@ -265,21 +266,21 @@ public class MainActivity extends BaseGameActivity
             }
             turnBasedMatch = initiateMatchResult.getMatch();
 
-            GoGame gogame = createGoGame(turnBasedMatch);
+            GoGameController goGameController = createGoGameController(turnBasedMatch);
             if (turnBasedMatch.getData() == null) {
               Log.d(TAG, "getData is null, saving a new game");
               TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(),
-                  gameMoveSerializer.serialize(gogame), getMyId(turnBasedMatch));
+                  gameMoveSerializer.serialize(goGameController.getGame()), getMyId(turnBasedMatch));
             }
 
             // TODO: start activity
             Log.d(TAG, "Game created, starting game activity...");
-            startGame(gogame);
+            startGame(goGameController);
           }
         });
   }
 
-  private GoGame createGoGame(TurnBasedMatch turnBasedMatch) {
+  private GoGameController createGoGameController(TurnBasedMatch turnBasedMatch) {
     boolean myTurn = turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN;
     if (myTurn && turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
       TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
@@ -304,10 +305,11 @@ public class MainActivity extends BaseGameActivity
     StoneColor turnColor = (gogame.getMoveHistory().size() % 2 == 0)
         ? StoneColor.Black : StoneColor.White;
 
-    gogame.setGoPlayer(myTurn ? turnColor : turnColor.getOpponent(), myPlayer);
-    gogame.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
+    GoGameController goGameController = new GoGameController(gogame);
+    goGameController.setGoPlayer(myTurn ? turnColor : turnColor.getOpponent(), myPlayer);
+    goGameController.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
 
-    return gogame;
+    return goGameController;
   }
 
   private String getOpponentId(TurnBasedMatch turnBasedMatch, String id) {

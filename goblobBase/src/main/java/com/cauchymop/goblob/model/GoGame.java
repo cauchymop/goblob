@@ -17,11 +17,8 @@ public class GoGame implements Serializable {
 
   public static final int NO_MOVE = -1;
 
-  private Map<StoneColor, GoPlayer> players = Maps.newHashMap();
   private int boardSize;
   private GoBoard board;
-  private transient PlayerController blackController;
-  private transient PlayerController whiteController;
   private StoneColor currentColor;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
@@ -29,44 +26,11 @@ public class GoGame implements Serializable {
   private GoBoard[] boardPool = new GoBoard[10];
   private int boardPoolSize = 0;
 
-  private transient Thread thread;
-  private transient Set<Listener> listeners = Sets.newHashSet();
-
   public GoGame(int boardSize) {
     this.boardSize = boardSize;
     currentColor = StoneColor.Black;
     board = getNewBoard();
     boardHistory.add(board);
-  }
-
-  public void runGame() {
-    thread = new Thread("Game") {
-
-      @Override
-      public void run() {
-        while (!isGameEnd()) {
-          System.out.println(currentColor + ".startTurn()");
-          getCurrentController().startTurn();
-        }
-      }
-    };
-    thread.start();
-  }
-
-  private PlayerController getCurrentController() {
-    if (currentColor == StoneColor.Black) {
-      return blackController;
-    } else {
-      return whiteController;
-    }
-  }
-
-  private PlayerController getOpponentController() {
-    if (currentColor == StoneColor.Black) {
-      return whiteController;
-    } else {
-      return blackController;
-    }
   }
 
   private GoBoard getNewBoard() {
@@ -84,19 +48,7 @@ public class GoGame implements Serializable {
     boardPoolSize++;
   }
 
-  public boolean pass(PlayerController controller) {
-    return play(controller, getPassValue());
-  }
-
-  public boolean play(PlayerController controller, int x, int y) {
-    return play(controller, getPos(x, y));
-  }
-
-  public boolean play(PlayerController controller, int move) {
-    if (controller != getCurrentController()) {
-      return false;
-    }
-
+  public boolean play(int move) {
     GoBoard newBoard = getNewBoard();
     newBoard.copyFrom(board);
 
@@ -119,10 +71,6 @@ public class GoGame implements Serializable {
     moveHistory.add(move);
     board = newBoard;
     currentColor = currentColor.getOpponent();
-    if (getOpponentController() != null) {
-      getOpponentController().opponentPlayed(move);
-    }
-    fireGameChanged();
   }
 
   public void undo() {
@@ -135,7 +83,7 @@ public class GoGame implements Serializable {
   public GoGame copy() {
     GoGame copy = new GoGame(boardSize);
     for (Integer move : moveHistory) {
-      copy.play(copy.getCurrentController(), move);
+      copy.play(move);
     }
     return copy;
   }
@@ -162,34 +110,12 @@ public class GoGame implements Serializable {
     return board.getColor(x, y);
   }
 
-  public void setBlackController(PlayerController blackController) {
-    System.out.println("setBlackController: " + blackController);
-    this.blackController = blackController;
-  }
-
-  public void setWhiteController(PlayerController whiteController) {
-    System.out.println("setWhiteController: " + whiteController);
-    this.whiteController = whiteController;
-  }
-
   public StoneColor getCurrentColor() {
     return currentColor;
   }
 
   public int getBoardSize() {
     return boardSize;
-  }
-
-  public GoPlayer getCurrentPlayer() {
-    return getGoPlayer(getCurrentColor());
-  }
-
-  public GoPlayer getOpponent() {
-    return getGoPlayer(getCurrentColor().getOpponent());
-  }
-
-  public GoPlayer getGoPlayer(StoneColor color) {
-    return players.get(color);
   }
 
   public boolean isLastMovePass() {
@@ -212,48 +138,12 @@ public class GoGame implements Serializable {
     board.mark(pos, color);
   }
 
-  public void pause() {
-    System.out.println("pause - killing thread");
-    if (thread != null) {
-      thread.interrupt();
-    }
-  }
-
-  public void resume() {
-    System.out.println("resume - starting thread");
-    runGame();
-  }
-
   public List<Integer> getMoveHistory() {
     return moveHistory;
   }
 
-  public void setGoPlayer(StoneColor color, GoPlayer player) {
-    players.put(color, player);
-  }
-
   @Override
   public String toString() {
-    return String.format("GoGame(size=%d, black=%s, white=%s, moves=%s)", getBoardSize(),
-        getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), getMoveHistory());
-  }
-
-  public void addListener(Listener listener) {
-    listeners.add(listener);
-  }
-
-  public void removeListener(Listener listener) {
-    listeners.remove(listener);
-  }
-
-  protected void fireGameChanged() {
-    if (listeners.isEmpty()) return;
-    for (Listener listener : listeners) {
-      listener.gameChanged(this);
-    }
-  }
-
-  public interface Listener {
-    public void gameChanged(GoGame game);
+    return String.format("GoGame(size=%d, moves=%s)", getBoardSize(), getMoveHistory());
   }
 }

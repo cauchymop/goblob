@@ -33,9 +33,8 @@ public class GameMoveSerializer {
 
   private void play(GoGame game, List<Integer> movesToPlay) {
     for (Integer move : movesToPlay) {
-      game.play(null, move);
+      game.play(move);
     }
-
   }
 
   private void undo(GoGame game, int undoCount) {
