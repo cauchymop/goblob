@@ -98,7 +98,7 @@ public class GoBoardView extends View {
         // Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
         if (lastClickedCellCoord != null && lastClickedCellCoord.x == x
             && lastClickedCellCoord.y == y) {
-          firePlayed(game.getPos(x, y));
+          firePlayed(x, y);
           lastClickedCellCoord = null;
           return true;
         }
@@ -108,9 +108,9 @@ public class GoBoardView extends View {
     return false;
   }
 
-  private void firePlayed(int move) {
+  private void firePlayed(int x, int y) {
     for (Listener listener : listeners) {
-      listener.played(move);
+      listener.played(x, y);
     }
   }
 
@@ -172,6 +172,6 @@ public class GoBoardView extends View {
   }
 
   public interface Listener {
-    public void played(int move);
+    public void played(int x, int y);
   }
 }

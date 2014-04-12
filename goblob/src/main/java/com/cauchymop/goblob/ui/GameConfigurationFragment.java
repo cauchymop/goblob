@@ -13,6 +13,7 @@ import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
+import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.GoPlayer.PlayerType;
 import com.cauchymop.goblob.model.StoneColor;
@@ -136,10 +137,11 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     final StoneColor homePlayerColor = (StoneColor) homePlayerColorSpinner.getSelectedItem();
 
     GoGame goGame = new GoGame(boardSize);
-    goGame.setGoPlayer(homePlayerColor, homePlayer);
-    goGame.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
+    GoGameController goGameController = new GoGameController(goGame);
+    goGameController.setGoPlayer(homePlayerColor, homePlayer);
+    goGameController.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
 
-    getGoBlobActivity().startGame(goGame);
+    getGoBlobActivity().startGame(goGameController);
   }
 
   private class PlayerTypeAdapter extends ArrayAdapter<StoneColor> {

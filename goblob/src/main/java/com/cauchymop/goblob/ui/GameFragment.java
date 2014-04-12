@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGame;
+import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
@@ -23,26 +24,26 @@ import com.cauchymop.goblob.model.StoneColor;
 /**
  * Game Page Fragment.
  */
-public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
+public class GameFragment extends GoBlobBaseFragment implements GoGameController.Listener,
     GoBoardView.Listener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
   private static final String EXTRA_GO_GAME = "GO_GAME";
 
-  private GoGame goGame;
+  private GoGameController goGameController;
   private GoBoardView goBoardView;
   private HumanPlayerController currentPlayerController;
 
-  public static GameFragment newInstance(GoGame goGame) {
+  public static GameFragment newInstance(GoGameController gameController) {
     GameFragment fragment = new GameFragment();
     Bundle args = new Bundle();
-    args.putSerializable(EXTRA_GO_GAME, goGame);
+    args.putSerializable(EXTRA_GO_GAME, gameController);
     fragment.setArguments(args);
     return fragment;
   }
 
-  public void setGame(GoGame gogame) {
-    this.goGame = gogame;
+  public void setGameController(GoGameController goGameController) {
+    this.goGameController = goGameController;
     initBoardView();
   }
 
@@ -50,8 +51,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Log.d(TAG, "onCreate: " + getArguments());
-    if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGame == null) {
-      this.goGame = (GoGame) getArguments().getSerializable(EXTRA_GO_GAME);
+    if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
+      this.goGameController = (GoGameController) getArguments().getSerializable(EXTRA_GO_GAME);
     }
   }
 
@@ -76,16 +77,16 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   @Override
   public void onPause() {
     super.onPause();
-    if (goGame != null) {
-      goGame.pause();
+    if (goGameController != null) {
+      goGameController.pause();
     }
   }
 
   @Override
   public void onResume() {
     super.onResume();
-    if (goGame != null) {
-      goGame.resume();
+    if (goGameController != null) {
+      goGameController.resume();
     }
   }
 
@@ -105,17 +106,17 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   }
 
   private void initBoardView() {
-    if (goGame == null) {
+    if (goGameController == null) {
       return;
     }
 
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     boardViewContainer.removeAllViews();
-    goGame.setBlackController(getController(goGame.getGoPlayer(StoneColor.Black)));
-    goGame.setWhiteController(getController(goGame.getGoPlayer(StoneColor.White)));
-    goGame.addListener(this);
-    goGame.runGame();
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGame);
+    goGameController.setBlackController(getController(goGameController.getGoPlayer(StoneColor.Black)));
+    goGameController.setWhiteController(getController(goGameController.getGoPlayer(StoneColor.White)));
+    goGameController.addListener(this);
+    goGameController.runGame();
+    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController.getGame());
     goBoardView.addListener(this);
 
     // Disable Interactions for Local Humans
@@ -141,8 +142,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
       goBoardView.removeListener(this);
     }
 
-    if (goGame != null) {
-      goGame.removeListener(this);
+    if (goGameController != null) {
+      goGameController.removeListener(this);
     }
   }
 
@@ -159,9 +160,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   private void updateTitleArea() {
     TextView titleView = (TextView) getView().findViewById(R.id.title);
     ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
-    final GoPlayer currentPlayer = goGame.getCurrentPlayer();
+    final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
-    titleImage.setImageResource(goGame.getCurrentColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
+    titleImage.setImageResource(goGameController.getGame().getCurrentColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
     updateAvatar(currentPlayer);
   }
 
@@ -176,10 +177,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
    */
   private void updateMessageArea() {
     final String message;
-    if (goGame.isGameEnd()) {
+    if (goGameController.getGame().isGameEnd()) {
       message = getString(R.string.end_of_game_message);
-    } else if (goGame.isLastMovePass()) {
-      message = getString(R.string.opponent_passed_message, goGame.getOpponent().getName());
+    } else if (goGameController.getGame().isLastMovePass()) {
+      message = getString(R.string.opponent_passed_message, goGameController.getOpponent().getName());
     } else {
       message = null;
     }
@@ -191,18 +192,18 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   private PlayerController getController(GoPlayer player) {
     switch (player.getType()) {
       case LOCAL:
-        return new LocalHumanPlayerController(goGame);
+        return new LocalHumanPlayerController(goGameController);
       case REMOTE:
-        return new HumanPlayerController(goGame);
+        return new HumanPlayerController(goGameController);
       default:
         throw new RuntimeException("Invalid PlayerControler type");
     }
   }
 
   @Override
-  public void gameChanged(GoGame game) {
-    if (game.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-      getGoBlobActivity().giveTurn(game);
+  public void gameChanged(GoGameController gameController) {
+    if (gameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
+      getGoBlobActivity().giveTurn(gameController.getGame());
     }
 
     // Refresh UI and current controller
@@ -213,7 +214,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
 
   private void updateAchievements() {
     getGoBlobActivity().unlockAchievement(getString(R.string.achievements_gamers));
-    switch (goGame.getBoardSize()) {
+    switch (goGameController.getGame().getBoardSize()) {
       case 9:
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_9x9));
         break;
@@ -224,7 +225,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_19x19));
         break;
     }
-    switch (goGame.getOpponent().getType()) {
+    switch (goGameController.getOpponent().getType()) {
       case LOCAL:
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_human));
         break;
@@ -232,8 +233,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   }
 
   @Override
-  public void played(int move) {
-    currentPlayerController.play(move);
+  public void played(int x, int y) {
+    currentPlayerController.play(x, y);
   }
 
   private void setHumanInteractionEnabled(final boolean enabled) {
@@ -250,8 +251,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
 
   private class LocalHumanPlayerController extends HumanPlayerController {
 
-    public LocalHumanPlayerController(GoGame game) {
-      super(game);
+    public LocalHumanPlayerController(GoGameController gameController) {
+      super(gameController);
     }
 
     @Override
@@ -284,11 +285,11 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
   }
 
   public class HumanPlayerController extends PlayerController {
-    protected GoGame game;
+    protected GoGameController gameController;
     private boolean played;
 
-    public HumanPlayerController(GoGame game) {
-      this.game = game;
+    public HumanPlayerController(GoGameController gameController) {
+      this.gameController = gameController;
     }
 
     @Override
@@ -306,8 +307,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
       }
     }
 
-    public void play(int move) {
-      if (!played && game.play(this, move)) {
+    public void play(int x, int y) {
+      if (!played && gameController.play(this, x, y)) {
         played = true;
         synchronized (this) {
           this.notifyAll();
@@ -318,7 +319,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGame.Listener,
     }
 
     public void pass() {
-      if (!played && game.pass(this)) {
+      if (!played && gameController.pass(this)) {
         played = true;
         synchronized (this) {
           this.notifyAll();

@@ -7,7 +7,4 @@ import java.io.Serializable;
  */
 public abstract class PlayerController implements Serializable {
   public abstract void startTurn();
-
-  public void opponentPlayed(int move) {
-  }
 }
