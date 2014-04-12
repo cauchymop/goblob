@@ -25,19 +25,19 @@ public class GameSerializerTest {
 
   @Test
   public void test_serialize_empty() {
-    assertThat(serializer.serialize(goGame)).isEqualTo("".getBytes());
+    assertThat(serializer.getDataFromGame(goGame)).isEqualTo("".getBytes());
   }
 
   @Test
   public void test_serialize() {
     goGame.play(null, 7);
     goGame.play(null, 12);
-    assertThat(serializer.serialize(goGame)).isEqualTo("7 12".getBytes());
+    assertThat(serializer.getDataFromGame(goGame)).isEqualTo("7 12".getBytes());
   }
 
   @Test
   public void test_deserialize() {
-    serializer.deserializeTo("7 12".getBytes(), goGame);
+    serializer.getGameFromData("7 12".getBytes(), goGame);
     assertThat(goGame.getMoveHistory()).containsExactly(7, 12);
   }
 }

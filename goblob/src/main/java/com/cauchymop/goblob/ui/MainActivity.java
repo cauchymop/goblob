@@ -220,10 +220,10 @@ public class MainActivity extends BaseGameActivity
     String matchId = turnBasedMatch.getMatchId();
     String myId = getMyId(turnBasedMatch);
     if (gogame.isGameEnd()) {
-      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.serialize(gogame), myId);
+      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.getDataFromGame(gogame), myId);
       TurnBasedMultiplayer.finishMatch(getApiClient(), matchId);
     } else {
-      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.serialize(gogame),
+      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.getDataFromGame(gogame),
           getOpponentId(turnBasedMatch, myId));
     }
   }
@@ -270,7 +270,7 @@ public class MainActivity extends BaseGameActivity
             if (turnBasedMatch.getData() == null) {
               Log.d(TAG, "getData is null, saving a new game");
               TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(),
-                  gameMoveSerializer.serialize(goGameController.getGame()), getMyId(turnBasedMatch));
+                  gameMoveSerializer.getDataFromGame(goGameController.getGame()), getMyId(turnBasedMatch));
             }
 
             // TODO: start activity
@@ -295,8 +295,7 @@ public class MainActivity extends BaseGameActivity
     }
 
     int boardSize = turnBasedMatch.getVariant();
-    GoGame gogame = new GoGame(boardSize);
-    gameMoveSerializer.deserializeTo(turnBasedMatch.getData(), gogame);
+    GoGame gogame = gameMoveSerializer.getGameFromData(turnBasedMatch.getData(), boardSize);
 
     GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
     GoPlayer opponentPlayer =
