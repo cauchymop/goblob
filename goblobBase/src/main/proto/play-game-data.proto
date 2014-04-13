@@ -1,0 +1,26 @@
+
+option java_package = "com.cauchymop.goblob.proto";
+
+// Next ID: 2
+message GameData {
+  repeated int32 move = 1;
+}
+
+// Next ID: 3
+message Move {
+
+  enum MoveType {
+    MOVE = 0;
+    PASS = 1;
+  }
+
+  required MoveType type = 1;
+  optional Position position = 2;
+}
+
+// Next ID: 3
+message Position {
+  required int32 x = 1;
+  required int32 y = 2;
+}
+
