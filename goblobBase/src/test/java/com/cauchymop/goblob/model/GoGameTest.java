@@ -39,8 +39,8 @@ public class GoGameTest {
 
   @Test
   public void test_GetMoveHistory() {
-    goGame.play(null, 11);
-    goGame.play(null, 17);
+    goGame.play(11);
+    goGame.play(17);
     assertThat(goGame.getMoveHistory()).containsExactly(11, 17);
   }
 

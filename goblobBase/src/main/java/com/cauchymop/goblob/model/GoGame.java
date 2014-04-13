@@ -146,4 +146,31 @@ public class GoGame implements Serializable {
   public String toString() {
     return String.format("GoGame(size=%d, moves=%s)", getBoardSize(), getMoveHistory());
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    GoGame goGame = (GoGame) o;
+
+    if (boardSize != goGame.boardSize) return false;
+    if (!board.equals(goGame.board)) return false;
+    if (!boardHistory.equals(goGame.boardHistory)) return false;
+    if (currentColor != goGame.currentColor) return false;
+    if (!moveHistory.equals(goGame.moveHistory)) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = boardSize;
+    result = 31 * result + board.hashCode();
+    result = 31 * result + currentColor.hashCode();
+    result = 31 * result + boardHistory.hashCode();
+    result = 31 * result + moveHistory.hashCode();
+    return result;
+  }
 }
+
