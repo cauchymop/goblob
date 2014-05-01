@@ -1,26 +1,40 @@
 package com.cauchymop.goblob.model;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
 /**
  * Class to handle interactions between the {@link GoPlayer}s and the {@link GoGame}.
  */
 public class GoGameController implements Serializable {
 
-  private final GoGame goGame;
   private Map<StoneColor, GoPlayer> players = Maps.newHashMap();
+  private List<Integer> moves;
+  private transient final GoGame goGame;
   private transient Set<Listener> listeners = Sets.newHashSet();
   private transient Thread thread;
   private transient PlayerController blackController;
   private transient PlayerController whiteController;
 
-  public GoGameController(GoGame goGame) {
-    this.goGame = goGame;
+  public GoGameController(GameData gameData, int boardsize) {
+    this.moves = Lists.newArrayList(gameData.getMoveList());
+    this.goGame = createGoGame(boardsize);
+  }
+
+  private GoGame createGoGame(int boardsize) {
+    GoGame goGame = new GoGame(boardsize);
+    for (int move : moves) {
+      goGame.play(move);
+    }
+    return goGame;
   }
 
   private PlayerController getCurrentController() {
@@ -31,21 +45,12 @@ public class GoGameController implements Serializable {
     }
   }
 
-  private PlayerController getOpponentController() {
-    if (goGame.getCurrentColor() == StoneColor.Black) {
-      return whiteController;
-    } else {
-      return blackController;
-    }
-  }
-
   public void runGame() {
     thread = new Thread("Game") {
 
       @Override
       public void run() {
         while (!goGame.isGameEnd()) {
-          System.out.println(goGame.getCurrentColor() + ".startTurn()");
           getCurrentController().startTurn();
         }
       }
@@ -54,16 +59,24 @@ public class GoGameController implements Serializable {
   }
 
   public boolean pass(PlayerController controller) {
-    return isCurrentController(controller) && playMove(goGame.getPassValue());
+    return playMove(controller, goGame.getPassValue());
   }
 
   public boolean play(PlayerController controller, int x, int y) {
-    return isCurrentController(controller) && playMove(goGame.getPos(x, y));
+    return playMove(controller, goGame.getPos(x, y));
   }
 
-  private boolean playMove(int passValue) {
-    if (goGame.play(passValue)) {
+  private boolean playMove(PlayerController controller, int move) {
+    if (isCurrentController(controller) && playMove(move)) {
+      moves.add(move);
       fireGameChanged();
+      return true;
+    }
+    return false;
+  }
+
+  private boolean playMove(int move) {
+    if (goGame.play(move)) {
       return true;
     }
     return false;
@@ -113,8 +126,8 @@ public class GoGameController implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("GoGameController(GoGame=%s, black=%s, white=%s)", goGame,
-        getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White));
+    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, moves=%s)", goGame,
+        getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), moves);
   }
 
   public void addListener(Listener listener) {
@@ -134,6 +147,10 @@ public class GoGameController implements Serializable {
 
   public GoGame getGame() {
     return goGame;
+  }
+
+  public GameData getGameData() {
+    return GameData.newBuilder().addAllMove(moves).build();
   }
 
   public interface Listener {

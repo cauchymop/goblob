@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.PlayerController;
@@ -203,7 +202,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
   @Override
   public void gameChanged(GoGameController gameController) {
     if (gameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-      getGoBlobActivity().giveTurn(gameController.getGame());
+      getGoBlobActivity().giveTurn(gameController);
     }
 
     // Refresh UI and current controller
