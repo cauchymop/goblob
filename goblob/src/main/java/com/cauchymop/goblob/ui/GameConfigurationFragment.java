@@ -12,12 +12,13 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.GoPlayer.PlayerType;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.Player;
+
+import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
 /**
  * Home Page Fragment.
@@ -136,8 +137,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
     final StoneColor homePlayerColor = (StoneColor) homePlayerColorSpinner.getSelectedItem();
 
-    GoGame goGame = new GoGame(boardSize);
-    GoGameController goGameController = new GoGameController(goGame);
+    GoGameController goGameController = new GoGameController(GameData.getDefaultInstance(), boardSize);
     goGameController.setGoPlayer(homePlayerColor, homePlayer);
     goGameController.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
 

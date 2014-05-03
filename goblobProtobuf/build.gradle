@@ -10,6 +10,7 @@ buildscript {
         classpath files('libs/gradle-protobuf-plugin-0.3.jar')
     }
 }
+
 protoBuf {
     lang {
         java

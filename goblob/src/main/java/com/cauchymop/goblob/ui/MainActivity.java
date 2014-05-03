@@ -12,8 +12,6 @@ import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.GameMoveSerializer;
-import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
@@ -27,10 +25,12 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.example.games.basegameutils.BaseGameActivity;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 
 import static com.cauchymop.goblob.model.GoPlayer.PlayerType;
+import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.Players;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
@@ -45,7 +45,6 @@ public class MainActivity extends BaseGameActivity
   private static final String TAG = MainActivity.class.getName();
   private int boardSize = 9;
   private AvatarManager avatarManager = new AvatarManager();
-  private GameMoveSerializer gameMoveSerializer = new GameMoveSerializer();
   private TurnBasedMatch turnBasedMatch;
   private GameFragment gameFragment;
 
@@ -216,16 +215,21 @@ public class MainActivity extends BaseGameActivity
     }
   }
 
-  public void giveTurn(GoGame gogame) {
-    String matchId = turnBasedMatch.getMatchId();
+  public void giveTurn(GoGameController goGameController) {
     String myId = getMyId(turnBasedMatch);
-    if (gogame.isGameEnd()) {
-      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.getDataFromGame(gogame), myId);
-      TurnBasedMultiplayer.finishMatch(getApiClient(), matchId);
+    if (goGameController.getGame().isGameEnd()) {
+      takeTurn(goGameController, myId);
+      TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
     } else {
-      TurnBasedMultiplayer.takeTurn(getApiClient(), matchId, gameMoveSerializer.getDataFromGame(gogame),
-          getOpponentId(turnBasedMatch, myId));
+      takeTurn(goGameController, getOpponentId(turnBasedMatch, myId));
     }
+  }
+
+  private void takeTurn(GoGameController goGameController, String myId) {
+    byte[] gameDataBytes = goGameController.getGameData().toByteArray();
+    Log.d(TAG, "taketurn: " + goGameController);
+    Log.d(TAG, "taketurn: " + goGameController.getGameData());
+    TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
   }
 
   public AvatarManager getAvatarManager() {
@@ -269,8 +273,7 @@ public class MainActivity extends BaseGameActivity
             GoGameController goGameController = createGoGameController(turnBasedMatch);
             if (turnBasedMatch.getData() == null) {
               Log.d(TAG, "getData is null, saving a new game");
-              TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(),
-                  gameMoveSerializer.getDataFromGame(goGameController.getGame()), getMyId(turnBasedMatch));
+              takeTurn(goGameController, getMyId(turnBasedMatch));
             }
 
             // TODO: start activity
@@ -295,20 +298,29 @@ public class MainActivity extends BaseGameActivity
     }
 
     int boardSize = turnBasedMatch.getVariant();
-    GoGame gogame = gameMoveSerializer.getGameFromData(turnBasedMatch.getData(), boardSize);
+    GameData gameData = getGameData(turnBasedMatch);
 
     GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
     GoPlayer opponentPlayer =
         createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE);
 
-    StoneColor turnColor = (gogame.getMoveHistory().size() % 2 == 0)
+    StoneColor turnColor = (gameData.getMoveCount() % 2 == 0)
         ? StoneColor.Black : StoneColor.White;
 
-    GoGameController goGameController = new GoGameController(gogame);
+    GoGameController goGameController = new GoGameController(gameData, boardSize);
     goGameController.setGoPlayer(myTurn ? turnColor : turnColor.getOpponent(), myPlayer);
     goGameController.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
 
     return goGameController;
+  }
+
+  private GameData getGameData(TurnBasedMatch turnBasedMatch) {
+    try {
+      return turnBasedMatch.getData() == null ? GameData.getDefaultInstance()
+          : GameData.parseFrom(turnBasedMatch.getData());
+    } catch (InvalidProtocolBufferException exception) {
+      throw new RuntimeException(exception);
+    }
   }
 
   private String getOpponentId(TurnBasedMatch turnBasedMatch, String id) {
