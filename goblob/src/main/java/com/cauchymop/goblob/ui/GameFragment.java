@@ -318,7 +318,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     }
 
     public void pass() {
-      if (!played && gameController.pass(this)) {
+      if (!played) {
+        gameController.pass(this);
         played = true;
         synchronized (this) {
           this.notifyAll();
