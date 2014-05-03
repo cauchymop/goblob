@@ -55,24 +55,11 @@ public class GoGameController implements Serializable {
   }
 
   public boolean pass(PlayerController controller) {
-    return playMove(controller, createPassMove());
+    return playMove(controller, GameDatas.createPassMove());
   }
 
   public boolean play(PlayerController controller, int x, int y) {
-    return playMove(controller, createMove(x, y));
-  }
-
-  private Move createPassMove() {
-    return Move.newBuilder().setType(Move.MoveType.PASS).build();
-  }
-
-  private Move createMove(int x, int y) {
-    return Move.newBuilder()
-        .setType(Move.MoveType.MOVE)
-        .setPosition(PlayGameData.Position.newBuilder()
-            .setX(x)
-            .setY(y))
-        .build();
+    return playMove(controller, GameDatas.createMove(x, y));
   }
 
   private boolean playMove(PlayerController controller, Move move) {
