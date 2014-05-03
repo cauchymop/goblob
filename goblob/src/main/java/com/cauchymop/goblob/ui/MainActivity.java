@@ -12,11 +12,9 @@ import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
-import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.Player;
@@ -229,8 +227,8 @@ public class MainActivity extends BaseGameActivity
 
   private void takeTurn(GoGameController goGameController, String myId) {
     byte[] gameDataBytes = goGameController.getGameData().toByteArray();
-    System.out.println("taketurn: " + goGameController);
-    System.out.println("taketurn: " + goGameController.getGameData());
+    Log.d(TAG, "taketurn: " + goGameController);
+    Log.d(TAG, "taketurn: " + goGameController.getGameData());
     TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
   }
 
@@ -300,13 +298,7 @@ public class MainActivity extends BaseGameActivity
     }
 
     int boardSize = turnBasedMatch.getVariant();
-    GameData gameData;
-    try {
-      gameData = turnBasedMatch.getData() == null ? GameData.getDefaultInstance()
-          : GameData.parseFrom(turnBasedMatch.getData());
-    } catch (InvalidProtocolBufferException exception) {
-      throw new RuntimeException(exception);
-    }
+    GameData gameData = getGameData(turnBasedMatch);
 
     GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
     GoPlayer opponentPlayer =
@@ -320,6 +312,15 @@ public class MainActivity extends BaseGameActivity
     goGameController.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
 
     return goGameController;
+  }
+
+  private GameData getGameData(TurnBasedMatch turnBasedMatch) {
+    try {
+      return turnBasedMatch.getData() == null ? GameData.getDefaultInstance()
+          : GameData.parseFrom(turnBasedMatch.getData());
+    } catch (InvalidProtocolBufferException exception) {
+      throw new RuntimeException(exception);
+    }
   }
 
   private String getOpponentId(TurnBasedMatch turnBasedMatch, String id) {
