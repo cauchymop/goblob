@@ -97,7 +97,7 @@ public class MainActivity extends BaseGameActivity
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
       turnBasedMatch = mHelper.getTurnBasedMatch();
-      startGame(createGoGameController(turnBasedMatch));
+      startGame(turnBasedMatch);
     }
     TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
   }
@@ -228,7 +228,6 @@ public class MainActivity extends BaseGameActivity
   private void takeTurn(GoGameController goGameController, String myId) {
     byte[] gameDataBytes = goGameController.getGameData().toByteArray();
     Log.d(TAG, "taketurn: " + goGameController);
-    Log.d(TAG, "taketurn: " + goGameController.getGameData());
     TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
   }
 
