@@ -1,14 +1,11 @@
 package com.cauchymop.goblob.model;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
@@ -154,23 +151,13 @@ public class GoGame implements Serializable {
 
     GoGame goGame = (GoGame) o;
 
-    if (boardSize != goGame.boardSize) return false;
-    if (!board.equals(goGame.board)) return false;
-    if (!boardHistory.equals(goGame.boardHistory)) return false;
-    if (currentColor != goGame.currentColor) return false;
-    if (!moveHistory.equals(goGame.moveHistory)) return false;
-
-    return true;
+    return Objects.equals(boardSize, goGame.boardSize)
+        && Objects.equals(moveHistory, goGame.moveHistory);
   }
 
   @Override
   public int hashCode() {
-    int result = boardSize;
-    result = 31 * result + board.hashCode();
-    result = 31 * result + currentColor.hashCode();
-    result = 31 * result + boardHistory.hashCode();
-    result = 31 * result + moveHistory.hashCode();
-    return result;
+    return Objects.hash(boardSize, moveHistory);
   }
 }
 
