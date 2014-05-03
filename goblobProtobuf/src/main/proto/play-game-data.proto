@@ -3,7 +3,7 @@ option java_package = "com.cauchymop.goblob.proto";
 
 // Next ID: 2
 message GameData {
-  repeated int32 move = 1;
+  repeated Move move = 1;
 }
 
 // Next ID: 3
