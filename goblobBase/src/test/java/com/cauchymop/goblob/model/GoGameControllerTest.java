@@ -6,12 +6,28 @@ import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 
 /**
  * Tests for {@link GoGameController}.
  */
 public class GoGameControllerTest {
+
+  @Test
+  public void testNew_gameData() {
+    GameData gameData = GameData.newBuilder()
+        .addMove(GameDatas.createMove(2, 3))
+        .addMove(GameDatas.createMove(4, 5))
+        .build();
+
+    GoGameController controller = new GoGameController(gameData, 9);
+
+    assertThat(controller.getGameData()).isEqualTo(gameData);
+    GoGame goGame = controller.getGame();
+    assertThat(goGame.getMoveHistory())
+        .containsExactly(goGame.getPos(2, 3), goGame.getPos(4, 5));
+  }
 
   @Test
   public void testGetGameData() {
@@ -47,6 +63,17 @@ public class GoGameControllerTest {
 
     verify(mockListener1).gameChanged(controller);
     verify(mockListener2).gameChanged(controller);
+  }
+
+  @Test
+  public void testRemoveListener() {
+    GoGameController controller = new GoGameController(GameData.getDefaultInstance(), 9);
+    GoGameController.Listener mockListener = mock(GoGameController.Listener.class);
+    controller.addListener(mockListener);
+    controller.removeListener(mockListener);
+    controller.fireGameChanged();
+
+    verifyZeroInteractions(mockListener);
   }
 
   private static class DummyPlayerController extends PlayerController {

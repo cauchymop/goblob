@@ -54,8 +54,8 @@ public class GoGameController implements Serializable {
     thread.start();
   }
 
-  public boolean pass(PlayerController controller) {
-    return playMove(controller, GameDatas.createPassMove());
+  public void pass(PlayerController controller) {
+    playMove(controller, GameDatas.createPassMove());
   }
 
   public boolean play(PlayerController controller, int x, int y) {
@@ -76,9 +76,7 @@ public class GoGameController implements Serializable {
         }
         break;
       case PASS:
-        if (!goGame.play(goGame.getPassValue())) {
-          return false;
-        }
+        goGame.play(goGame.getPassValue());
         break;
     }
     moves.add(move);
