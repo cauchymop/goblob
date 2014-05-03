@@ -7,11 +7,19 @@ buildscript {
     }
 
     dependencies {
-        classpath files('libs/gradle-protobuf-plugin-0.3.jar')
+        classpath 'com.tomcawley:gradle-protobuf-plugin:0.3'
     }
 }
 
 protoBuf {
+    protoc {
+        'Linux' {
+            path = "protoc"
+        }
+        'Mac OS X' {
+            path = "/usr/local/bin/protoc"
+        }
+    }
     lang {
         java
     }
@@ -22,5 +30,5 @@ repositories {
 }
 
 dependencies {
-    compile "com.google.protobuf:protobuf-java:2.4.1"
+    compile "com.google.protobuf:protobuf-java:2.5.0"
 }
