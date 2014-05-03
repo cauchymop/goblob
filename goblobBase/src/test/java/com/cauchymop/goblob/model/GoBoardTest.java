@@ -3,6 +3,8 @@ package com.cauchymop.goblob.model;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 /**
  * Class to test {@link com.cauchymop.goblob.model.GoBoard}.
  */
@@ -68,5 +70,14 @@ public class GoBoardTest {
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(2, 3)));
     Assert.assertTrue(goBoard.play(StoneColor.White, goBoard.getPos(2, 4)));  // No capture.
     Assert.assertEquals(StoneColor.Black, goBoard.getColor(3, 3));
+  }
+
+  @Test
+  public void testClear() {
+    GoBoard goBoard = new GoBoard(5);
+    goBoard.play(StoneColor.Black, goBoard.getPos(0, 0));
+    goBoard.play(StoneColor.White, goBoard.getPos(1, 1));
+    goBoard.clear();
+    assertThat(goBoard).isEqualTo(new GoBoard(5));
   }
 }
