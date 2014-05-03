@@ -10,10 +10,10 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:16.+'
-    compile "com.google.protobuf:protobuf-java:2.4.1"
+    compile 'com.google.guava:guava:17.+'
     compile project(":goblobProtobuf")
-    testCompile group: 'junit', name: 'junit', version: '4.+'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.0'
-    testCompile group: 'org.easytesting', name: 'fest-assert', version: '1.2'
+    testCompile 'com.google.guava:guava-testlib:17.+'
+    testCompile 'junit:junit:4.+'
+    testCompile 'org.mockito:mockito-all:1.9.0'
+    testCompile 'org.easytesting:fest-assert:1.2'
 }

@@ -12,7 +12,7 @@ dependencies {
     compile 'com.android.support:support-v4:19.1.0'
     compile 'com.android.support:gridlayout-v7:19.0.0'
     compile 'com.android.support:appcompat-v7:19.1.0'
-    compile 'com.google.guava:guava:16.+'
+    compile 'com.google.guava:guava:17.+'
     compile project(":BaseGameUtils")
     compile project(":goblobBase")
 }
@@ -20,6 +20,10 @@ dependencies {
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.3"
+
+    lintOptions {
+        abortOnError false
+    }
 
     defaultConfig {
         minSdkVersion 14
