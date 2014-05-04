@@ -12,13 +12,12 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.GoPlayer.PlayerType;
 import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.Player;
-
-import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
 /**
  * Home Page Fragment.
@@ -27,6 +26,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   public static final String EXTRA_OPPONENT = "opponent";
   public static final String EXTRA_BOARD_SIZE = "board_size";
+  public static final String LOCAL_PARTICIPANT_ID = "local";
   private Spinner opponentColorSpinner;
   private Spinner homePlayerColorSpinner;
   private EditText homePlayerNameField;
@@ -81,7 +81,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    homePlayer = new GoPlayer(PlayerType.LOCAL, getString(R.string.home_player_default_name));
+    homePlayer = new GoPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
@@ -110,18 +110,13 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private void configureCurrentPlayerFromGooglePlusAccount() {
     if (isSignedIn()) {
-      homePlayer = getHomePlayer();
+      final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
+      final String homePlayerName = currentPlayer.getDisplayName();
+      homePlayer = new GoPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, homePlayerName);
+      getGoBlobActivity().getAvatarManager().setAvatarUri(getActivity(), homePlayer,
+          currentPlayer.getIconImageUri());
       homePlayerNameField.setText(homePlayer.getName());
     }
-  }
-
-  public GoPlayer getHomePlayer() {
-    final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
-    final String homePlayerName = currentPlayer.getDisplayName();
-    final GoPlayer homePlayer = new GoPlayer(PlayerType.LOCAL, homePlayerName);
-    getGoBlobActivity().getAvatarManager().setAvatarUri(getActivity(), homePlayer,
-        currentPlayer.getIconImageUri());
-    return homePlayer;
   }
 
   private void startGame() {
@@ -136,8 +131,11 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     }
 
     final StoneColor homePlayerColor = (StoneColor) homePlayerColorSpinner.getSelectedItem();
+    String blackId = homePlayerColor == StoneColor.Black ? homePlayer.getId() : opponentPlayer.getId();
+    String whiteId = homePlayerColor == StoneColor.Black ? opponentPlayer.getId() : homePlayer.getId();
 
-    GoGameController goGameController = new GoGameController(GameData.getDefaultInstance(), boardSize);
+    GoGameController goGameController =
+        new GoGameController(GameDatas.createGameData(boardSize, 0, blackId, whiteId));
     goGameController.setGoPlayer(homePlayerColor, homePlayer);
     goGameController.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
 

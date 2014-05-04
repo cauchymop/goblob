@@ -8,15 +8,21 @@ import java.io.Serializable;
 public class GoPlayer implements Serializable {
 
   private PlayerType type;
+  private String id;
   private String name;
 
-  public GoPlayer(PlayerType type, String name) {
+  public GoPlayer(PlayerType type, String id, String name) {
     this.type = type;
+    this.id = id;
     this.name = name;
   }
 
   public PlayerType getType() {
     return type;
+  }
+
+  public String getId() {
+    return id;
   }
 
   public String getName() {
@@ -29,7 +35,7 @@ public class GoPlayer implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("Player(type=%s, name=%s)", getType(), getName());
+    return String.format("Player(type=%s, id=%s, name=%s)", getType(), getId(), getName());
   }
 
   public enum PlayerType {

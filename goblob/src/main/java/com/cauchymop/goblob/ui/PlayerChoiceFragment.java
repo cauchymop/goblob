@@ -17,6 +17,7 @@ import com.cauchymop.goblob.model.GoPlayer;
  */
 public class PlayerChoiceFragment extends GoBlobBaseFragment {
 
+  private static final String OPPONENT_PARTICIPANT_ID = "opponent";
   private static final String TAG = PlayerChoiceFragment.class.getName();
   private RadioGroup opponentRadioGroup;
   private RadioGroup boardSizeRadioGroup;
@@ -86,7 +87,7 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
         opponentDefaultName = null;
         break;
     }
-    return new GoPlayer(opponentType, opponentDefaultName);
+    return new GoPlayer(opponentType, OPPONENT_PARTICIPANT_ID, opponentDefaultName);
   }
 
   public int getBoardSize() {
