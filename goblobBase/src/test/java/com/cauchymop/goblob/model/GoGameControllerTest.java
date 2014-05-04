@@ -1,8 +1,11 @@
 package com.cauchymop.goblob.model;
 
+import com.cauchymop.goblob.proto.PlayGameData;
+
 import org.junit.Test;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
+import static com.cauchymop.goblob.proto.PlayGameData.Move;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -36,7 +39,10 @@ public class GoGameControllerTest {
 
   @Test
   public void testGetGameData() {
-    GoGameController controller = createGoGameController();
+    Move startGameMove = GameDatas.createStartGameMove(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID);
+    GoGameController controller = new GoGameController(GameData.newBuilder()
+        .addMove(startGameMove)
+        .build());
     DummyPlayerController whiteController = new DummyPlayerController();
     controller.setWhiteController(whiteController);
     DummyPlayerController blackController = new DummyPlayerController();
@@ -45,6 +51,7 @@ public class GoGameControllerTest {
     controller.play(whiteController, 1, 1);
     controller.pass(blackController);
     assertThat(controller.getGameData()).isEqualTo(GameData.newBuilder()
+        .addMove(startGameMove)
         .addMove(GameDatas.createMove(0, 0))
         .addMove(GameDatas.createMove(1, 1))
         .addMove(GameDatas.createPassMove())
