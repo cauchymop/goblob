@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Game of Go</string>
-  <string name="menu_settings">Settings</string>
   <string name="button_pass_label">Pass</string>
-  <string name="button_label_challenges">Challenges</string>
-  <string name="button_label_free_game">Free Game</string>
   <string name="black_label">Black</string>
   <string name="white_label">White</string>
   <string name="board_size_label">Select board size</string>
@@ -12,9 +9,7 @@
   <string name="start_game_label">Start Game</string>
   <string name="choose_opponent_label">Select your opponent</string>
   <string name="configure_game_label">Configure Game</string>
-  <string name="computer_opponent_label">Computer</string>
   <string name="human_local_opponent_label">Human (Local)</string>
-  <string name="board_size_label_5x5">5x5</string>
   <string name="board_size_label_9x9">9x9</string>
   <string name="board_size_label_13x13">13x13</string>
   <string name="board_size_label_19x19">19x19</string>
@@ -26,7 +21,6 @@
   <string name="opponent_default_name">Player 2</string>
   <string name="end_of_game_message">"Game finished"</string>
   <string name="opponent_passed_message">"%1$s has passed!"</string>
-  <string name="button_continue_label">Continue</string>
   <string name="sign_out">Sign out</string>
   <string name="achievements">Achievements</string>
   <string name="sign_in">Sign In</string>
@@ -37,7 +31,6 @@
   <string name="achievements_ai">CggImpiG6GMQAhAE</string>
   <string name="achievements_human">CggImpiG6GMQAhAF</string>
   <string name="human_remote_friend_label">Human (Google+ Friend)</string>
-  <string name="human_remote_random_label">Human (Google+ Random)</string>
   <string name="please_wait">Please Wait…</string>
   <string name="button_label_check_matches">Check matches</string>
 </resources>

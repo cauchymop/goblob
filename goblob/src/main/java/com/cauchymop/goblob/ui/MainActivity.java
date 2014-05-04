@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
@@ -53,8 +52,7 @@ public class MainActivity extends BaseGameActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
-      HomeFragment homeFragment = new HomeFragment();
-      displayFragment(homeFragment, false);
+      displayFragment(new PlayerChoiceFragment(), false);
     }
   }
 
@@ -158,6 +156,8 @@ public class MainActivity extends BaseGameActivity
       signOut();
     } else if (id == R.id.menu_signin) {
       beginUserInitiatedSignIn();
+    } else if (id == R.id.menu_check_matches) {
+      checkMatches();
     }
     return false;
   }
@@ -172,19 +172,7 @@ public class MainActivity extends BaseGameActivity
     getCurrentFragment().onSignOut();
   }
 
-  public void signOut(View v) {
-    signOut();
-  }
-
-  public void startChallenges(View v) {
-  }
-
-  public void startFreeGame(View v) {
-    PlayerChoiceFragment playerChoiceFragment = new PlayerChoiceFragment();
-    displayFragment(playerChoiceFragment, true);
-  }
-
-  public void checkMatches(View v) {
+  public void checkMatches() {
     startActivityForResult(TurnBasedMultiplayer.getInboxIntent(getApiClient()), CHECK_MATCHES);
   }
 
@@ -240,7 +228,6 @@ public class MainActivity extends BaseGameActivity
 
     // get the invitee list
     final ArrayList<String> invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
-    Log.d(TAG, "Invitee count: " + invitees.size());
 
     // get the automatch criteria
     Bundle autoMatchCriteria = null;

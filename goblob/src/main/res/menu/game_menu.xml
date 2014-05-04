@@ -12,6 +12,11 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/achievements"/>
+    <item
+        android:id="@+id/menu_check_matches"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/button_label_check_matches"/>
   </group>
   <group android:id="@+id/group_signedOut">
     <item
