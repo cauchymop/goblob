@@ -10,7 +10,8 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 
 /**
- * Class storing avatars Uris for {@link GoPlayer}s.
+ * Utility class storing avatars Uris for {@link GoPlayer}s and using them to load Avatar images in
+ * {@link ImageView}s on demand.
  */
 public class AvatarManager {
   private final Map<String, Uri> avatarUrisByPlayerIds = Maps.newHashMap();
@@ -26,11 +27,12 @@ public class AvatarManager {
     }
   }
 
+  public void loadImage(ImageView avatarImage, String playerId) {
+    imageManager.loadImage(avatarImage, getAvatarUri(playerId));
+  }
+
   private  Uri getAvatarUri(String playerId) {
     return avatarUrisByPlayerIds.get(playerId);
   }
 
-  public void loadImage(ImageView avatarImage, String playerId) {
-    imageManager.loadImage(avatarImage, getAvatarUri(playerId));
-  }
 }
