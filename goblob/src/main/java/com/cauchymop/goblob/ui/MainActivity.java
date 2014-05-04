@@ -228,6 +228,7 @@ public class MainActivity extends BaseGameActivity
 
     // get the invitee list
     final ArrayList<String> invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+    Log.d(TAG, "Invitees: " + invitees);
 
     // get the automatch criteria
     Bundle autoMatchCriteria = null;
@@ -262,7 +263,6 @@ public class MainActivity extends BaseGameActivity
               takeTurn(goGameController, getMyId(turnBasedMatch));
             }
 
-            // TODO: start activity
             Log.d(TAG, "Game created, starting game activity...");
             startGame(goGameController);
           }
