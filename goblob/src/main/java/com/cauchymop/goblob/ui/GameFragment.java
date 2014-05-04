@@ -1,6 +1,5 @@
 package com.cauchymop.goblob.ui;
 
-import android.graphics.Bitmap;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -167,8 +166,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   private void updateAvatar(GoPlayer currentPlayer) {
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
-    final Bitmap avatar = getGoBlobActivity().getAvatarManager().getAvatar(currentPlayer);
-    avatarImage.setImageBitmap(avatar);
+    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getId());
   }
 
   /**
