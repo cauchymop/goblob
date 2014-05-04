@@ -337,7 +337,7 @@ public class MainActivity extends BaseGameActivity
     } else {
       Player player = turnBasedMatch.getParticipant(participantId).getPlayer();
       goPlayer = new GoPlayer(playerType, participantId, player.getDisplayName());
-      avatarManager.setAvatarUri(getApplicationContext(), goPlayer, player.getIconImageUri());
+      avatarManager.setAvatarUri(goPlayer.getId(), player.getIconImageUri());
     }
     return goPlayer;
   }
