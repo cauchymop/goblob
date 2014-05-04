@@ -6,16 +6,26 @@ message GameData {
   repeated Move move = 1;
 }
 
-// Next ID: 3
+// Next ID: 4
 message Move {
 
   enum MoveType {
     MOVE = 0;
     PASS = 1;
+    PROPOSAL = 2;
+    START_GAME = 3;
   }
 
   required MoveType type = 1;
-  optional Position position = 2;
+  optional Position position = 2;  // For MOVE.
+  optional GameConfiguration game_configuration = 3;  // For PROPOSAL and START_GAME.
+}
+
+message GameConfiguration {
+  required int32 board_size = 3;
+  required int32 handicap = 4;
+  required string black_id = 5;
+  required string white_id = 6;
 }
 
 // Next ID: 3
@@ -23,4 +33,3 @@ message Position {
   required int32 x = 1;
   required int32 y = 2;
 }
-
