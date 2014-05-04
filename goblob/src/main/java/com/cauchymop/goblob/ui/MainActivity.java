@@ -293,7 +293,7 @@ public class MainActivity extends BaseGameActivity
 
     for (String participantId : turnBasedMatch.getParticipantIds()) {
       Log.i(TAG, String.format(" participant %s: player %s", participantId,
-          turnBasedMatch.getParticipant(participantId).getPlayer().getPlayerId()));
+          getPlayerId(turnBasedMatch, participantId)));
     }
 
     int boardSize = turnBasedMatch.getVariant();
@@ -311,6 +311,11 @@ public class MainActivity extends BaseGameActivity
     goGameController.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
 
     return goGameController;
+  }
+
+  private String getPlayerId(TurnBasedMatch turnBasedMatch, String participantId) {
+    Player player = turnBasedMatch.getParticipant(participantId).getPlayer();
+    return player == null ? null : player.getPlayerId();
   }
 
   private GameData getGameData(TurnBasedMatch turnBasedMatch) {
@@ -335,12 +340,21 @@ public class MainActivity extends BaseGameActivity
     return turnBasedMatch.getParticipantId(Players.getCurrentPlayerId(getApiClient()));
   }
 
-  private GoPlayer createGoPlayer(TurnBasedMatch turnBasedMatch, String creatorId,
-      PlayerType humanLocal) {
-    Player player = turnBasedMatch.getParticipant(creatorId).getPlayer();
-    GoPlayer goPlayer = new GoPlayer(humanLocal, player.getDisplayName());
-    avatarManager.setAvatarUri(getApplicationContext(), goPlayer, player.getIconImageUri());
+  private GoPlayer createGoPlayer(TurnBasedMatch turnBasedMatch, String participantId,
+      PlayerType playerType) {
+    GoPlayer goPlayer;
+    if (isParticipantAutoMatch(turnBasedMatch, participantId)) {
+      goPlayer = new GoPlayer(playerType, getString(R.string.opponent_default_name));
+    } else {
+      Player player = turnBasedMatch.getParticipant(participantId).getPlayer();
+      goPlayer = new GoPlayer(playerType, player.getDisplayName());
+      avatarManager.setAvatarUri(getApplicationContext(), goPlayer, player.getIconImageUri());
+    }
     return goPlayer;
+  }
+
+  private boolean isParticipantAutoMatch(TurnBasedMatch turnBasedMatch, String participantId) {
+    return participantId == null || turnBasedMatch.getParticipant(participantId).getPlayer() == null;
   }
 
   @Override
