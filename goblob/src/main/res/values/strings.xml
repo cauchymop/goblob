@@ -33,4 +33,6 @@
   <string name="human_remote_friend_label">Human (Google+ Friend)</string>
   <string name="please_wait">Please Wait…</string>
   <string name="button_label_check_matches">Check matches</string>
+  <string name="player_avatar_content_description">player_avatar</string>
+  <string name="player_stonecolor_content_description">Player Color Icon</string>
 </resources>
