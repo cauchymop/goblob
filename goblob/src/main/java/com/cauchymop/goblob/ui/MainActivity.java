@@ -11,6 +11,7 @@ import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
+import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
@@ -23,12 +24,15 @@ import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdate
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
+import com.google.common.collect.ImmutableMap;
 import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static com.cauchymop.goblob.model.GoPlayer.PlayerType;
+import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.Players;
@@ -60,7 +64,7 @@ public class MainActivity extends BaseGameActivity
   protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
     super.onActivityResult(requestCode, responseCode, intent);
     if (responseCode != Activity.RESULT_OK) {
-      Log.w(TAG, "*** select players UI cancelled, " + responseCode);
+      Log.w(TAG, "Select players UI cancelled, " + responseCode);
       return;
     }
     switch (requestCode) {
@@ -283,19 +287,16 @@ public class MainActivity extends BaseGameActivity
           getPlayerId(turnBasedMatch, participantId)));
     }
 
-    int boardSize = turnBasedMatch.getVariant();
-    GameData gameData = getGameData(turnBasedMatch);
+    GameData gameData = getGameData(turnBasedMatch, myId, opponentId);
 
-    GoPlayer myPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
-    GoPlayer opponentPlayer =
-        createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE);
+    Map<String, GoPlayer> goPlayers = ImmutableMap.of(
+        myId, createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL),
+        opponentId, createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE));
 
-    StoneColor turnColor = (gameData.getMoveCount() % 2 == 0)
-        ? StoneColor.Black : StoneColor.White;
-
-    GoGameController goGameController = new GoGameController(gameData, boardSize);
-    goGameController.setGoPlayer(myTurn ? turnColor : turnColor.getOpponent(), myPlayer);
-    goGameController.setGoPlayer(myTurn ? turnColor.getOpponent() : turnColor, opponentPlayer);
+    GoGameController goGameController = new GoGameController(gameData);
+    GameConfiguration gameConfiguration = goGameController.getGameConfiguration();
+    goGameController.setGoPlayer(StoneColor.Black, goPlayers.get(gameConfiguration.getBlackId()));
+    goGameController.setGoPlayer(StoneColor.White, goPlayers.get(gameConfiguration.getWhiteId()));
 
     return goGameController;
   }
@@ -305,9 +306,10 @@ public class MainActivity extends BaseGameActivity
     return player == null ? null : player.getPlayerId();
   }
 
-  private GameData getGameData(TurnBasedMatch turnBasedMatch) {
+  private GameData getGameData(TurnBasedMatch turnBasedMatch, String myId, String opponentId) {
     try {
-      return turnBasedMatch.getData() == null ? GameData.getDefaultInstance()
+      return turnBasedMatch.getData() == null
+          ? GameDatas.createGameData(turnBasedMatch.getVariant(), 0, myId, opponentId)
           : GameData.parseFrom(turnBasedMatch.getData());
     } catch (InvalidProtocolBufferException exception) {
       throw new RuntimeException(exception);
@@ -331,10 +333,10 @@ public class MainActivity extends BaseGameActivity
       PlayerType playerType) {
     GoPlayer goPlayer;
     if (isParticipantAutoMatch(turnBasedMatch, participantId)) {
-      goPlayer = new GoPlayer(playerType, getString(R.string.opponent_default_name));
+      goPlayer = new GoPlayer(playerType, participantId, getString(R.string.opponent_default_name));
     } else {
       Player player = turnBasedMatch.getParticipant(participantId).getPlayer();
-      goPlayer = new GoPlayer(playerType, player.getDisplayName());
+      goPlayer = new GoPlayer(playerType, participantId, player.getDisplayName());
       avatarManager.setAvatarUri(getApplicationContext(), goPlayer, player.getIconImageUri());
     }
     return goPlayer;
