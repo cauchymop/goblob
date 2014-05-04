@@ -60,6 +60,7 @@
                             android:layout_height="wrap_content"
                             android:id="@+id/home_player_name"
                             android:singleLine="true"
+                            android:inputType="text"
                             android:layout_column="1"/>
                 </TableRow>
 
@@ -113,6 +114,7 @@
                             android:layout_weight="1"
                             android:layout_height="wrap_content"
                             android:id="@+id/opponent_player_name"
+                            android:inputType="text"
                             android:singleLine="true"
                             android:layout_column="1"/>
                 </TableRow>

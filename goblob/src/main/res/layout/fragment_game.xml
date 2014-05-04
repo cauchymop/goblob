@@ -15,11 +15,14 @@
         android:layout_width="44dip"
         android:layout_height="44dip"
         android:id="@+id/titleImage"
+        android:contentDescription="@string/player_stonecolor_content_description"
         android:layout_gravity="left|center_vertical"/>
 
     <TextView
         style="@style/Title"
         android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="left|center_vertical"/>
 
@@ -27,6 +30,7 @@
         android:layout_width="44dip"
         android:layout_height="44dip"
         android:id="@+id/avatarImage"
+        android:contentDescription="@string/player_avatar_content_description"
         android:layout_gravity="left|center_vertical"/>
   </LinearLayout>
 

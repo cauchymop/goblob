@@ -135,6 +135,7 @@ public class GoBoard implements Serializable {
     }
 
     libertyFieldByGroup[group].clear(move);
+    //noinspection RedundantIfStatement
     if (libertyFieldByGroup[group].isEmpty()) {
       return false;
     }
