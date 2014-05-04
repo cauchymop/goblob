@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.cauchymop.goblob.proto.PlayGameData.EndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
@@ -27,8 +28,12 @@ public class GoGameController implements Serializable {
   private transient PlayerController blackController;
   private transient PlayerController whiteController;
   private transient GameConfiguration gameConfiguration;
+  private transient EndStatus endStatus;
 
   public GoGameController(GameData gameData) {
+    gameConfiguration = gameData.getGameConfiguration();
+    endStatus = gameData.getEndStatus();
+    goGame = new GoGame(gameConfiguration.getBoardSize());
     for (Move move : gameData.getMoveList()) {
       playMove(move);
     }
@@ -78,10 +83,6 @@ public class GoGameController implements Serializable {
         break;
       case PASS:
         goGame.play(goGame.getPassValue());
-        break;
-      case START_GAME:
-        gameConfiguration = move.getGameConfiguration();
-        goGame = new GoGame(gameConfiguration.getBoardSize());
         break;
     }
     moves.add(move);
@@ -157,7 +158,10 @@ public class GoGameController implements Serializable {
   }
 
   public GameData getGameData() {
-    return GameData.newBuilder().addAllMove(moves).build();
+    return GameData.newBuilder()
+        .setGameConfiguration(gameConfiguration)
+        .addAllMove(moves)
+        .build();
   }
 
   public GameConfiguration getGameConfiguration() {

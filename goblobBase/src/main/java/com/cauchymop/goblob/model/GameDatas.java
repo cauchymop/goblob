@@ -26,24 +26,18 @@ public class GameDatas {
 
   public static GameData createGameData(int size, int handicap, String blackId, String whiteId) {
     return GameData.newBuilder()
-        .addMove(createStartGameMove(size, handicap, blackId, whiteId))
-        .build();
-  }
-
-  public static Move createStartGameMove(int size, int handicap, String blackId, String whiteId) {
-    return Move.newBuilder()
-        .setType(Move.MoveType.START_GAME)
         .setGameConfiguration(createGameConfiguration(size, handicap, blackId, whiteId))
         .build();
   }
 
-  private static GameConfiguration createGameConfiguration(int size, int handicap, String blackId,
+  public static GameConfiguration createGameConfiguration(int size, int handicap, String blackId,
       String whiteId) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)
         .setHandicap(handicap)
         .setBlackId(blackId)
         .setWhiteId(whiteId)
+        .setScoreType(GameConfiguration.ScoreType.JAPANESE)
         .build();
   }
 }
