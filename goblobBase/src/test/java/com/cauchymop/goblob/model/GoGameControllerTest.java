@@ -5,7 +5,6 @@ import com.cauchymop.goblob.proto.PlayGameData;
 import org.junit.Test;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
-import static com.cauchymop.goblob.proto.PlayGameData.Move;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,7 +23,7 @@ public class GoGameControllerTest {
   @Test
   public void testNew_gameData() {
     GameData gameData = GameData.newBuilder()
-        .addMove(GameDatas.createStartGameMove(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID))
+        .setGameConfiguration(GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID))
         .addMove(GameDatas.createMove(2, 3))
         .addMove(GameDatas.createMove(4, 5))
         .build();
@@ -39,9 +38,9 @@ public class GoGameControllerTest {
 
   @Test
   public void testGetGameData() {
-    Move startGameMove = GameDatas.createStartGameMove(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID);
+    PlayGameData.GameConfiguration gameConfiguration = GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID);
     GoGameController controller = new GoGameController(GameData.newBuilder()
-        .addMove(startGameMove)
+        .setGameConfiguration(gameConfiguration)
         .build());
     DummyPlayerController whiteController = new DummyPlayerController();
     controller.setWhiteController(whiteController);
@@ -51,7 +50,7 @@ public class GoGameControllerTest {
     controller.play(whiteController, 1, 1);
     controller.pass(blackController);
     assertThat(controller.getGameData()).isEqualTo(GameData.newBuilder()
-        .addMove(startGameMove)
+        .setGameConfiguration(gameConfiguration)
         .addMove(GameDatas.createMove(0, 0))
         .addMove(GameDatas.createMove(1, 1))
         .addMove(GameDatas.createPassMove())
