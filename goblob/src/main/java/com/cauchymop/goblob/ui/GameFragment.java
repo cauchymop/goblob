@@ -18,7 +18,6 @@ import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
-import com.google.android.gms.common.images.ImageManager;
 
 /**
  * Game Page Fragment.
@@ -167,8 +166,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   private void updateAvatar(GoPlayer currentPlayer) {
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
-    ImageManager imageManager = ImageManager.create(getActivity());
-    imageManager.loadImage(avatarImage, getGoBlobActivity().getAvatarManager().getAvatarUri(currentPlayer.getId()));
+    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getId());
   }
 
   /**
