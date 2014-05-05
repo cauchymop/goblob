@@ -193,7 +193,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
       case REMOTE:
         return new HumanPlayerController(goGameController);
       default:
-        throw new RuntimeException("Invalid PlayerControler type");
+        throw new RuntimeException("Invalid PlayerController type");
     }
   }
 
