@@ -26,7 +26,6 @@ public class GoBoard implements Serializable {
   private int[] groupByPosition;
   private BitSet[] stoneFieldByGroup;
   private BitSet[] libertyFieldByGroup;
-  private Territories territories;
 
   public GoBoard(int size) {
     this.size = size;
@@ -179,11 +178,6 @@ public class GoBoard implements Serializable {
     return (group < whiteGroupStart) ? StoneColor.Black : StoneColor.White;
   }
 
-  public double getScore(StoneColor color) {
-    int score = blackField.cardinality() - whiteField.cardinality();
-    return (color == StoneColor.Black) ? score : -score;
-  }
-
   public StoneColor getColor(int x, int y) {
     return getColorByGroup(groupByPosition[getPos(x, y)]);
   }
@@ -214,13 +208,5 @@ public class GoBoard implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hashCode(blackField, whiteField);
-  }
-
-  public StoneColor getTerritory(int pos) {
-    return territories.getTerritory(pos);
-  }
-
-  public void mark(int pos, StoneColor color) {
-    territories.mark(pos, color);
   }
 }

@@ -219,7 +219,7 @@ public class MainActivity extends BaseGameActivity
 
   private void takeTurn(GoGameController goGameController, String myId) {
     byte[] gameDataBytes = goGameController.getGameData().toByteArray();
-    Log.d(TAG, "taketurn: " + goGameController);
+    Log.d(TAG, "takeTurn: " + goGameController);
     TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
   }
 
