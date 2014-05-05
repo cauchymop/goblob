@@ -99,10 +99,6 @@ public class GoGame implements Serializable {
     return lastMove == passMove && previousMove == passMove;
   }
 
-  public double getScore() {
-    return board.getScore(currentColor);
-  }
-
   public StoneColor getColor(int x, int y) {
     return board.getColor(x, y);
   }
@@ -125,14 +121,6 @@ public class GoGame implements Serializable {
 
   public int getLastMove() {
     return (moveHistory.isEmpty()) ? NO_MOVE : moveHistory.get(moveHistory.size() - 1);
-  }
-
-  public StoneColor getTerritory(int pos) {
-    return board.getTerritory(pos);
-  }
-
-  public void mark(int pos, StoneColor color) {
-    board.mark(pos, color);
   }
 
   public List<Integer> getMoveHistory() {
