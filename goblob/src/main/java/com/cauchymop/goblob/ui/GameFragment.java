@@ -166,7 +166,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   private void updateAvatar(GoPlayer currentPlayer) {
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
-    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getId());
+    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getName());
   }
 
   /**
