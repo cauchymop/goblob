@@ -306,6 +306,9 @@ public class MainActivity extends BaseGameActivity
     byte[] gameDataBytes = goGameController.getGameData().toByteArray();
     Log.d(TAG, "takeTurn: " + goGameController);
     TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
+    // Reloads the list of matches to reflect new state
+    // TODO: Handle the list better
+    loadMatches();
   }
 
   public AvatarManager getAvatarManager() {
