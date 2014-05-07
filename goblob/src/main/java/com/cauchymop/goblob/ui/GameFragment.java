@@ -42,6 +42,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   public void setGameController(GoGameController goGameController) {
     this.goGameController = goGameController;
+
+    // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
+    getArguments().putSerializable(EXTRA_GO_GAME, goGameController);
+
     initBoardView();
   }
 
@@ -199,6 +203,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   @Override
   public void gameChanged(GoGameController gameController) {
+
+    // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
+    getArguments().putSerializable(EXTRA_GO_GAME, gameController);
+
     if (gameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
       getGoBlobActivity().giveTurn(gameController);
     }

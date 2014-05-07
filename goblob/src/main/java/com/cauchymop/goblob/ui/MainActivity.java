@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.StoneColor;
@@ -63,6 +62,7 @@ public class MainActivity extends BaseGameActivity
     setContentView(R.layout.activity_main);
     // Set up the action bar to show a dropdown list.
     final ActionBar actionBar = getActionBar();
+    assert actionBar != null;
     actionBar.setDisplayShowTitleEnabled(false);
     actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
@@ -456,8 +456,8 @@ public class MainActivity extends BaseGameActivity
       }
 
       @Override
-      public void startLocalGame(GoGame game) {
-        // TODO
+      public void startLocalGame(GoGameController gameController) {
+        startGame(gameController);
       }
     };
     item.start(gameStarter);
