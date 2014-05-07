@@ -50,6 +50,8 @@ public class MainActivity extends BaseGameActivity
   public static final int CHECK_MATCHES = 3;
 
   private static final String TAG = MainActivity.class.getName();
+  private static final String CURRENT_MATCH = "CURRENT_MATCH";
+
   private int boardSize = 9;
   private AvatarManager avatarManager;
   private TurnBasedMatch turnBasedMatch;
@@ -60,6 +62,12 @@ public class MainActivity extends BaseGameActivity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    if (savedInstanceState != null) {
+      turnBasedMatch = savedInstanceState.getParcelable(CURRENT_MATCH);
+    }
+
+
     // Set up the action bar to show a dropdown list.
     final ActionBar actionBar = getActionBar();
     assert actionBar != null;
@@ -127,6 +135,14 @@ public class MainActivity extends BaseGameActivity
         handleMatchSelected(intent);
         break;
     }
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    if (turnBasedMatch != null) {
+      outState.putParcelable(CURRENT_MATCH, turnBasedMatch);
+    }
+    super.onSaveInstanceState(outState);
   }
 
   private void handleMatchSelected(Intent intent) {
@@ -259,7 +275,7 @@ public class MainActivity extends BaseGameActivity
 
   public void displayGameConfigurationScreen(GoPlayer opponentPlayer, int boardSize) {
     GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(opponentPlayer, boardSize);
-    displayFragment(gameConfigurationFragment, true);
+    displayFragment(gameConfigurationFragment, false);
   }
 
   public void startGame(TurnBasedMatch turnBasedMatch) {
