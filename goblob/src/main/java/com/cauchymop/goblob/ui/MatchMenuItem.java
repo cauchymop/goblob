@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 /**
- * Created by olivierbonal on 05/05/14.
+ * An ActionBar navigation spinner menu entry for a match.
  */
 public interface MatchMenuItem {
   public String getDisplayName(Context context);

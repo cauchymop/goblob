@@ -10,48 +10,39 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Adapter displaying MatchMenuItem from the actionbar navigation spinner.
  */
 public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
 
-
-
-
-  public MatchesAdapter(Context context, List<MatchMenuItem> matchItems) {
-    super(context, R.layout.match_row, R.id.label, matchItems);
+  public MatchesAdapter(Context context) {
+    super(context, R.layout.match_row_view, R.id.label);
   }
 
-  @Override
+  @Override @NotNull
   public View getDropDownView(int position, View convertView, ViewGroup parent) {
-    final View rowView = super.getView(position, convertView, parent);
-    assert rowView != null;
+    final View matchRowView = super.getDropDownView(position, convertView, parent);
     MatchMenuItem item = getItem(position);
 
-    TextView labelView = (TextView) rowView.findViewById( R.id.label);
+    TextView labelView = (TextView) matchRowView.findViewById( R.id.label);
     labelView.setText(item.getDisplayName(getContext()));
 
-    ImageView iconView = (ImageView) rowView.findViewById( R.id.match_type_icon);
+    ImageView iconView = (ImageView) matchRowView.findViewById( R.id.match_type_icon);
+    iconView.setImageDrawable(item.getIcon(getContext()));
+    // May have been set to GONE if it was a closed view.
     iconView.setVisibility(View.VISIBLE);
-    Drawable icon = item.getIcon(getContext());
-    iconView.setImageDrawable(icon);
 
-    return rowView;
+    return matchRowView;
   }
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    // TODO: Add number of messages
-    final View rowView =  getDropDownView(position, convertView, parent);
-    View icon = rowView.findViewById( R.id.match_type_icon);
+    // TODO: Add number of games by turn status
+    final View matchRowView = getDropDownView(position, convertView, parent);
+    View icon = matchRowView.findViewById(R.id.match_type_icon);
     icon.setVisibility(View.GONE);
-    return rowView;
+    return matchRowView;
   }
-
-
-
-
-
 }

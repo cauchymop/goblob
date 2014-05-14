@@ -8,7 +8,7 @@ import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 
 /**
- * MatchMenuItem representing a Local Game.
+ * {@link MatchMenuItem} representing a Local Game.
  */
 public class LocalMatchMenuItem implements MatchMenuItem {
   private final GoGameController gameController;

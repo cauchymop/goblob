@@ -14,7 +14,6 @@
       android:paddingTop="10dp"
       android:paddingLeft="10dp"
       android:paddingRight="2dp"
-      android:src="@drawable/ic_match_your_turn"
       android:scaleType="centerCrop"
       android:layout_gravity="center"
       />

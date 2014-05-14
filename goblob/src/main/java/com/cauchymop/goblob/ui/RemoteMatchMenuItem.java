@@ -10,7 +10,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 /**
- * Created by olivierbonal on 05/05/14.
+ * {@link MatchMenuItem} for a Google Play games turn based match.
  */
 public class RemoteMatchMenuItem implements MatchMenuItem {
   private final TurnBasedMatch match;
@@ -43,5 +43,4 @@ public class RemoteMatchMenuItem implements MatchMenuItem {
   public void start(GameStarter gameStarter) {
     gameStarter.startRemoteGame(match);
   }
-
 }

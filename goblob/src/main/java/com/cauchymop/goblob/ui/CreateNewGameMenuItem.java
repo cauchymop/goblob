@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 /**
- * Created by olivierbonal on 05/05/14.
+ * {@link MatchMenuItem} which creates a new game.
  */
 public class CreateNewGameMenuItem implements MatchMenuItem {
   private final String label;

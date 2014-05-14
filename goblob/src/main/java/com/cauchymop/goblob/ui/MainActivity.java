@@ -67,10 +67,8 @@ public class MainActivity extends BaseGameActivity
       turnBasedMatch = savedInstanceState.getParcelable(CURRENT_MATCH);
     }
 
-
     // Set up the action bar to show a dropdown list.
     final ActionBar actionBar = getActionBar();
-    assert actionBar != null;
     actionBar.setDisplayShowTitleEnabled(false);
     actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
@@ -78,11 +76,10 @@ public class MainActivity extends BaseGameActivity
     // use getActionBar().getThemedContext() to ensure
     // that the text color is always appropriate for the action bar
     // background rather than the activity background.
-    navigationSpinnerAdapter = new MatchesAdapter(actionBar.getThemedContext(), new ArrayList<MatchMenuItem>());
+    navigationSpinnerAdapter = new MatchesAdapter(actionBar.getThemedContext());
 
     // Set up the dropdown list navigation in the action bar.
     actionBar.setListNavigationCallbacks(navigationSpinnerAdapter, this);
-
 
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment(), false);
@@ -184,13 +181,12 @@ public class MainActivity extends BaseGameActivity
 
         int currentGameIndex = 0;
 
-        LoadMatchesResponse matches = loadMatchesResult.getMatches();
+        navigationSpinnerAdapter.clear();
+
         // Add Matches
-        if (matches != null) {
-          navigationSpinnerAdapter.clear();
-          currentGameIndex = addMatchesToMatchesAdapter(matches.getMyTurnMatches(), currentGameIndex);
-          currentGameIndex = addMatchesToMatchesAdapter(matches.getTheirTurnMatches(), currentGameIndex);
-        }
+        LoadMatchesResponse matches = loadMatchesResult.getMatches();
+        currentGameIndex = addMatchesToMatchesAdapter(matches.getMyTurnMatches(), currentGameIndex);
+        currentGameIndex = addMatchesToMatchesAdapter(matches.getTheirTurnMatches(), currentGameIndex);
 
         // Add Create New Game entry
         MatchMenuItem matchMenuItem = new CreateNewGameMenuItem(getString(R.string.new_game_label));
@@ -199,9 +195,7 @@ public class MainActivity extends BaseGameActivity
 
         // Select current game index
         ActionBar actionBar = getActionBar();
-        if (actionBar != null) {
-          actionBar.setSelectedNavigationItem(currentGameIndex);
-        }
+        actionBar.setSelectedNavigationItem(currentGameIndex);
       }
     };
     matchListResult.setResultCallback(matchListResultCallBack);
@@ -363,7 +357,6 @@ public class MainActivity extends BaseGameActivity
             loadMatches();
           }
         });
-
   }
 
   private GoGameController createGoGameController(TurnBasedMatch turnBasedMatch) {
