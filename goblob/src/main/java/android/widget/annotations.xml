@@ -1,0 +1,14 @@
+<root>
+    <item
+        name='android.widget.ArrayAdapter android.view.View getDropDownView(int, android.view.View, android.view.ViewGroup)'>
+        <annotation name='org.jetbrains.annotations.Contract'>
+            <val val="&quot;_,_,_ -&gt; !null&quot;"/>
+        </annotation>
+    </item>
+    <item
+        name='android.widget.ArrayAdapter android.view.View getView(int, android.view.View, android.view.ViewGroup)'>
+        <annotation name='org.jetbrains.annotations.Contract'>
+            <val val="&quot;_,_,_ -&gt; !null&quot;"/>
+        </annotation>
+    </item>
+</root>

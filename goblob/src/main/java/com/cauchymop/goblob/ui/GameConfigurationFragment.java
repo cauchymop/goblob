@@ -113,7 +113,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
       final String homePlayerName = currentPlayer.getDisplayName();
       homePlayer = new GoPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, homePlayerName);
-      getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayer.getId(),
+      getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
           currentPlayer.getIconImageUri());
       homePlayerNameField.setText(homePlayer.getName());
     }

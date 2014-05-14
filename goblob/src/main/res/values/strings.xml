@@ -35,4 +35,6 @@
   <string name="button_label_check_matches">Check matches</string>
   <string name="player_avatar_content_description">player_avatar</string>
   <string name="player_stonecolor_content_description">Player Color Icon</string>
+  <string name="new_game_label">New Game</string>
+  <string name="match_label_format">"%1$s (%2$s x %2$s)"</string>
 </resources>

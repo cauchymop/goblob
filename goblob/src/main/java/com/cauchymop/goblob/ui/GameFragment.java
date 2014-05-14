@@ -42,6 +42,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   public void setGameController(GoGameController goGameController) {
     this.goGameController = goGameController;
+
+    // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
+    getArguments().putSerializable(EXTRA_GO_GAME, goGameController);
+
     initBoardView();
   }
 
@@ -166,7 +170,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   private void updateAvatar(GoPlayer currentPlayer) {
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
-    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getId());
+    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getName());
   }
 
   /**
@@ -199,6 +203,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   @Override
   public void gameChanged(GoGameController gameController) {
+
+    // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
+    getArguments().putSerializable(EXTRA_GO_GAME, gameController);
+
     if (gameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
       getGoBlobActivity().giveTurn(gameController);
     }
