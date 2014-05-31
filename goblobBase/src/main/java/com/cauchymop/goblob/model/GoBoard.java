@@ -2,12 +2,14 @@ package com.cauchymop.goblob.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Map;
 
 /**
  * Class to represent the state of a Go board, and apply the logic of playing a move.
@@ -15,6 +17,8 @@ import java.util.BitSet;
 public class GoBoard implements Serializable {
 
   private static final int BLACK_GROUP_START = 1;
+
+  private static Map<Integer, int[][]> neighborPositionsByPositionCache = Maps.newHashMap();
 
   private int[][] neighborPositionsByPosition;
   private int size;
@@ -78,6 +82,9 @@ public class GoBoard implements Serializable {
   }
 
   private int[][] getNeighborPositionsByPosition() {
+    if (neighborPositionsByPositionCache.containsKey(size)) {
+      return neighborPositionsByPositionCache.get(size);
+    }
     int[][] neighborPositionsByPositions = new int[numberOfPositions][];
     for (int x = 0; x < size; x++) {
       for (int y = 0; y < size; y++) {
@@ -89,6 +96,7 @@ public class GoBoard implements Serializable {
         neighborPositionsByPositions[getPos(x, y)] = Ints.toArray(neighbors);
       }
     }
+    neighborPositionsByPositionCache.put(size, neighborPositionsByPositions);
     return neighborPositionsByPositions;
   }
 
@@ -179,7 +187,11 @@ public class GoBoard implements Serializable {
   }
 
   public StoneColor getColor(int x, int y) {
-    return getColorByGroup(groupByPosition[getPos(x, y)]);
+    return getColor(getPos(x, y));
+  }
+
+  public StoneColor getColor(int pos) {
+    return getColorByGroup(groupByPosition[pos]);
   }
 
   public int getSize() {
