@@ -2,10 +2,15 @@ package com.cauchymop.goblob.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
@@ -20,8 +25,7 @@ public class GoGame implements Serializable {
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
   // Instance pool management.
-  private GoBoard[] boardPool = new GoBoard[10];
-  private int boardPoolSize = 0;
+  private LinkedList<GoBoard> boardPool = Lists.newLinkedList();
 
   public GoGame(int boardSize) {
     this.boardSize = boardSize;
@@ -31,18 +35,16 @@ public class GoGame implements Serializable {
   }
 
   private GoBoard getNewBoard() {
-    if (boardPoolSize == 0) {
+    if (boardPool.isEmpty()) {
       return new GoBoard(boardSize);
     }
-    boardPoolSize--;
-    GoBoard board = boardPool[boardPoolSize];
+    GoBoard board = boardPool.remove(0);
     board.clear();
     return board;
   }
 
   private void recycleBoard(GoBoard board) {
-    boardPool[boardPoolSize] = board;
-    boardPoolSize++;
+    boardPool.add(board);
   }
 
   public boolean play(int move) {
@@ -146,6 +148,20 @@ public class GoGame implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hashCode(boardSize, moveHistory);
+  }
+
+  public GoBoard getBoard() {
+    return board;
+  }
+
+  public Set<Integer> getNonEyeFillingMoves() {
+    Set<Integer> moves = Sets.newHashSet();
+    for (int pos = 0 ; pos < boardSize*boardSize ; pos++) {
+      if (board.getColor(pos) == null && !board.isEyeFilling(pos, currentColor)) {
+        moves.add(pos);
+      }
+    }
+    return moves;
   }
 }
 
