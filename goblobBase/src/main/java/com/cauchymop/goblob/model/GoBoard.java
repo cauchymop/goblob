@@ -20,14 +20,14 @@ public class GoBoard implements Serializable {
 
   private static Map<Integer, int[][]> neighborPositionsByPositionCache = Maps.newHashMap();
 
-  private int[][] neighborPositionsByPosition;
-  private int size;
-  private int numberOfPositions;
-  private int numberOfGroups;
-  private int whiteGroupStart;
+  private final int[][] neighborPositionsByPosition;
+  private final int size;
+  private final int numberOfPositions;
+  private final int numberOfGroups;
+  private final int whiteGroupStart;
+  private int[] groupByPosition;
   private BitSet blackField;
   private BitSet whiteField;
-  private int[] groupByPosition;
   private BitSet[] stoneFieldByGroup;
   private BitSet[] libertyFieldByGroup;
 
@@ -78,6 +78,7 @@ public class GoBoard implements Serializable {
     Arrays.fill(groupByPosition, 0);
     for (int i = 0; i < numberOfGroups; i++) {
       stoneFieldByGroup[i].clear();
+      libertyFieldByGroup[i].clear();
     }
   }
 
@@ -200,11 +201,34 @@ public class GoBoard implements Serializable {
 
   public void copyFrom(GoBoard board) {
     System.arraycopy(board.groupByPosition, 0, groupByPosition, 0, numberOfPositions);
-    populateFromGroups();
+//    populateFromGroups();
+    blackField.or(board.blackField);
+    whiteField.or(board.whiteField);
+    for (int index = 0; index < numberOfGroups; index++) {
+      stoneFieldByGroup[index].or(board.stoneFieldByGroup[index]);
+      libertyFieldByGroup[index].or(board.libertyFieldByGroup[index]);
+    }
   }
 
   public int getPos(int x, int y) {
     return y * size + x;
+  }
+
+  public int getScore() {
+    return blackField.cardinality() - whiteField.cardinality();
+  }
+
+  public boolean isEyeFilling(int position, StoneColor color) {
+    int[] neighborPositions = neighborPositionsByPosition[position];
+    for (int neighborPosition : neighborPositions) {
+      if (getColor(neighborPosition) != color) {
+        return false;
+      }
+      if (libertyFieldByGroup[groupByPosition[neighborPosition]].cardinality() == 1) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
