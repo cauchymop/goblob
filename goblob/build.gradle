@@ -29,6 +29,24 @@ android {
         targetSdkVersion 19
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("debug.keystore")
+        }
+        release {
+            storeFile file("release.keystore")
+            keyAlias "game of go"
+            keyPassword System.getenv("KEY_PASSWORD")
+            storePassword System.getenv("KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+
     lintOptions {
         abortOnError false
     }
