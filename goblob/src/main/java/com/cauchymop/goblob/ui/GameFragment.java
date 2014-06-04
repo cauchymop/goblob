@@ -6,6 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -13,9 +16,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.cauchymop.goblob.BuildConfig;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.MonteCarlo;
 import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
 
@@ -52,6 +57,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    setHasOptionsMenu(true);
     Log.d(TAG, "onCreate: " + getArguments());
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
       this.goGameController = (GoGameController) getArguments().getSerializable(EXTRA_GO_GAME);
@@ -90,6 +96,26 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     if (goGameController != null) {
       goGameController.resume();
     }
+  }
+
+  @Override
+  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    super.onCreateOptionsMenu(menu, inflater);
+    if (BuildConfig.DEBUG) {
+      menu.add(Menu.NONE, R.id.menu_imfeelinglucky, Menu.NONE, R.string.imfeelinglucky);
+    }
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.menu_imfeelinglucky) {
+      int bestMove = MonteCarlo.getBestMove(goGameController.getGame(), 1000);
+      int boardSize = goGameController.getGameConfiguration().getBoardSize();
+      int x = bestMove % boardSize;
+      int y = bestMove / boardSize;
+      currentPlayerController.play(x, y);
+    }
+    return super.onOptionsItemSelected(item);
   }
 
   @Override
