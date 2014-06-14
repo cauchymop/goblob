@@ -1,5 +1,4 @@
-apply plugin: 'java'
-apply plugin: 'gradleProtobufPlugin'
+apply plugin: 'protobuf'
 
 buildscript {
     repositories {
@@ -7,21 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.tomcawley:gradle-protobuf-plugin:0.3'
-    }
-}
-
-protoBuf {
-    protoc {
-        'Linux' {
-            path = "protoc"
-        }
-        'Mac OS X' {
-            path = "/usr/local/bin/protoc"
-        }
-    }
-    lang {
-        java
+        classpath 'ws.antonov.gradle.plugins:gradle-plugin-protobuf:0.9.1'
     }
 }
 
@@ -32,3 +17,20 @@ repositories {
 dependencies {
     compile "com.google.protobuf:protobuf-java:2.5.0"
 }
+
+// AndroidStudio can't see the sources from build/generated-sources without the following
+// workaround.
+task copyGeneratedToMain(type: Copy) {
+    from 'build/generated-sources/main'
+    into 'src/main/java'
+}
+task deleteGeneratedSources(type: Delete) {
+    delete 'build/generated-sources/main'
+}
+task deleteMainSources(type: Delete) {
+    delete 'src/main/java'
+}
+copyGeneratedToMain.dependsOn(generateProto)
+deleteGeneratedSources.dependsOn(copyGeneratedToMain)
+compileJava.dependsOn(deleteGeneratedSources)
+clean.dependsOn(deleteMainSources)
