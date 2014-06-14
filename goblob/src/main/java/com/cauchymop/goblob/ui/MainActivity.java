@@ -41,6 +41,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.Players;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
+import static com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchResult;
 
 public class MainActivity extends BaseGameActivity
     implements OnTurnBasedMatchUpdateReceivedListener, ActionBar.OnNavigationListener {
@@ -207,9 +208,10 @@ public class MainActivity extends BaseGameActivity
       if (turnBasedMatch != null && match.getMatchId().equals(turnBasedMatch.getMatchId())) {
         currentGameIndex = navigationSpinnerAdapter.getCount();
       }
-      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(match);
+      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(match.getCreationTimestamp(), match.getVariant(), match.getTurnStatus(), match.getMatchId());
       navigationSpinnerAdapter.add(matchMenuItem);
     }
+    matchBuffer.close();
     return currentGameIndex;
   }
 
@@ -270,6 +272,16 @@ public class MainActivity extends BaseGameActivity
   public void displayGameConfigurationScreen(GoPlayer opponentPlayer, int boardSize) {
     GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(opponentPlayer, boardSize);
     displayFragment(gameConfigurationFragment, false);
+  }
+
+  private void startGame(String matchId) {
+    TurnBasedMultiplayer.loadMatch(getApiClient(), matchId)
+        .setResultCallback(new ResultCallback<LoadMatchResult>() {
+          @Override
+          public void onResult(LoadMatchResult loadMatchResult) {
+            startGame(loadMatchResult.getMatch());
+          }
+        });
   }
 
   public void startGame(TurnBasedMatch turnBasedMatch) {
@@ -463,7 +475,7 @@ public class MainActivity extends BaseGameActivity
       }
 
       @Override
-      public void startRemoteGame(TurnBasedMatch match) {
+      public void startRemoteGame(String match) {
         startGame(match);
       }
 

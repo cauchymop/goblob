@@ -35,10 +35,11 @@ message GameConfiguration {
   required ScoreType score_type = 5;
 }
 
-// Next ID: 3
+// Next ID: 4
 message MatchEndStatus {
   required int32 score = 1;
-  repeated Position dead_stone = 2;
+  required string last_modifier_id = 2;
+  repeated Position dead_stone = 3;
 }
 
 // Next ID: 3

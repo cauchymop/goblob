@@ -13,18 +13,24 @@ import java.util.Date;
  * {@link MatchMenuItem} for a Google Play games turn based match.
  */
 public class RemoteMatchMenuItem implements MatchMenuItem {
-  private final TurnBasedMatch match;
+  private final String matchId;
+  private final int variant;
+  private final int turnStatus;
+  private final long creationTimestamp;
 
-  public RemoteMatchMenuItem(TurnBasedMatch match) {
-    this.match = match;
+  public RemoteMatchMenuItem(long creationTimestamp, int variant, int turnStatus, String matchId) {
+    this.creationTimestamp = creationTimestamp;
+    this.variant = variant;
+    this.turnStatus = turnStatus;
+    this.matchId = matchId;
   }
 
   @Override
   public String getDisplayName(Context context) {
-    Date date = new Date(match.getCreationTimestamp());
+    Date date = new Date(creationTimestamp);
     DateFormat dateFormat = DateFormat.getDateInstance();
 
-    return context.getString(R.string.match_label_format, dateFormat.format(date), match.getVariant());
+    return context.getString(R.string.match_label_format, dateFormat.format(date), variant);
 //    StringBuilder builder = new StringBuilder();
 //    String opponentId = getOpponentId(turnBasedMatch, myId);
 //    Participant participant = turnBasedMatch.getParticipant(opponentId);
@@ -35,12 +41,12 @@ public class RemoteMatchMenuItem implements MatchMenuItem {
 
   @Override
   public Drawable getIcon(Context context) {
-    int iconResId =  match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN?R.drawable.ic_match_your_turn:R.drawable.ic_match_their_turn;
+    int iconResId =  turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN?R.drawable.ic_match_your_turn:R.drawable.ic_match_their_turn;
     return context.getResources().getDrawable(iconResId);
   }
 
   @Override
   public void start(GameStarter gameStarter) {
-    gameStarter.startRemoteGame(match);
+    gameStarter.startRemoteGame(matchId);
   }
 }

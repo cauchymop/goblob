@@ -8,6 +8,6 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
  */
 public interface GameStarter {
   public void startNewGame();
-  public void startRemoteGame(TurnBasedMatch match);
+  public void startRemoteGame(String matchId);
   public void startLocalGame(GoGameController gameController);
 }
