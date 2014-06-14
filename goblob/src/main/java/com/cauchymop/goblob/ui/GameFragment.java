@@ -21,7 +21,6 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.MonteCarlo;
-import com.cauchymop.goblob.model.PlayerController;
 import com.cauchymop.goblob.model.StoneColor;
 
 /**
@@ -35,7 +34,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   private GoGameController goGameController;
   private GoBoardView goBoardView;
-  private HumanPlayerController currentPlayerController;
 
   public static GameFragment newInstance(GoGameController gameController) {
     GameFragment fragment = new GameFragment();
@@ -83,22 +81,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
   }
 
   @Override
-  public void onPause() {
-    super.onPause();
-    if (goGameController != null) {
-      goGameController.pause();
-    }
-  }
-
-  @Override
-  public void onResume() {
-    super.onResume();
-    if (goGameController != null) {
-      goGameController.resume();
-    }
-  }
-
-  @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     if (BuildConfig.DEBUG) {
@@ -113,7 +95,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
       int boardSize = goGameController.getGameConfiguration().getBoardSize();
       int x = bestMove % boardSize;
       int y = bestMove / boardSize;
-      currentPlayerController.play(x, y);
+      goGameController.play(x, y);
     }
     return super.onOptionsItemSelected(item);
   }
@@ -140,15 +122,12 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     boardViewContainer.removeAllViews();
-    goGameController.setBlackController(getController(goGameController.getGoPlayer(StoneColor.Black)));
-    goGameController.setWhiteController(getController(goGameController.getGoPlayer(StoneColor.White)));
     goGameController.addListener(this);
-    goGameController.runGame();
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController.getGame());
     goBoardView.addListener(this);
 
     // Disable Interactions for Local Humans
-    setHumanInteractionEnabled(false);
+    setHumanInteractionEnabled(goGameController.isLocalTurn());
 
     boardViewContainer.addView(goBoardView);
 
@@ -158,7 +137,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     passButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        currentPlayerController.pass();
+        goGameController.pass();
       }
     });
 
@@ -216,31 +195,18 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     messageView.setText(message);
   }
 
-  private PlayerController getController(GoPlayer player) {
-    switch (player.getType()) {
-      case LOCAL:
-        return new LocalHumanPlayerController(goGameController);
-      case REMOTE:
-        return new HumanPlayerController(goGameController);
-      default:
-        throw new RuntimeException("Invalid PlayerController type");
-    }
-  }
-
   @Override
   public void gameChanged(GoGameController gameController) {
 
     // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
     getArguments().putSerializable(EXTRA_GO_GAME, gameController);
 
+    updateAchievements();
+
     if (gameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
       getGoBlobActivity().giveTurn(gameController);
     }
-
-    // Refresh UI and current controller
-    goBoardView.postInvalidate();
-    updateFromGameState();
-    updateAchievements();
+    getGoBlobActivity().startGame(gameController);
   }
 
   private void updateAchievements() {
@@ -265,7 +231,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
   @Override
   public void played(int x, int y) {
-    currentPlayerController.play(x, y);
+    if(!goGameController.play(x, y)) {
+      buzz();
+    }
   }
 
   private void setHumanInteractionEnabled(final boolean enabled) {
@@ -280,88 +248,14 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     });
   }
 
-  private class LocalHumanPlayerController extends HumanPlayerController {
-
-    public LocalHumanPlayerController(GoGameController gameController) {
-      super(gameController);
-    }
-
-    @Override
-    public void startTurn() {
-      // Enable Interactions for Local Humans
-      setHumanInteractionEnabled(true);
-
-      super.startTurn();
-
-      // Disable Interactions for Local Humans
-      setHumanInteractionEnabled(false);
-    }
-
-    @Override
-    protected void handleInvalidMove() {
-      super.handleInvalidMove();
-      buzz();
-    }
-
-    private void buzz() {
-      try {
-        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(getActivity().getApplicationContext(), notification);
-        r.play();
-      } catch (Exception e) {
-        System.err.println("Exception while buzzing");
-        e.printStackTrace();
-      }
-    }
-  }
-
-  public class HumanPlayerController extends PlayerController {
-    protected GoGameController gameController;
-    private boolean played;
-
-    public HumanPlayerController(GoGameController gameController) {
-      this.gameController = gameController;
-    }
-
-    @Override
-    public void startTurn() {
-      currentPlayerController = this;
-      played = false;
-      synchronized (this) {
-        while (!played) {
-          try {
-            this.wait();
-          } catch (InterruptedException e) {
-            // Expected.
-          }
-        }
-      }
-    }
-
-    public void play(int x, int y) {
-      if (!played && gameController.play(this, x, y)) {
-        played = true;
-        synchronized (this) {
-          this.notifyAll();
-        }
-      } else {
-        handleInvalidMove();
-      }
-    }
-
-    public void pass() {
-      if (!played) {
-        gameController.pass(this);
-        played = true;
-        synchronized (this) {
-          this.notifyAll();
-        }
-      } else {
-        handleInvalidMove();
-      }
-    }
-
-    protected void handleInvalidMove() {
+  private void buzz() {
+    try {
+      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+      Ringtone r = RingtoneManager.getRingtone(getActivity().getApplicationContext(), notification);
+      r.play();
+    } catch (Exception e) {
+      System.err.println("Exception while buzzing");
+      e.printStackTrace();
     }
   }
 }

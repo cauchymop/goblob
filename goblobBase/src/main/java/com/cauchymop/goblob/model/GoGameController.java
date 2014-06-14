@@ -24,9 +24,6 @@ public class GoGameController implements Serializable {
   private List<Move> moves = Lists.newArrayList();
   private final transient GoGame goGame;
   private transient Set<Listener> listeners = Sets.newHashSet();
-  private transient Thread thread;
-  private transient PlayerController blackController;
-  private transient PlayerController whiteController;
   private transient GameConfiguration gameConfiguration;
   private transient MatchEndStatus matchEndStatus;
 
@@ -39,37 +36,12 @@ public class GoGameController implements Serializable {
     }
   }
 
-  private PlayerController getCurrentController() {
-    if (goGame.getCurrentColor() == StoneColor.Black) {
-      return blackController;
-    } else {
-      return whiteController;
-    }
+  public void pass() {
+    playMove(GameDatas.createPassMove());
   }
 
-  public void runGame() {
-    thread = new Thread("Game") {
-
-      @Override
-      public void run() {
-        while (!goGame.isGameEnd()) {
-          getCurrentController().startTurn();
-        }
-      }
-    };
-    thread.start();
-  }
-
-  public void pass(PlayerController controller) {
-    playMove(controller, GameDatas.createPassMove());
-  }
-
-  public boolean play(PlayerController controller, int x, int y) {
-    return playMove(controller, GameDatas.createMove(x, y));
-  }
-
-  private boolean playMove(PlayerController controller, Move move) {
-    return isCurrentController(controller) && playMove(move);
+  public boolean play(int x, int y) {
+    return playMove(GameDatas.createMove(x, y));
   }
 
   private boolean playMove(Move move) {
@@ -90,20 +62,6 @@ public class GoGameController implements Serializable {
     return true;
   }
 
-  private boolean isCurrentController(PlayerController controller) {
-    return controller == getCurrentController();
-  }
-
-  public void setBlackController(PlayerController blackController) {
-    System.out.println("setBlackController: " + blackController);
-    this.blackController = blackController;
-  }
-
-  public void setWhiteController(PlayerController whiteController) {
-    System.out.println("setWhiteController: " + whiteController);
-    this.whiteController = whiteController;
-  }
-
   public GoPlayer getCurrentPlayer() {
     return getGoPlayer(goGame.getCurrentColor());
   }
@@ -114,18 +72,6 @@ public class GoGameController implements Serializable {
 
   public GoPlayer getGoPlayer(StoneColor color) {
     return players.get(color);
-  }
-
-  public void pause() {
-    System.out.println("pause - killing thread");
-    if (thread != null) {
-      thread.interrupt();
-    }
-  }
-
-  public void resume() {
-    System.out.println("resume - starting thread");
-    runGame();
   }
 
   public void setGoPlayer(StoneColor color, GoPlayer player) {
@@ -166,6 +112,10 @@ public class GoGameController implements Serializable {
 
   public GameConfiguration getGameConfiguration() {
     return gameConfiguration;
+  }
+
+  public boolean isLocalTurn() {
+    return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL && !getGame().isGameEnd();
   }
 
   public interface Listener {

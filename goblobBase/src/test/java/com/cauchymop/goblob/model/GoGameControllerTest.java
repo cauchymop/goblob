@@ -42,13 +42,9 @@ public class GoGameControllerTest {
     GoGameController controller = new GoGameController(GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
         .build());
-    DummyPlayerController whiteController = new DummyPlayerController();
-    controller.setWhiteController(whiteController);
-    DummyPlayerController blackController = new DummyPlayerController();
-    controller.setBlackController(blackController);
-    controller.play(blackController, 0, 0);
-    controller.play(whiteController, 1, 1);
-    controller.pass(blackController);
+    controller.play(0, 0);
+    controller.play(1, 1);
+    controller.pass();
     assertThat(controller.getGameData()).isEqualTo(GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
         .addMove(GameDatas.createMove(0, 0))
@@ -89,11 +85,5 @@ public class GoGameControllerTest {
     controller.fireGameChanged();
 
     verifyZeroInteractions(mockListener);
-  }
-
-  private static class DummyPlayerController extends PlayerController {
-    @Override
-    public void startTurn() {
-    }
   }
 }
