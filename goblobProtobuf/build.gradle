@@ -14,8 +14,20 @@ repositories {
     mavenCentral()
 }
 
+def protobufversion() {
+    Process result = [ project.convention.plugins.protobuf.protocPath, "--version" ].execute()
+    def outputBuffer = new StringBuffer()
+    result.consumeProcessOutput(outputBuffer, outputBuffer)
+    result.waitFor()
+    def output = outputBuffer.toString()
+    def match = output =~ /libprotoc ([0-9.]*).*/
+    def version = match[0][1]
+    println "Using libprotoc: " + version
+    return version
+}
+
 dependencies {
-    compile "com.google.protobuf:protobuf-java:2.5.0"
+    compile group: "com.google.protobuf", name: "protobuf-java", version: protobufversion()
 }
 
 // AndroidStudio can't see the sources from build/generated-sources without the following
