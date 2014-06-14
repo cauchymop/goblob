@@ -10,8 +10,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:17.+'
     compile project(":goblobProtobuf")
+    compile 'com.google.guava:guava:17.+'
     testCompile 'com.google.guava:guava-testlib:17.+'
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-all:1.9.0'
