@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compile "com.google.protobuf:protobuf-java:2.4.1"
+    compile "com.google.protobuf:protobuf-java:2.5.0"
 }
 
 // AndroidStudio can't see the sources from build/generated-sources without the following
