@@ -6,9 +6,6 @@ import org.junit.Test;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 
 /**
@@ -61,29 +58,5 @@ public class GoGameControllerTest {
   public void testToString() {
     GoGameController controller = createGoGameController();
     assertThat(controller.toString()).isNotNull();
-  }
-
-  @Test
-  public void testFireGameChanged() {
-    GoGameController controller = createGoGameController();
-    GoGameController.Listener mockListener1 = mock(GoGameController.Listener.class);
-    GoGameController.Listener mockListener2 = mock(GoGameController.Listener.class);
-    controller.addListener(mockListener1);
-    controller.addListener(mockListener2);
-    controller.fireGameChanged();
-
-    verify(mockListener1).gameChanged(controller);
-    verify(mockListener2).gameChanged(controller);
-  }
-
-  @Test
-  public void testRemoveListener() {
-    GoGameController controller = createGoGameController();
-    GoGameController.Listener mockListener = mock(GoGameController.Listener.class);
-    controller.addListener(mockListener);
-    controller.removeListener(mockListener);
-    controller.fireGameChanged();
-
-    verifyZeroInteractions(mockListener);
   }
 }

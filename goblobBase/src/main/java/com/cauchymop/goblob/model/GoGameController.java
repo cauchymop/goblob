@@ -3,12 +3,10 @@ package com.cauchymop.goblob.model;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -23,7 +21,6 @@ public class GoGameController implements Serializable {
   private Map<StoneColor, GoPlayer> players = Maps.newHashMap();
   private List<Move> moves = Lists.newArrayList();
   private final transient GoGame goGame;
-  private transient Set<Listener> listeners = Sets.newHashSet();
   private transient GameConfiguration gameConfiguration;
   private transient MatchEndStatus matchEndStatus;
 
@@ -44,7 +41,7 @@ public class GoGameController implements Serializable {
     return playMove(GameDatas.createMove(x, y));
   }
 
-  private boolean playMove(Move move) {
+  public boolean playMove(Move move) {
     switch (move.getType()) {
       case MOVE:
         PlayGameData.Position position = move.getPosition();
@@ -58,7 +55,6 @@ public class GoGameController implements Serializable {
         break;
     }
     moves.add(move);
-    fireGameChanged();
     return true;
   }
 
@@ -84,21 +80,6 @@ public class GoGameController implements Serializable {
         getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), moves);
   }
 
-  public void addListener(Listener listener) {
-    listeners.add(listener);
-  }
-
-  public void removeListener(Listener listener) {
-    listeners.remove(listener);
-  }
-
-  protected void fireGameChanged() {
-    if (listeners.isEmpty()) return;
-    for (Listener listener : listeners) {
-      listener.gameChanged(this);
-    }
-  }
-
   public GoGame getGame() {
     return goGame;
   }
@@ -116,9 +97,5 @@ public class GoGameController implements Serializable {
 
   public boolean isLocalTurn() {
     return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL && !getGame().isGameEnd();
-  }
-
-  public interface Listener {
-    public void gameChanged(GoGameController gameController);
   }
 }
