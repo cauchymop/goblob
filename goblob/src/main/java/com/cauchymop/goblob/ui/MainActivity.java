@@ -290,12 +290,8 @@ public class MainActivity extends BaseGameActivity
   }
 
   public void startGame(GoGameController goGameController) {
-    if (gameFragment == null || !gameFragment.isVisible()) {  // TODO: || isDifferentGame()
-      gameFragment = GameFragment.newInstance(goGameController);
-      displayFragment(gameFragment, false);
-    } else {
-      gameFragment.setGameController(goGameController);
-    }
+    gameFragment = GameFragment.newInstance(goGameController);
+    displayFragment(gameFragment, false);
   }
 
   public void giveTurn(GoGameController goGameController) {

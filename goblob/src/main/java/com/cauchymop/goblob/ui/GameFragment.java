@@ -18,16 +18,17 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.BuildConfig;
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.MonteCarlo;
 import com.cauchymop.goblob.model.StoneColor;
+import com.cauchymop.goblob.proto.PlayGameData;
 
 /**
  * Game Page Fragment.
  */
-public class GameFragment extends GoBlobBaseFragment implements GoGameController.Listener,
-    GoBoardView.Listener {
+public class GameFragment extends GoBlobBaseFragment implements GoBoardView.Listener {
 
   private static final String TAG = GoBlobBaseFragment.class.getName();
   private static final String EXTRA_GO_GAME = "GO_GAME";
@@ -41,15 +42,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     args.putSerializable(EXTRA_GO_GAME, gameController);
     fragment.setArguments(args);
     return fragment;
-  }
-
-  public void setGameController(GoGameController goGameController) {
-    this.goGameController = goGameController;
-
-    // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
-    getArguments().putSerializable(EXTRA_GO_GAME, goGameController);
-
-    initBoardView();
   }
 
   @Override
@@ -95,7 +87,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
       int boardSize = goGameController.getGameConfiguration().getBoardSize();
       int x = bestMove % boardSize;
       int y = bestMove / boardSize;
-      goGameController.play(x, y);
+      goGameController.playMove(GameDatas.createMove(x, y));
     }
     return super.onOptionsItemSelected(item);
   }
@@ -122,7 +114,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
 
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     boardViewContainer.removeAllViews();
-    goGameController.addListener(this);
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController.getGame());
     goBoardView.addListener(this);
 
@@ -137,20 +128,38 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     passButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        goGameController.pass();
+        playMove(GameDatas.createPassMove());
       }
     });
 
     updateFromGameState();
   }
 
+  private boolean playMove(PlayGameData.Move move) {
+    if (goGameController.playMove(move)) {
+      updateAchievements();
+
+      if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
+        getGoBlobActivity().giveTurn(goGameController);
+      }
+      getGoBlobActivity().startGame(goGameController);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  @Override
+  public void played(int x, int y) {
+    if(!playMove(GameDatas.createMove(x, y))) {
+      buzz();
+    }
+  }
+
   private void cleanBoardView() {
     if (goBoardView != null) {
       goBoardView.removeListener(this);
-    }
-
-    if (goGameController != null) {
-      goGameController.removeListener(this);
     }
   }
 
@@ -195,20 +204,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
     messageView.setText(message);
   }
 
-  @Override
-  public void gameChanged(GoGameController gameController) {
-
-    // Update fragment arguments so that it's correct on next reload (rotation, off screen and back...)
-    getArguments().putSerializable(EXTRA_GO_GAME, gameController);
-
-    updateAchievements();
-
-    if (gameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-      getGoBlobActivity().giveTurn(gameController);
-    }
-    getGoBlobActivity().startGame(gameController);
-  }
-
   private void updateAchievements() {
     getGoBlobActivity().unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGameController.getGame().getBoardSize()) {
@@ -226,13 +221,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoGameController
       case LOCAL:
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_human));
         break;
-    }
-  }
-
-  @Override
-  public void played(int x, int y) {
-    if(!goGameController.play(x, y)) {
-      buzz();
     }
   }
 
