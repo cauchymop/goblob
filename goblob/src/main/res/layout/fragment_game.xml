@@ -67,15 +67,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <Button
-        android:id="@+id/pass_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingLeft="20dip"
-        android:paddingRight="20dip"
-        android:layout_marginTop="5dip"
-        android:layout_marginBottom="15dip"
+        android:id="@+id/action_button"
         android:visibility="gone"
-        android:text="@string/button_pass_label"/>
+        style="@style/GameAction"/>
   </LinearLayout>
 
 </LinearLayout>

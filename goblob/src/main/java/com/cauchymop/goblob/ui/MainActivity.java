@@ -147,7 +147,7 @@ public class MainActivity extends BaseGameActivity
     Log.d(TAG, "handleMatchSelected.");
     TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
     startGame(match);
-    loadMatches();
+    updateMatchSpinner();
   }
 
   @Override
@@ -160,7 +160,7 @@ public class MainActivity extends BaseGameActivity
   public void onSignInSucceeded() {
     invalidateOptionsMenu();
     getCurrentFragment().onSignInSucceeded();
-    loadMatches();
+    updateMatchSpinner();
     if (mHelper.getTurnBasedMatch() != null) {
       Log.d(TAG, "Found match");
 
@@ -171,7 +171,7 @@ public class MainActivity extends BaseGameActivity
     TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
   }
 
-  private void loadMatches() {
+  private void updateMatchSpinner() {
     PendingResult<TurnBasedMultiplayer.LoadMatchesResult> matchListResult = TurnBasedMultiplayer.loadMatchesByStatus(getApiClient(),
         Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
         new int[]{TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN}
@@ -295,22 +295,28 @@ public class MainActivity extends BaseGameActivity
   }
 
   public void giveTurn(GoGameController goGameController) {
+    Log.d(TAG, "giveTurn: " + goGameController);
     String myId = getMyId(turnBasedMatch);
-    if (goGameController.getGame().isGameEnd()) {
-      takeTurn(goGameController, myId);
-      TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
-    } else {
-      takeTurn(goGameController, getOpponentId(turnBasedMatch, myId));
-    }
+    takeTurn(goGameController, getOpponentId(turnBasedMatch, myId));
+  }
+
+  public void keepTurn(GoGameController goGameController) {
+    Log.d(TAG, "keepTurn: " + goGameController);
+    String myId = getMyId(turnBasedMatch);
+    takeTurn(goGameController, myId);
+  }
+
+  public void finishTurn(GoGameController goGameController) {
+    Log.d(TAG, "finishTurn: " + goGameController);
+    String myId = getMyId(turnBasedMatch);
+    takeTurn(goGameController, myId);
+    TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
   }
 
   private void takeTurn(GoGameController goGameController, String myId) {
     byte[] gameDataBytes = goGameController.getGameData().toByteArray();
-    Log.d(TAG, "takeTurn: " + goGameController);
     TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
-    // Reloads the list of matches to reflect new state
-    // TODO: Handle the list better
-    loadMatches();
+    updateMatchSpinner();
   }
 
   public AvatarManager getAvatarManager() {
@@ -362,7 +368,7 @@ public class MainActivity extends BaseGameActivity
 
             Log.d(TAG, "Game created, starting game activity...");
             startGame(goGameController);
-            loadMatches();
+            updateMatchSpinner();
           }
         });
   }
@@ -444,13 +450,13 @@ public class MainActivity extends BaseGameActivity
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
     startGame(turnBasedMatch);
-    loadMatches();
+    updateMatchSpinner();
   }
 
   @Override
   public void onTurnBasedMatchRemoved(String s) {
     Log.d(TAG, "onTurnBasedMatchRemoved: " + s);
-    loadMatches();
+    updateMatchSpinner();
   }
 
   public void unlockAchievement(String achievementId) {

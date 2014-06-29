@@ -62,7 +62,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    initBoardView();
+    initViews();
   }
 
   @Override
@@ -107,30 +107,45 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     super.onSignOut();
   }
 
-  private void initBoardView() {
-    if (goGameController == null) {
-      return;
-    }
-
+  private void initViews() {
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     boardViewContainer.removeAllViews();
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController.getGame());
     goBoardView.addListener(this);
 
-    // Disable Interactions for Local Humans
-    setHumanInteractionEnabled(goGameController.isLocalTurn());
+    if (goGameController.getMode() == GoGameController.Mode.IN_GAME) {
+      final boolean enabled = goGameController.isLocalTurn();
+
+      // Enable or Disable Pass Button for Local Humans
+      Button passButton = (Button) getView().findViewById(R.id.action_button);
+      passButton.setVisibility(View.VISIBLE);
+      passButton.setEnabled(enabled);
+      passButton.setText(R.string.button_pass_label);
+
+      passButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          switch(goGameController.getMode()) {
+            case IN_GAME:
+              playMove(GameDatas.createPassMove());
+              break;
+            case END_GAME_NEGOTIATION:
+              if (goGameController.isEndGameStatusLastModifiedByCurrentPlayer()) {
+                getGoBlobActivity().giveTurn(goGameController);
+              } else {
+                getGoBlobActivity().finishTurn(goGameController);
+              }
+              break;
+            default:
+              throw new RuntimeException("Invalid mode");
+          }
+        }
+      });
+
+      goBoardView.setClickable(enabled);
+    }
 
     boardViewContainer.addView(goBoardView);
-
-    Button passButton = (Button) getView().findViewById(R.id.pass_button);
-    passButton.setVisibility(View.VISIBLE);
-
-    passButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        playMove(GameDatas.createPassMove());
-      }
-    });
 
     updateFromGameState();
   }
@@ -140,8 +155,18 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       updateAchievements();
 
       if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-        getGoBlobActivity().giveTurn(goGameController);
+        switch(goGameController.getMode()) {
+          case START_GAME_NEGOTIATION:
+            break;
+          case IN_GAME:
+            getGoBlobActivity().giveTurn(goGameController);
+            break;
+          case END_GAME_NEGOTIATION:
+            getGoBlobActivity().keepTurn(goGameController);
+            break;
+        }
       }
+
       getGoBlobActivity().startGame(goGameController);
 
       return true;
@@ -222,18 +247,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_human));
         break;
     }
-  }
-
-  private void setHumanInteractionEnabled(final boolean enabled) {
-    getActivity().runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        // Enable or Disable Pass Button for Local Humans
-        final Button pass_button = (Button) getView().findViewById(R.id.pass_button);
-        pass_button.setEnabled(enabled);
-        goBoardView.setClickable(enabled);
-      }
-    });
   }
 
   private void buzz() {

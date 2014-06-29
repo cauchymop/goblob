@@ -37,8 +37,14 @@ message GameConfiguration {
 
 // Next ID: 4
 message MatchEndStatus {
+
+  enum Color {
+    BLACK = 0;
+    WHITE = 1;
+  }
+
   required int32 score = 1;
-  required string last_modifier_id = 2;
+  required Color last_modifier = 2;
   repeated Position dead_stone = 3;
 }
 
