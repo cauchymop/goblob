@@ -38,4 +38,5 @@
   <string name="new_game_label">New Game</string>
   <string name="match_label_format">"%1$s (%2$s x %2$s)"</string>
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
+  <string name="button_done_label">Done</string>
 </resources>

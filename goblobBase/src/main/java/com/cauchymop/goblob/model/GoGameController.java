@@ -26,7 +26,7 @@ public class GoGameController implements Serializable {
 
   public GoGameController(GameData gameData) {
     gameConfiguration = gameData.getGameConfiguration();
-    matchEndStatus = gameData.getMatchEndStatus();
+    matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
     goGame = new GoGame(gameConfiguration.getBoardSize());
     for (Move move : gameData.getMoveList()) {
       playMove(move);
@@ -49,13 +49,26 @@ public class GoGameController implements Serializable {
         if (!goGame.play(pos)) {
           return false;
         }
+        // TODO: if endgame, update last change
         break;
       case PASS:
+        MatchEndStatus.Color lastModifier = goGame.getCurrentColor().getGameDataColor();
         goGame.play(goGame.getPassValue());
+        if (goGame.isGameEnd()) {
+          matchEndStatus = MatchEndStatus.newBuilder()
+              .setLastModifier(lastModifier)
+              .setScore(calculateScore())
+              .build();
+        }
         break;
     }
     moves.add(move);
     return true;
+  }
+
+  private int calculateScore() {
+    // TODO: better scoring.
+    return 0;
   }
 
   public GoPlayer getCurrentPlayer() {
@@ -85,10 +98,13 @@ public class GoGameController implements Serializable {
   }
 
   public GameData getGameData() {
-    return GameData.newBuilder()
+    GameData.Builder builder = GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
-        .addAllMove(moves)
-        .build();
+        .addAllMove(moves);
+    if (matchEndStatus != null) {
+      builder.setMatchEndStatus(matchEndStatus);
+    }
+    return builder.build();
   }
 
   public GameConfiguration getGameConfiguration() {
@@ -97,5 +113,23 @@ public class GoGameController implements Serializable {
 
   public boolean isLocalTurn() {
     return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL && !getGame().isGameEnd();
+  }
+
+  public Mode getMode() {
+    if (matchEndStatus != null) {
+//      return Mode.END_GAME_NEGOTIATION;
+    }
+    return Mode.IN_GAME;
+  }
+
+  public boolean isEndGameStatusLastModifiedByCurrentPlayer() {
+    return getMode() == Mode.END_GAME_NEGOTIATION
+        && matchEndStatus.getLastModifier().equals(goGame.getCurrentColor().getGameDataColor());
+  }
+
+  public enum Mode {
+    START_GAME_NEGOTIATION,
+    IN_GAME,
+    END_GAME_NEGOTIATION
   }
 }
