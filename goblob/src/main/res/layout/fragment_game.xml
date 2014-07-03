@@ -42,14 +42,6 @@
       android:layout_width="match_parent"
       android:layout_height="0dip"
       android:layout_weight="1">
-    <TextView
-        android:id="@+id/waiting_textview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:text="@string/please_wait"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
   </FrameLayout>
 
   <LinearLayout
@@ -68,7 +60,6 @@
 
     <Button
         android:id="@+id/action_button"
-        android:visibility="gone"
         style="@style/GameAction"/>
   </LinearLayout>
 

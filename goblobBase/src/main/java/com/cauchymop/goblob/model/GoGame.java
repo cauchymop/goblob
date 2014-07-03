@@ -25,7 +25,7 @@ public class GoGame implements Serializable {
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
   // Instance pool management.
-  private LinkedList<GoBoard> boardPool = Lists.newLinkedList();
+  private transient LinkedList<GoBoard> boardPool = Lists.newLinkedList();
 
   public GoGame(int boardSize) {
     this.boardSize = boardSize;

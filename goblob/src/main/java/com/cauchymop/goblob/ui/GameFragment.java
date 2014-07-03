@@ -109,76 +109,102 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
 
   private void initViews() {
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
-    boardViewContainer.removeAllViews();
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController.getGame());
+    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
     goBoardView.addListener(this);
-
-    if (goGameController.getMode() == GoGameController.Mode.IN_GAME) {
-      final boolean enabled = goGameController.isLocalTurn();
-
-      // Enable or Disable Pass Button for Local Humans
-      Button passButton = (Button) getView().findViewById(R.id.action_button);
-      passButton.setVisibility(View.VISIBLE);
-      passButton.setEnabled(enabled);
-      passButton.setText(R.string.button_pass_label);
-
-      passButton.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-          switch(goGameController.getMode()) {
-            case IN_GAME:
-              playMove(GameDatas.createPassMove());
-              break;
-            case END_GAME_NEGOTIATION:
-              if (goGameController.isEndGameStatusLastModifiedByCurrentPlayer()) {
-                getGoBlobActivity().giveTurn(goGameController);
-              } else {
-                getGoBlobActivity().finishTurn(goGameController);
-              }
-              break;
-            default:
-              throw new RuntimeException("Invalid mode");
-          }
-        }
-      });
-
-      goBoardView.setClickable(enabled);
-    }
-
+    configureActionButton();
     boardViewContainer.addView(goBoardView);
-
-    updateFromGameState();
+    initFromGameState();
+    enableInteractions(goGameController.isLocalTurn());
   }
 
-  private boolean playMove(PlayGameData.Move move) {
-    if (goGameController.playMove(move)) {
-      updateAchievements();
+  private void enableInteractions(boolean enabled) {
+    Button actionButton = (Button) getView().findViewById(R.id.action_button);
+    actionButton.setEnabled(enabled);
+    goBoardView.setClickable(enabled);
+  }
 
-      if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-        switch(goGameController.getMode()) {
-          case START_GAME_NEGOTIATION:
-            break;
-          case IN_GAME:
-            getGoBlobActivity().giveTurn(goGameController);
-            break;
-          case END_GAME_NEGOTIATION:
-            getGoBlobActivity().keepTurn(goGameController);
-            break;
-        }
-      }
-
-      getGoBlobActivity().startGame(goGameController);
-
-      return true;
+  private void configureActionButton() {
+    switch(goGameController.getMode()) {
+      case START_GAME_NEGOTIATION:
+        break;
+      case IN_GAME:
+        configureActionButton(R.string.button_pass_label, new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            play(GameDatas.createPassMove());
+          }
+        });
+        break;
+      case END_GAME_NEGOTIATION:
+        configureActionButton(R.string.button_done_label, new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            goGameController.markingTurnDone();
+            endTurn();
+          }
+        });
+        break;
     }
+  }
 
-    return false;
+  private void configureActionButton(int buttonLabel, View.OnClickListener clickListener) {
+    Button actionButton = (Button) getView().findViewById(R.id.action_button);
+    actionButton.setText(buttonLabel);
+    actionButton.setOnClickListener(clickListener);
+  }
+
+  private void endTurn() {
+    updateAchievements();
+    sendRemoteMessages();
+    getGoBlobActivity().startGame(goGameController);
+  }
+
+  private void sendRemoteMessages() {
+    switch (goGameController.getMode()) {
+      case START_GAME_NEGOTIATION:
+        break;
+      case IN_GAME:
+        if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
+          getGoBlobActivity().giveTurn(goGameController);
+        }
+        break;
+      case END_GAME_NEGOTIATION:
+        if (goGameController.getOpponent().getType() == GoPlayer.PlayerType.REMOTE) {
+          getGoBlobActivity().keepTurn(goGameController);
+        }
+        if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
+          if (goGameController.isGameFinished()) {
+            getGoBlobActivity().finishTurn(goGameController);
+          } else {
+            getGoBlobActivity().giveTurn(goGameController);
+          }
+        }
+        break;
+    }
   }
 
   @Override
   public void played(int x, int y) {
-    if(!playMove(GameDatas.createMove(x, y))) {
+    play(GameDatas.createMove(x, y));
+  }
+
+  private void play(PlayGameData.Move move) {
+    boolean played = playMoveOrToggleDeadStone(move);
+    if(played) {
+      endTurn();
+    } else {
       buzz();
+    }
+  }
+
+  private boolean playMoveOrToggleDeadStone(PlayGameData.Move move) {
+    switch(goGameController.getMode()) {
+      case IN_GAME:
+        return goGameController.playMove(move);
+      case END_GAME_NEGOTIATION:
+        return goGameController.toggleDeadStone(move);
+      default:
+        throw new RuntimeException("Invalid mode");
     }
   }
 
@@ -188,26 +214,22 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     }
   }
 
-  private void updateFromGameState() {
+  private void initFromGameState() {
     getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        updateTitleArea();
-        updateMessageArea();
+        initTitleArea();
+        initMessageArea();
       }
     });
   }
 
-  private void updateTitleArea() {
+  private void initTitleArea() {
     TextView titleView = (TextView) getView().findViewById(R.id.title);
     ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
     final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
-    titleImage.setImageResource(goGameController.getGame().getCurrentColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
-    updateAvatar(currentPlayer);
-  }
-
-  private void updateAvatar(GoPlayer currentPlayer) {
+    titleImage.setImageResource(goGameController.getCurrentColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
     getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getName());
   }
@@ -215,10 +237,12 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   /**
    * Display a message if needed (other player has passed...), clean the message area otherwise.
    */
-  private void updateMessageArea() {
+  private void initMessageArea() {
     final String message;
-    if (goGameController.getGame().isGameEnd()) {
+    if (goGameController.isGameFinished()) {
       message = getString(R.string.end_of_game_message);
+    } else if (goGameController.getMode() == GoGameController.Mode.END_GAME_NEGOTIATION) {
+      message = getString(R.string.marking_message);
     } else if (goGameController.getGame().isLastMovePass()) {
       message = getString(R.string.opponent_passed_message, goGameController.getOpponent().getName());
     } else {

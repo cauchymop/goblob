@@ -32,4 +32,15 @@ public enum StoneColor implements Serializable {
         throw new RuntimeException("Invalid color");
     }
   }
+
+  public static StoneColor getStoneColor(PlayGameData.MatchEndStatus.Color color) {
+    switch (color) {
+      case BLACK:
+        return Black;
+      case WHITE:
+        return White;
+      default:
+        throw new RuntimeException("Invalid color");
+    }
+  }
 }

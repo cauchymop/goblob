@@ -39,9 +39,9 @@ public class GoGameControllerTest {
     GoGameController controller = new GoGameController(GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
         .build());
-    controller.play(0, 0);
-    controller.play(1, 1);
-    controller.pass();
+    controller.playMove(GameDatas.createMove(0, 0));
+    controller.playMove(GameDatas.createMove(1, 1));
+    controller.playMove(GameDatas.createPassMove());
     assertThat(controller.getGameData()).isEqualTo(GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
         .addMove(GameDatas.createMove(0, 0))
