@@ -39,4 +39,5 @@
   <string name="match_label_format">"%1$s (%2$s x %2$s)"</string>
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
   <string name="button_done_label">Done</string>
+  <string name="marking_message">Marking…</string>
 </resources>

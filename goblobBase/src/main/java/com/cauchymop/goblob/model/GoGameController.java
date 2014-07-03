@@ -20,50 +20,50 @@ public class GoGameController implements Serializable {
 
   private Map<StoneColor, GoPlayer> players = Maps.newHashMap();
   private List<Move> moves = Lists.newArrayList();
-  private final transient GoGame goGame;
-  private transient GameConfiguration gameConfiguration;
-  private transient MatchEndStatus matchEndStatus;
+  private final GoGame goGame;
+  private GameConfiguration gameConfiguration;
+  private MatchEndStatus matchEndStatus;
 
   public GoGameController(GameData gameData) {
     gameConfiguration = gameData.getGameConfiguration();
-    matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
     goGame = new GoGame(gameConfiguration.getBoardSize());
-    for (Move move : gameData.getMoveList()) {
-      playMove(move);
+    matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
+    moves = Lists.newArrayList(gameData.getMoveList());
+    for (Move move : moves) {
+      goGame.play(getPos(move));
     }
-  }
-
-  public void pass() {
-    playMove(GameDatas.createPassMove());
-  }
-
-  public boolean play(int x, int y) {
-    return playMove(GameDatas.createMove(x, y));
   }
 
   public boolean playMove(Move move) {
+    if (getMode() == Mode.IN_GAME && goGame.play(getPos(move))) {
+      moves.add(move);
+      checkForMatchEnd();
+      return true;
+    }
+    return false;
+  }
+
+  private void checkForMatchEnd() {
+    if (goGame.isGameEnd()) {
+      MatchEndStatus.Color lastModifier = goGame.getCurrentColor().getOpponent().getGameDataColor();
+      matchEndStatus = MatchEndStatus.newBuilder()
+          .setLastModifier(lastModifier)
+          .setTurn(lastModifier)
+          .setScore(calculateScore())
+          .build();
+    }
+  }
+
+  private int getPos(Move move) {
     switch (move.getType()) {
       case MOVE:
         PlayGameData.Position position = move.getPosition();
-        int pos = goGame.getPos(position.getX(), position.getY());
-        if (!goGame.play(pos)) {
-          return false;
-        }
-        // TODO: if endgame, update last change
-        break;
+        return goGame.getPos(position.getX(), position.getY());
       case PASS:
-        MatchEndStatus.Color lastModifier = goGame.getCurrentColor().getGameDataColor();
-        goGame.play(goGame.getPassValue());
-        if (goGame.isGameEnd()) {
-          matchEndStatus = MatchEndStatus.newBuilder()
-              .setLastModifier(lastModifier)
-              .setScore(calculateScore())
-              .build();
-        }
-        break;
+        return goGame.getPassValue();
+      default:
+        throw new RuntimeException("Invalid Move");
     }
-    moves.add(move);
-    return true;
   }
 
   private int calculateScore() {
@@ -72,11 +72,18 @@ public class GoGameController implements Serializable {
   }
 
   public GoPlayer getCurrentPlayer() {
-    return getGoPlayer(goGame.getCurrentColor());
+    return getGoPlayer(getCurrentColor());
   }
 
   public GoPlayer getOpponent() {
-    return getGoPlayer(goGame.getCurrentColor().getOpponent());
+    return getGoPlayer(getCurrentColor().getOpponent());
+  }
+
+  public StoneColor getCurrentColor() {
+    if (getMode() == Mode.IN_GAME) {
+      return goGame.getCurrentColor();
+    }
+    return StoneColor.getStoneColor(matchEndStatus.getTurn());
   }
 
   public GoPlayer getGoPlayer(StoneColor color) {
@@ -89,8 +96,9 @@ public class GoGameController implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, moves=%s)", goGame,
-        getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), moves);
+    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, moves=%s, end=%s)",
+        goGame, getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), moves,
+        matchEndStatus);
   }
 
   public GoGame getGame() {
@@ -112,19 +120,58 @@ public class GoGameController implements Serializable {
   }
 
   public boolean isLocalTurn() {
-    return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL && !getGame().isGameEnd();
+    return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL && !isGameFinished();
+  }
+
+  public boolean isGameFinished() {
+    return matchEndStatus != null && matchEndStatus.getGameFinished();
   }
 
   public Mode getMode() {
     if (matchEndStatus != null) {
-//      return Mode.END_GAME_NEGOTIATION;
+      return Mode.END_GAME_NEGOTIATION;
     }
     return Mode.IN_GAME;
   }
 
-  public boolean isEndGameStatusLastModifiedByCurrentPlayer() {
+  public boolean toggleDeadStone(Move move) {
+    PlayGameData.Position position = move.getPosition();
+    if (goGame.getColor(position.getX(), position.getY()) == null) {
+      return false;
+    }
+    int index = matchEndStatus.getDeadStoneList().indexOf(move.getPosition());
+    if (index == -1) {
+      matchEndStatus = matchEndStatus.toBuilder()
+          .addDeadStone(move.getPosition())
+          .setLastModifier(matchEndStatus.getTurn())
+          .build();
+    } else {
+      matchEndStatus = matchEndStatus.toBuilder()
+          .removeDeadStone(index)
+          .setLastModifier(matchEndStatus.getTurn())
+          .build();
+    }
+    return true;
+  }
+
+  public List<PlayGameData.Position> getDeadStones() {
+    return matchEndStatus.getDeadStoneList();
+  }
+
+  private boolean isEndGameStatusLastModifiedByCurrentPlayer() {
     return getMode() == Mode.END_GAME_NEGOTIATION
-        && matchEndStatus.getLastModifier().equals(goGame.getCurrentColor().getGameDataColor());
+        && matchEndStatus.getLastModifier().equals(getCurrentColor().getGameDataColor());
+  }
+
+  public void markingTurnDone() {
+    if (!isEndGameStatusLastModifiedByCurrentPlayer()) {
+      matchEndStatus = matchEndStatus.toBuilder()
+          .setGameFinished(true)
+          .build();
+    }
+    matchEndStatus = matchEndStatus.toBuilder()
+        .setTurn(getCurrentColor().getOpponent().getGameDataColor())
+        .build();
   }
 
   public enum Mode {

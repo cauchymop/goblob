@@ -35,7 +35,7 @@ message GameConfiguration {
   required ScoreType score_type = 5;
 }
 
-// Next ID: 4
+// Next ID: 6
 message MatchEndStatus {
 
   enum Color {
@@ -45,7 +45,9 @@ message MatchEndStatus {
 
   required int32 score = 1;
   required Color last_modifier = 2;
-  repeated Position dead_stone = 3;
+  required Color turn = 3;
+  repeated Position dead_stone = 4;
+  optional bool game_finished = 5;
 }
 
 // Next ID: 3
