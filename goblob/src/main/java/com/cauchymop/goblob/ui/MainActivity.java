@@ -83,7 +83,7 @@ public class MainActivity extends BaseGameActivity
     actionBar.setListNavigationCallbacks(navigationSpinnerAdapter, this);
 
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
-      displayFragment(new PlayerChoiceFragment(), false);
+      displayFragment(new PlayerChoiceFragment());
     }
   }
 
@@ -230,17 +230,12 @@ public class MainActivity extends BaseGameActivity
     return (GoBlobBaseFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
   }
 
-  private void displayFragment(GoBlobBaseFragment fragment, boolean addToBackStack) {
+  private void displayFragment(GoBlobBaseFragment fragment) {
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
     // Replace whatever is in the fragment_container view with this fragment,
     // and add the transaction to the back stack
     ft.replace(R.id.fragment_container, fragment);
-
-    // Add the transaction to the back stack if needed.
-    if (addToBackStack) {
-      ft.addToBackStack(null);
-    }
 
     // Commit the transaction
     ft.commit();
@@ -271,7 +266,7 @@ public class MainActivity extends BaseGameActivity
 
   public void displayGameConfigurationScreen(GoPlayer opponentPlayer, int boardSize) {
     GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(opponentPlayer, boardSize);
-    displayFragment(gameConfigurationFragment, false);
+    displayFragment(gameConfigurationFragment);
   }
 
   private void startGame(String matchId) {
@@ -291,7 +286,7 @@ public class MainActivity extends BaseGameActivity
 
   public void startGame(GoGameController goGameController) {
     gameFragment = GameFragment.newInstance(goGameController);
-    displayFragment(gameFragment, false);
+    displayFragment(gameFragment);
   }
 
   public void giveTurn(GoGameController goGameController) {
@@ -473,7 +468,7 @@ public class MainActivity extends BaseGameActivity
     GameStarter gameStarter = new GameStarter() {
       @Override
       public void startNewGame() {
-        displayFragment(new PlayerChoiceFragment(), false);
+        displayFragment(new PlayerChoiceFragment());
       }
 
       @Override
