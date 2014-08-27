@@ -1,0 +1,6 @@
+Things to do:
+- Support for local games
+- Only switch for current game
+- Be smarter when marking stones
+- Calculate score
+- Migrate to the latest Play Game API
