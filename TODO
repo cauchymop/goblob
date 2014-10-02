@@ -1,9 +1,6 @@
 Things to do:
+- wait screen (starting activity, after startActivityForResult, ...)
 - Support for local games
 - Only switch for current game
 - Be smarter when marking stones
 - Calculate score
-
-Current bugs to fix:
-- sometimes, selecting a game from the google play games activity does not select it.
-- returning from a locked screen selects the first game.
