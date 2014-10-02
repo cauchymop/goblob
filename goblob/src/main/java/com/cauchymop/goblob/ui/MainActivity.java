@@ -168,15 +168,9 @@ public class MainActivity extends BaseGameActivity
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
       loadGame(mHelper.getTurnBasedMatch());
-    } else {
-      selectFirstGame();
     }
 
     TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
-  }
-
-  private void selectFirstGame() {
-    getActionBar().setSelectedNavigationItem(0);
   }
 
   private void updateMatchSpinner() {
