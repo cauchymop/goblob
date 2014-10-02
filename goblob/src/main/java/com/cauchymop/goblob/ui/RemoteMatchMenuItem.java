@@ -49,4 +49,9 @@ public class RemoteMatchMenuItem implements MatchMenuItem {
   public void start(GameStarter gameStarter) {
     gameStarter.startRemoteGame(matchId);
   }
+
+  @Override
+  public String getMatchId() {
+    return matchId;
+  }
 }

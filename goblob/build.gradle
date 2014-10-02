@@ -14,8 +14,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:20.+'
     compile 'com.google.guava:guava:17.+'
     compile 'com.intellij:annotations:+@jar'
-    compile project(":BaseGameUtils")
-    compile project(":goblobBase")
+    compile project(':BaseGameUtils')
+    compile project(':goblobBase')
 }
 
 android {
@@ -49,5 +49,9 @@ android {
 
     lintOptions {
         abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }

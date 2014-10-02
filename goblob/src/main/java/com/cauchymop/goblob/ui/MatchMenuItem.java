@@ -10,4 +10,5 @@ public interface MatchMenuItem {
   public String getDisplayName(Context context);
   public Drawable getIcon(Context context);
   public void start(GameStarter gameStarter);
+  public String getMatchId();
 }

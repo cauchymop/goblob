@@ -139,7 +139,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     goGameController.setGoPlayer(homePlayerColor, homePlayer);
     goGameController.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
 
-    getGoBlobActivity().startGame(goGameController);
+    getGoBlobActivity().selectGame(goGameController);
   }
 
   private class PlayerTypeAdapter extends ArrayAdapter<StoneColor> {
