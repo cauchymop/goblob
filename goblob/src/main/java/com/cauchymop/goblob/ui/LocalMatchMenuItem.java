@@ -11,6 +11,7 @@ import com.cauchymop.goblob.proto.PlayGameData;
  * {@link MatchMenuItem} representing a Local Game.
  */
 public class LocalMatchMenuItem implements MatchMenuItem {
+  public static final String LOCAL_MATCH_ID = "local";
   private final GoGameController gameController;
 
   public LocalMatchMenuItem(GoGameController gameController) {
@@ -31,5 +32,10 @@ public class LocalMatchMenuItem implements MatchMenuItem {
   @Override
   public void start(GameStarter gameStarter) {
     gameStarter.startLocalGame(gameController);
+  }
+
+  @Override
+  public String getMatchId() {
+    return LOCAL_MATCH_ID;
   }
 }

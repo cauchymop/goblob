@@ -7,6 +7,9 @@ import android.graphics.drawable.Drawable;
  * {@link MatchMenuItem} which creates a new game.
  */
 public class CreateNewGameMenuItem implements MatchMenuItem {
+
+  public static final String NEW_GAME_MATCH_ID = "new game";
+
   private final String label;
 
   public CreateNewGameMenuItem(String label) {
@@ -26,5 +29,10 @@ public class CreateNewGameMenuItem implements MatchMenuItem {
   @Override
   public void start(GameStarter gameStarter) {
     gameStarter.startNewGame();
+  }
+
+  @Override
+  public String getMatchId() {
+    return NEW_GAME_MATCH_ID;
   }
 }

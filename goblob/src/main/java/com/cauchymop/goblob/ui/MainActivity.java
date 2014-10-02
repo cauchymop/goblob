@@ -28,6 +28,7 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.example.games.basegameutils.BaseGameActivity;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -146,8 +147,8 @@ public class MainActivity extends BaseGameActivity
   private void handleMatchSelected(Intent intent) {
     Log.d(TAG, "handleMatchSelected.");
     TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
-    startGame(match);
     updateMatchSpinner();
+    selectGame(match);
   }
 
   @Override
@@ -166,53 +167,57 @@ public class MainActivity extends BaseGameActivity
 
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-      startGame(mHelper.getTurnBasedMatch());
+      selectGame(mHelper.getTurnBasedMatch());
+    } else {
+      selectFirstGame();
     }
+
     TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
   }
 
+  private void selectFirstGame() {
+    getActionBar().setSelectedNavigationItem(0);
+  }
+
   private void updateMatchSpinner() {
+    int selectedNavigationIndex = getActionBar().getSelectedNavigationIndex();
+    final String previousMatchId = selectedNavigationIndex == -1 ? null
+        : navigationSpinnerAdapter.getItem(selectedNavigationIndex).getMatchId();
+
     PendingResult<TurnBasedMultiplayer.LoadMatchesResult> matchListResult = TurnBasedMultiplayer.loadMatchesByStatus(getApiClient(),
         Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
         new int[]{TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN}
     );
-    ResultCallback<TurnBasedMultiplayer.LoadMatchesResult> matchListResultCallBack = new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
-      @Override
-      public void onResult(TurnBasedMultiplayer.LoadMatchesResult loadMatchesResult) {
+    ResultCallback<TurnBasedMultiplayer.LoadMatchesResult> matchListResultCallBack =
+        new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
+          @Override
+          public void onResult(TurnBasedMultiplayer.LoadMatchesResult loadMatchesResult) {
+            navigationSpinnerAdapter.clear();
 
-        int currentGameIndex = 0;
+            // Add Matches
+            LoadMatchesResponse matches = loadMatchesResult.getMatches();
+            addMatchesToMatchesAdapter(matches.getMyTurnMatches());
+            addMatchesToMatchesAdapter(matches.getTheirTurnMatches());
 
-        navigationSpinnerAdapter.clear();
+            // Add Create New Game entry
+            MatchMenuItem matchMenuItem = new CreateNewGameMenuItem(getString(R.string.new_game_label));
+            navigationSpinnerAdapter.add(matchMenuItem);
+            navigationSpinnerAdapter.notifyDataSetChanged();
 
-        // Add Matches
-        LoadMatchesResponse matches = loadMatchesResult.getMatches();
-        currentGameIndex = addMatchesToMatchesAdapter(matches.getMyTurnMatches(), currentGameIndex);
-        currentGameIndex = addMatchesToMatchesAdapter(matches.getTheirTurnMatches(), currentGameIndex);
-
-        // Add Create New Game entry
-        MatchMenuItem matchMenuItem = new CreateNewGameMenuItem(getString(R.string.new_game_label));
-        navigationSpinnerAdapter.add(matchMenuItem);
-        navigationSpinnerAdapter.notifyDataSetChanged();
-
-        // Select current game index
-        ActionBar actionBar = getActionBar();
-        actionBar.setSelectedNavigationItem(currentGameIndex);
-      }
-    };
+            selectMenuItem(previousMatchId);
+          }
+        };
     matchListResult.setResultCallback(matchListResultCallBack);
   }
 
-  private int addMatchesToMatchesAdapter(TurnBasedMatchBuffer matchBuffer, int currentGameIndex) {
+  private void addMatchesToMatchesAdapter(TurnBasedMatchBuffer matchBuffer) {
     for (int i = 0; i < matchBuffer.getCount(); i++) {
       TurnBasedMatch match = matchBuffer.get(i);
-      if (turnBasedMatch != null && match.getMatchId().equals(turnBasedMatch.getMatchId())) {
-        currentGameIndex = navigationSpinnerAdapter.getCount();
-      }
-      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(match.getCreationTimestamp(), match.getVariant(), match.getTurnStatus(), match.getMatchId());
+      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(match.getCreationTimestamp(),
+          match.getVariant(), match.getTurnStatus(), match.getMatchId());
       navigationSpinnerAdapter.add(matchMenuItem);
     }
     matchBuffer.close();
-    return currentGameIndex;
   }
 
   @Override
@@ -269,24 +274,35 @@ public class MainActivity extends BaseGameActivity
     displayFragment(gameConfigurationFragment);
   }
 
-  private void startGame(String matchId) {
+  private void selectGame(String matchId) {
     TurnBasedMultiplayer.loadMatch(getApiClient(), matchId)
         .setResultCallback(new ResultCallback<LoadMatchResult>() {
           @Override
           public void onResult(LoadMatchResult loadMatchResult) {
-            startGame(loadMatchResult.getMatch());
+            selectGame(loadMatchResult.getMatch());
           }
         });
   }
 
-  public void startGame(TurnBasedMatch turnBasedMatch) {
+  public void selectGame(TurnBasedMatch turnBasedMatch) {
+    selectMenuItem(turnBasedMatch.getMatchId());
     this.turnBasedMatch = turnBasedMatch;
-    startGame(createGoGameController(turnBasedMatch));
+    selectGame(createGoGameController(turnBasedMatch));
   }
 
-  public void startGame(GoGameController goGameController) {
+  public void selectGame(GoGameController goGameController) {
     gameFragment = GameFragment.newInstance(goGameController);
     displayFragment(gameFragment);
+  }
+
+  private void selectMenuItem(String matchId) {
+    for (int index = 0 ; index < navigationSpinnerAdapter.getCount() ; index++) {
+      MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
+      if (Objects.equal(item.getMatchId(), matchId)) {
+        getActionBar().setSelectedNavigationItem(index);
+        return;
+      }
+    }
   }
 
   public void giveTurn(GoGameController goGameController) {
@@ -362,8 +378,8 @@ public class MainActivity extends BaseGameActivity
             }
 
             Log.d(TAG, "Game created, starting game activity...");
-            startGame(goGameController);
             updateMatchSpinner();
+            selectGame(goGameController);
           }
         });
   }
@@ -444,8 +460,14 @@ public class MainActivity extends BaseGameActivity
   @Override
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
-    startGame(turnBasedMatch);
     updateMatchSpinner();
+    if (sameMatchId(turnBasedMatch, this.turnBasedMatch)) {
+      selectGame(turnBasedMatch);
+    }
+  }
+
+  private boolean sameMatchId(TurnBasedMatch match1, TurnBasedMatch match2) {
+    return match2 != null && match2.getMatchId().equals(match1.getMatchId());
   }
 
   @Override
@@ -468,17 +490,18 @@ public class MainActivity extends BaseGameActivity
     GameStarter gameStarter = new GameStarter() {
       @Override
       public void startNewGame() {
+        turnBasedMatch = null;
         displayFragment(new PlayerChoiceFragment());
       }
 
       @Override
       public void startRemoteGame(String match) {
-        startGame(match);
+        selectGame(match);
       }
 
       @Override
       public void startLocalGame(GoGameController gameController) {
-        startGame(gameController);
+        selectGame(gameController);
       }
     };
     item.start(gameStarter);
