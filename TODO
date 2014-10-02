@@ -1,6 +1,5 @@
 Things to do:
 - wait screen (starting activity, after startActivityForResult, ...)
 - Support for local games
-- Only switch for current game
 - Be smarter when marking stones
 - Calculate score
