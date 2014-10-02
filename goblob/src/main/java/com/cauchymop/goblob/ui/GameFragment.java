@@ -156,7 +156,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private void endTurn() {
     updateAchievements();
     sendRemoteMessages();
-    getGoBlobActivity().selectGame(goGameController);
+    getGoBlobActivity().loadGame(goGameController);
   }
 
   private void sendRemoteMessages() {

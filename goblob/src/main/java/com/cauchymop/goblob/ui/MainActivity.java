@@ -148,7 +148,7 @@ public class MainActivity extends BaseGameActivity
     Log.d(TAG, "handleMatchSelected.");
     TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
     updateMatchSpinner();
-    selectGame(match);
+    loadGame(match);
   }
 
   @Override
@@ -167,7 +167,7 @@ public class MainActivity extends BaseGameActivity
 
       // prevent screen from sleeping during handshake
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-      selectGame(mHelper.getTurnBasedMatch());
+      loadGame(mHelper.getTurnBasedMatch());
     } else {
       selectFirstGame();
     }
@@ -274,27 +274,30 @@ public class MainActivity extends BaseGameActivity
     displayFragment(gameConfigurationFragment);
   }
 
-  private void selectGame(String matchId) {
+  private void loadGame(String matchId) {
     TurnBasedMultiplayer.loadMatch(getApiClient(), matchId)
         .setResultCallback(new ResultCallback<LoadMatchResult>() {
           @Override
           public void onResult(LoadMatchResult loadMatchResult) {
-            selectGame(loadMatchResult.getMatch());
+            loadGame(loadMatchResult.getMatch());
           }
         });
   }
 
-  public void selectGame(TurnBasedMatch turnBasedMatch) {
+  public void loadGame(TurnBasedMatch turnBasedMatch) {
     selectMenuItem(turnBasedMatch.getMatchId());
     this.turnBasedMatch = turnBasedMatch;
-    selectGame(createGoGameController(turnBasedMatch));
+    loadGame(createGoGameController(turnBasedMatch));
   }
 
-  public void selectGame(GoGameController goGameController) {
+  public void loadGame(GoGameController goGameController) {
     gameFragment = GameFragment.newInstance(goGameController);
     displayFragment(gameFragment);
   }
 
+  /**
+   * Selects the given match, or leave the current selection if the matchId does not exist.
+   */
   private void selectMenuItem(String matchId) {
     for (int index = 0 ; index < navigationSpinnerAdapter.getCount() ; index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
@@ -379,7 +382,7 @@ public class MainActivity extends BaseGameActivity
 
             Log.d(TAG, "Game created, starting game activity...");
             updateMatchSpinner();
-            selectGame(goGameController);
+            loadGame(goGameController);
           }
         });
   }
@@ -462,7 +465,7 @@ public class MainActivity extends BaseGameActivity
     Log.d(TAG, "onTurnBasedMatchReceived");
     updateMatchSpinner();
     if (sameMatchId(turnBasedMatch, this.turnBasedMatch)) {
-      selectGame(turnBasedMatch);
+      loadGame(turnBasedMatch);
     }
   }
 
@@ -496,12 +499,12 @@ public class MainActivity extends BaseGameActivity
 
       @Override
       public void startRemoteGame(String match) {
-        selectGame(match);
+        loadGame(match);
       }
 
       @Override
       public void startLocalGame(GoGameController gameController) {
-        selectGame(gameController);
+        loadGame(gameController);
       }
     };
     item.start(gameStarter);
