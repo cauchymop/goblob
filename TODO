@@ -1,5 +1,9 @@
 Things to do:
-- wait screen (starting activity, after startActivityForResult, ...)
+- Calculate score
+
+Bonus:
 - Support for local games
 - Be smarter when marking stones
-- Calculate score
+
+Bug:
+- After creating a new game, we should explicitly load it.

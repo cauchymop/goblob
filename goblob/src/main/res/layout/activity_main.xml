@@ -1,14 +1,34 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center"
-              android:orientation="vertical"
-              tools:context=".MainActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                tools:context=".MainActivity">
 
   <FrameLayout
       android:id="@+id/fragment_container"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
+      android:layout_height="match_parent" />
 
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/waiting_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/board_bg"
+        android:layout_gravity="left|center_vertical">
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center"
+          android:text="@string/please_wait"
+          android:textAppearance="?android:attr/textAppearanceLarge"/>
+      <ProgressBar
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:indeterminate="true" />
+    </LinearLayout>
+
+</RelativeLayout>

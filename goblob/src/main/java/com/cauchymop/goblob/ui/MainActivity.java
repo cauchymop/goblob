@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 
 import com.cauchymop.goblob.R;
@@ -159,6 +160,7 @@ public class MainActivity extends BaseGameActivity
   public void onSignInFailed() {
     invalidateOptionsMenu();
     getCurrentFragment().onSignInFailed();
+    setWaitingScreenVisible(false);
   }
 
   @Override
@@ -176,6 +178,7 @@ public class MainActivity extends BaseGameActivity
           getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
           loadGame(mHelper.getTurnBasedMatch());
         }
+        setWaitingScreenVisible(false);
       }
     });
   }
@@ -270,6 +273,7 @@ public class MainActivity extends BaseGameActivity
   public void configureGame(GoPlayer opponentPlayer, int boardSize) {
     this.boardSize = boardSize;
     if (opponentPlayer.getType() == PlayerType.REMOTE) {
+      setWaitingScreenVisible(true);
       startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(getApiClient(), 1, 1), SELECT_PLAYER);
     } else {
       displayGameConfigurationScreen(opponentPlayer, boardSize);
@@ -392,6 +396,7 @@ public class MainActivity extends BaseGameActivity
               @Override
               public void run() {
                 loadGame(goGameController);
+                setWaitingScreenVisible(false);
               }
             });
           }
@@ -521,5 +526,9 @@ public class MainActivity extends BaseGameActivity
     };
     item.start(gameStarter);
     return true;
+  }
+
+  public void setWaitingScreenVisible(boolean visible) {
+    findViewById(R.id.waiting_view).setVisibility(visible ? View.VISIBLE : View.GONE);
   }
 }
