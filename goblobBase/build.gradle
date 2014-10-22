@@ -11,9 +11,9 @@ repositories {
 
 dependencies {
     compile project(":goblobProtobuf")
-    compile 'com.google.guava:guava:17.+'
-    testCompile 'com.google.guava:guava-testlib:17.+'
-    testCompile 'junit:junit:4.+'
+    compile 'com.google.guava:guava:18.0'
+    testCompile 'com.google.guava:guava-testlib:17.0'
+    testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-all:1.9.0'
     testCompile 'org.easytesting:fest-assert:1.2'
 }
