@@ -12,13 +12,15 @@ import com.cauchymop.goblob.R;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 /**
  * Adapter displaying MatchMenuItem from the actionbar navigation spinner.
  */
 public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
 
-  public MatchesAdapter(Context context) {
-    super(context, R.layout.match_row_view, R.id.label);
+  public MatchesAdapter(Context context, List<MatchMenuItem> items) {
+    super(context, R.layout.match_row_view, R.id.label, items);
   }
 
   @Override @NotNull

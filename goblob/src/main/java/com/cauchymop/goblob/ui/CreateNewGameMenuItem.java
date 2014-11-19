@@ -6,13 +6,14 @@ import android.graphics.drawable.Drawable;
 /**
  * {@link MatchMenuItem} which creates a new game.
  */
-public class CreateNewGameMenuItem implements MatchMenuItem {
+public class CreateNewGameMenuItem extends MatchMenuItem {
 
   public static final String NEW_GAME_MATCH_ID = "new game";
 
   private final String label;
 
   public CreateNewGameMenuItem(String label) {
+    super(NEW_GAME_MATCH_ID);
     this.label = label;
   }
 

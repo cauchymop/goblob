@@ -5,19 +5,6 @@ Bonus:
 - Support for local games
 - Be smarter when marking stones
 
-Bug:
-- In debug, when creating a new game, updateMatchSpinner is called 3 times, reselecting
-    "new game" each time, and onNavigationItemSelected is called twice.
-- But when running normally, the onNaviagtionItemSelected is called earlier, and a NPE happens
-    a bit later.
-
-- Or, for the lazy: just move it to a NavigationDrawer:
-  1. As is.
-  2. By moving the NewGame out.
-  3. By using ExpandableListView.
-
-New! Extra! Read this!
-We want to fix the way we update the spinner. Instead of clearing it, we should update the items
-(add item, remove item, or modify turn status), which will put an end to spurious selection events,
-and only change the selection when the item disappeared, which is indeed a case where we don't want
-to keep the old selection.
+After publication:
+- Move to a NavigationDrawer or keep spinner in toolbar
+- Kill BaseGameActivity

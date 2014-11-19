@@ -12,17 +12,23 @@ import java.util.Date;
 /**
  * {@link MatchMenuItem} for a Google Play games turn based match.
  */
-public class RemoteMatchMenuItem implements MatchMenuItem {
-  private final String matchId;
+public class RemoteMatchMenuItem extends MatchMenuItem {
   private final int variant;
-  private final int turnStatus;
   private final long creationTimestamp;
+  private int turnStatus;
+  private long lastUpdateTimestamp;
 
-  public RemoteMatchMenuItem(long creationTimestamp, int variant, int turnStatus, String matchId) {
+  public RemoteMatchMenuItem(long creationTimestamp, long lastUpdateTimestamp, int variant,
+      int turnStatus, String matchId) {
+    super(matchId);
     this.creationTimestamp = creationTimestamp;
     this.variant = variant;
+    updateStatus(lastUpdateTimestamp, turnStatus);
+  }
+
+  private void updateStatus(long lastUpdateTimestamp, int turnStatus) {
+    this.lastUpdateTimestamp = lastUpdateTimestamp;
     this.turnStatus = turnStatus;
-    this.matchId = matchId;
   }
 
   @Override
@@ -47,11 +53,6 @@ public class RemoteMatchMenuItem implements MatchMenuItem {
 
   @Override
   public void start(GameStarter gameStarter) {
-    gameStarter.startRemoteGame(matchId);
-  }
-
-  @Override
-  public String getMatchId() {
-    return matchId;
+    gameStarter.startRemoteGame(getMatchId());
   }
 }
