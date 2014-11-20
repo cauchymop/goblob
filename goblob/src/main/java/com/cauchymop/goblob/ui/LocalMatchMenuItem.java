@@ -10,11 +10,12 @@ import com.cauchymop.goblob.proto.PlayGameData;
 /**
  * {@link MatchMenuItem} representing a Local Game.
  */
-public class LocalMatchMenuItem implements MatchMenuItem {
+public class LocalMatchMenuItem extends MatchMenuItem {
   public static final String LOCAL_MATCH_ID = "local";
   private final GoGameController gameController;
 
   public LocalMatchMenuItem(GoGameController gameController) {
+    super(LOCAL_MATCH_ID);
     this.gameController = gameController;
   }
 
