@@ -51,27 +51,6 @@ public class GoBoard implements Serializable {
     }
   }
 
-  private void populateFromGroups() {
-    for (BitSet libertyField : libertyFieldByGroup) {
-      libertyField.clear();
-    }
-    for (int pos = 0; pos < numberOfPositions; pos++) {
-      int group = groupByPosition[pos];
-      if (group == 0) continue;
-      if (group < whiteGroupStart) {
-        blackField.set(pos);
-      } else {
-        whiteField.set(pos);
-      }
-      stoneFieldByGroup[group].set(pos);
-      for (int neighbor : neighborPositionsByPosition[pos]) {
-        if (groupByPosition[neighbor] == 0) {
-          libertyFieldByGroup[group].set(neighbor);
-        }
-      }
-    }
-  }
-
   public void clear() {
     blackField.clear();
     whiteField.clear();
@@ -201,7 +180,6 @@ public class GoBoard implements Serializable {
 
   public void copyFrom(GoBoard board) {
     System.arraycopy(board.groupByPosition, 0, groupByPosition, 0, numberOfPositions);
-//    populateFromGroups();
     blackField.or(board.blackField);
     whiteField.or(board.whiteField);
     for (int index = 0; index < numberOfGroups; index++) {
