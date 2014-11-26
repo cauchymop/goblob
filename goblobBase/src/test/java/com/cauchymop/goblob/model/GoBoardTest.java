@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
- * Class to test {@link com.cauchymop.goblob.model.GoBoard}.
+ * Class to test {@link GoBoard}.
  */
 public class GoBoardTest {
 
