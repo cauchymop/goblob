@@ -1,10 +1,13 @@
-Things to do:
-- Calculate score
+High priority:
+- Bug refresh: when receiving a move while off-screen, there is no fragment update.
+- Support for local games: add the local game in the combo
+- remove handicap
+- Improve winning message
 
-Bonus:
-- Support for local games
+Medium (probably before release)
+- improve move picking accuracy
+
+Longer term:
 - Be smarter when marking stones
-
-After publication:
 - Move to a NavigationDrawer or keep spinner in toolbar
 - Kill BaseGameActivity

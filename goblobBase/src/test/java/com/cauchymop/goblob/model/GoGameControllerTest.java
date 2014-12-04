@@ -51,7 +51,7 @@ public class GoGameControllerTest {
   }
 
   private GoGameController createGoGameController() {
-    return new GoGameController(GameDatas.createGameData(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID));
+    return new GoGameController(GameDatas.createGameData(9, TEST_HANDICAP, 0, TEST_BLACK_ID, TEST_WHITE_ID));
   }
 
   @Test

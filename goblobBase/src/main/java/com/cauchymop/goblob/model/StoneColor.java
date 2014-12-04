@@ -22,18 +22,18 @@ public enum StoneColor implements Serializable {
     }
   }
 
-  public PlayGameData.MatchEndStatus.Color getGameDataColor() {
+  public PlayGameData.Color getGameDataColor() {
     switch (this) {
       case White:
-        return PlayGameData.MatchEndStatus.Color.WHITE;
+        return PlayGameData.Color.WHITE;
       case Black:
-        return PlayGameData.MatchEndStatus.Color.BLACK;
+        return PlayGameData.Color.BLACK;
       default:
         throw new RuntimeException("Invalid color");
     }
   }
 
-  public static StoneColor getStoneColor(PlayGameData.MatchEndStatus.Color color) {
+  public static StoneColor getStoneColor(PlayGameData.Color color) {
     switch (color) {
       case BLACK:
         return Black;

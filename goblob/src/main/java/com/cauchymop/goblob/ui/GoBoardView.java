@@ -17,6 +17,7 @@ import com.cauchymop.goblob.model.StoneColor;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Sets;
 
+import java.util.List;
 import java.util.Set;
 
 @SuppressLint("DrawAllocation")
@@ -168,14 +169,37 @@ public class GoBoardView extends View {
     if (gameController.getMode() != GoGameController.Mode.END_GAME_NEGOTIATION) {
       return;
     }
+    drawTerritories(canvas, startLineX, startLineY);
+  }
+
+  private void drawTerritories(Canvas canvas, int startLineX, int startLineY) {
+    drawDeadStones(canvas, startLineX, startLineY);
+    drawTerritories(canvas, startLineX, startLineY, gameController.getScore().getBlackTerritoryList(), blackFillPaint);
+    drawTerritories(canvas, startLineX, startLineY, gameController.getScore().getWhiteTerritoryList(), whiteFillPaint);
+  }
+
+  private void drawDeadStones(Canvas canvas, int startLineX, int startLineY) {
     for (PlayGameData.Position position : gameController.getDeadStones()) {
       int x = position.getX();
       int y = position.getY();
       int centerX = startLineX + cellSizeInPixels * x;
       int centerY = startLineY + cellSizeInPixels * y;
-      int markSize = cellSizeInPixels / 4;
+      int markSize = cellSizeInPixels / 6;
       canvas.drawRect(centerX - markSize, centerY - markSize, centerX + markSize, centerY + markSize,
           gameController.getGame().getColor(x, y) == StoneColor.Black ? whiteFillPaint : blackFillPaint);
+    }
+  }
+
+  private void drawTerritories(Canvas canvas, int startLineX, int startLineY,
+      List<PlayGameData.Position> territoryList, Paint paint) {
+    for (PlayGameData.Position position : territoryList) {
+      int x = position.getX();
+      int y = position.getY();
+      int centerX = startLineX + cellSizeInPixels * x;
+      int centerY = startLineY + cellSizeInPixels * y;
+      int markSize = cellSizeInPixels / 6;
+      canvas.drawRect(centerX - markSize, centerY - markSize,
+          centerX + markSize, centerY + markSize, paint);
     }
   }
 

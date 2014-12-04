@@ -23,6 +23,7 @@ public class GoGameController implements Serializable {
   private final GoGame goGame;
   private GameConfiguration gameConfiguration;
   private MatchEndStatus matchEndStatus;
+  private PlayGameData.Score score;
 
   public GoGameController(GameData gameData) {
     gameConfiguration = gameData.getGameConfiguration();
@@ -32,12 +33,24 @@ public class GoGameController implements Serializable {
     for (Move move : moves) {
       goGame.play(getPos(move));
     }
+    updateScore();
+  }
+
+  public PlayGameData.Score getScore() {
+    return score;
+  }
+
+  private void updateScore() {
+    ScoreGenerator scoreGenerator =
+        new ScoreGenerator(goGame.getBoard(), getDeadStones(), gameConfiguration.getKomi());
+    score = scoreGenerator.getScore();
   }
 
   public boolean playMove(Move move) {
     if (getMode() == Mode.IN_GAME && goGame.play(getPos(move))) {
       moves.add(move);
       checkForMatchEnd();
+      updateScore();
       return true;
     }
     return false;
@@ -45,11 +58,11 @@ public class GoGameController implements Serializable {
 
   private void checkForMatchEnd() {
     if (goGame.isGameEnd()) {
-      MatchEndStatus.Color lastModifier = goGame.getCurrentColor().getOpponent().getGameDataColor();
+      PlayGameData.Color lastModifier = goGame.getCurrentColor().getOpponent().getGameDataColor();
       matchEndStatus = MatchEndStatus.newBuilder()
           .setLastModifier(lastModifier)
           .setTurn(lastModifier)
-          .setScore(calculateScore())
+          .setScore(score)
           .build();
     }
   }
@@ -64,11 +77,6 @@ public class GoGameController implements Serializable {
       default:
         throw new RuntimeException("Invalid Move");
     }
-  }
-
-  private int calculateScore() {
-    // TODO: better scoring.
-    return 0;
   }
 
   public GoPlayer getCurrentPlayer() {
@@ -151,10 +159,14 @@ public class GoGameController implements Serializable {
           .setLastModifier(matchEndStatus.getTurn())
           .build();
     }
+    updateScore();
     return true;
   }
 
   public List<PlayGameData.Position> getDeadStones() {
+    if (matchEndStatus == null) {
+      return Lists.newArrayList();
+    }
     return matchEndStatus.getDeadStoneList();
   }
 

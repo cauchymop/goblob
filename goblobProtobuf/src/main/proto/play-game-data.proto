@@ -20,7 +20,7 @@ message Move {
   optional Position position = 2;  // For MOVE.
 }
 
-// Next ID: 6
+// Next ID: 7
 message GameConfiguration {
 
   enum ScoreType {
@@ -30,24 +30,32 @@ message GameConfiguration {
 
   required int32 board_size = 1;
   required int32 handicap = 2;
-  required string black_id = 3;
-  required string white_id = 4;
-  required ScoreType score_type = 5;
+  required float komi = 3;
+  required string black_id = 4;
+  required string white_id = 5;
+  required ScoreType score_type = 6;
 }
 
 // Next ID: 6
 message MatchEndStatus {
+  required Color last_modifier = 1;
+  required Color turn = 2;
+  repeated Position dead_stone = 3;
+  optional bool game_finished = 4;
+  optional Score score = 5;
+}
 
-  enum Color {
-    BLACK = 0;
-    WHITE = 1;
-  }
+enum Color {
+  BLACK = 0;
+  WHITE = 1;
+}
 
-  required int32 score = 1;
-  required Color last_modifier = 2;
-  required Color turn = 3;
-  repeated Position dead_stone = 4;
-  optional bool game_finished = 5;
+// Next ID: 5
+message Score {
+  required Color winner = 1;
+  required float won_by = 2;
+  repeated Position black_territory = 3;
+  repeated Position white_territory = 4;
 }
 
 // Next ID: 3

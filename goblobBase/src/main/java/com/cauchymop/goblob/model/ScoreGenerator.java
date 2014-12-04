@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model;
 
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -11,16 +12,19 @@ import java.util.List;
 import java.util.Set;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Position;
+import static com.cauchymop.goblob.proto.PlayGameData.Score;
 
 /**
  * Class to compute territories.
  */
-public class Territories {
+public class ScoreGenerator {
 
   private ImmutableMap<StoneColor, HashSet<Position>> territories = ImmutableMap.of(
       StoneColor.Black, Sets.<Position>newHashSet(), StoneColor.White, Sets.<Position>newHashSet());
+  private float komi;
 
-  public Territories(GoBoard board, Collection<Position> deadStones) {
+  public ScoreGenerator(GoBoard board, Collection<Position> deadStones, float komi) {
+    this.komi = komi;
     Set<Position> unknownTerritories = getEmptyPositions(board);
     while (!unknownTerritories.isEmpty()) {
       Position position = Iterables.getFirst(unknownTerritories, null);
@@ -35,8 +39,15 @@ public class Territories {
     }
   }
 
-  public HashSet<Position> getTerritories(StoneColor color) {
-    return territories.get(color);
+  public Score getScore() {
+    float blackScore = territories.get(StoneColor.Black).size();
+    float whiteScore = territories.get(StoneColor.White).size() + komi;
+    return Score.newBuilder()
+        .addAllBlackTerritory(territories.get(StoneColor.Black))
+        .addAllWhiteTerritory(territories.get(StoneColor.White))
+        .setWinner(blackScore > whiteScore ? PlayGameData.Color.BLACK : PlayGameData.Color.WHITE)
+        .setWonBy(Math.abs(blackScore - whiteScore))
+        .build();
   }
 
   private void fill(GoBoard board, Collection<Position> deadStones, Position seed,
