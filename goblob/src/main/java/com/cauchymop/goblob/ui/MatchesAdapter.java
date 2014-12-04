@@ -1,7 +1,7 @@
 package com.cauchymop.goblob.ui;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -9,8 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
     super(context, R.layout.match_row_view, R.id.label, items);
   }
 
-  @Override @NotNull
+  @Override @NonNull
   public View getDropDownView(int position, View convertView, ViewGroup parent) {
     final View matchRowView = super.getDropDownView(position, convertView, parent);
     MatchMenuItem item = getItem(position);

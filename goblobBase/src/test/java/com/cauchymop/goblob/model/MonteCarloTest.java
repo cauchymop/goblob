@@ -22,9 +22,4 @@ public class MonteCarloTest {
     assertThat(MonteCarlo.getBestMove(game, 100)).isEqualTo(33);
   }
 
-  @Test
-  public void test() {
-    GoGame game = new GoGame(9);
-    assertThat(MonteCarlo.getBestMove(game, 10000)).isEqualTo(25);
-  }
 }
