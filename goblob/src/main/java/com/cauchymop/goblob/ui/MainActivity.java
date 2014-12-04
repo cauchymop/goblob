@@ -401,12 +401,14 @@ public class MainActivity extends BaseGameActivity
     String myId = getMyId();
     String opponentId = getOpponentId(myId);
 
-    for (String participantId : turnBasedMatch.getParticipantIds()) {
-      Log.i(TAG, String.format(" participant %s: player %s", participantId,
-          getPlayerId(turnBasedMatch, participantId)));
-    }
-
     GameData gameData = getGameData(myId, opponentId);
+
+    if (gameData.getMoveCount() == 0) {
+      for (String participantId : turnBasedMatch.getParticipantIds()) {
+        Log.i(TAG, String.format(" participant %s: player %s", participantId,
+            getPlayerId(turnBasedMatch, participantId)));
+      }
+    }
 
     Map<String, GoPlayer> goPlayers = ImmutableMap.of(
         myId, createGoPlayer(myId, PlayerType.LOCAL),
@@ -427,9 +429,12 @@ public class MainActivity extends BaseGameActivity
 
   private GameData getGameData(String myId, String opponentId) {
     try {
-      return turnBasedMatch.getData() == null
-          ? GameDatas.createGameData(turnBasedMatch.getVariant(), 0, myId, opponentId)
-          : GameData.parseFrom(turnBasedMatch.getData());
+      if (turnBasedMatch.getData() == null) {
+        return GameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
+            GameDatas.DEFAULT_KOMI, myId, opponentId);
+      } else {
+        return GameData.parseFrom(turnBasedMatch.getData());
+      }
     } catch (InvalidProtocolBufferException exception) {
       throw new RuntimeException(exception);
     }

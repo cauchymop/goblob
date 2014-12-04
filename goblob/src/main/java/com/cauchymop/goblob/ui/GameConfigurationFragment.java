@@ -135,7 +135,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     String whiteId = homePlayerColor == StoneColor.Black ? opponentPlayer.getId() : homePlayer.getId();
 
     GoGameController goGameController =
-        new GoGameController(GameDatas.createGameData(boardSize, 0, blackId, whiteId));
+        new GoGameController(GameDatas.createGameData(boardSize, GameDatas.DEFAULT_HANDICAP, GameDatas.DEFAULT_KOMI, blackId, whiteId));
     goGameController.setGoPlayer(homePlayerColor, homePlayer);
     goGameController.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
 

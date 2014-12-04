@@ -19,7 +19,7 @@
   <string name="opponent_label">Opponent</string>
   <string name="home_player_default_name">Player 1</string>
   <string name="opponent_default_name">Player 2</string>
-  <string name="end_of_game_message">"Game finished"</string>
+  <string name="end_of_game_message">"Game finished, %1$s won by %2$.1f points"</string>
   <string name="opponent_passed_message">"%1$s has passed!"</string>
   <string name="sign_out">Sign out</string>
   <string name="achievements">Achievements</string>

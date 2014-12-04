@@ -14,13 +14,14 @@ import static org.fest.assertions.Assertions.assertThat;
 public class GoGameControllerTest {
 
   private static final int TEST_HANDICAP = 0;
+  private static final float TEST_KOMI = 7.5f;
   private static final String TEST_BLACK_ID = "black";
   private static final String TEST_WHITE_ID = "white";
 
   @Test
   public void testNew_gameData() {
     GameData gameData = GameData.newBuilder()
-        .setGameConfiguration(GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID))
+        .setGameConfiguration(GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, TEST_BLACK_ID, TEST_WHITE_ID))
         .addMove(GameDatas.createMove(2, 3))
         .addMove(GameDatas.createMove(4, 5))
         .build();
@@ -35,7 +36,7 @@ public class GoGameControllerTest {
 
   @Test
   public void testGetGameData() {
-    PlayGameData.GameConfiguration gameConfiguration = GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID);
+    PlayGameData.GameConfiguration gameConfiguration = GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, TEST_BLACK_ID, TEST_WHITE_ID);
     GoGameController controller = new GoGameController(GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
         .build());
@@ -51,7 +52,7 @@ public class GoGameControllerTest {
   }
 
   private GoGameController createGoGameController() {
-    return new GoGameController(GameDatas.createGameData(9, TEST_HANDICAP, TEST_BLACK_ID, TEST_WHITE_ID));
+    return new GoGameController(GameDatas.createGameData(9, TEST_HANDICAP, 0, TEST_BLACK_ID, TEST_WHITE_ID));
   }
 
   @Test

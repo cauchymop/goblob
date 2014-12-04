@@ -240,7 +240,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private void initMessageArea() {
     final String message;
     if (goGameController.isGameFinished()) {
-      message = getString(R.string.end_of_game_message);
+      PlayGameData.Score score = goGameController.getScore();
+      message = getString(R.string.end_of_game_message, score.getWinner(), score.getWonBy());
     } else if (goGameController.getMode() == GoGameController.Mode.END_GAME_NEGOTIATION) {
       message = getString(R.string.marking_message);
     } else if (goGameController.getGame().isLastMovePass()) {
