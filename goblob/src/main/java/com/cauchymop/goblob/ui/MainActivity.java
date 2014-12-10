@@ -125,8 +125,7 @@ public class MainActivity extends BaseGameActivity
   @Override
   protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
     super.onActivityResult(requestCode, responseCode, intent);
-    Log.d(TAG, "onActivityResult requestCode = " + requestCode);
-    Log.w(TAG, "onActivityResult responseCode = " + responseCode);
+    Log.d(TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
     switch (requestCode) {
       case SELECT_PLAYER:
         if (responseCode == Activity.RESULT_OK) {
