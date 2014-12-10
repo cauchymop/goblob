@@ -125,20 +125,26 @@ public class MainActivity extends BaseGameActivity
   @Override
   protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
     super.onActivityResult(requestCode, responseCode, intent);
-    updateMatchSpinner();
-    if (responseCode != Activity.RESULT_OK) {
-      Log.w(TAG, "Select players UI cancelled, " + responseCode);
-      setWaitingScreenVisible(false);
-      return;
-    }
+    Log.d(TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
     switch (requestCode) {
       case SELECT_PLAYER:
-        handleSelectPlayersResult(intent);
+        if (responseCode == Activity.RESULT_OK) {
+          handleSelectPlayersResult(intent);
+          return;
+        }
         break;
       case CHECK_MATCHES:
-        handleMatchSelected(intent);
+        if (responseCode == Activity.RESULT_OK) {
+          handleMatchSelected(intent);
+          return;
+        }
         break;
+      case REQUEST_ACHIEVEMENTS:
+        break;
+      default:
+        Log.e(TAG, "onActivityResult unexpected requestCode " + requestCode);
     }
+    updateMatchSpinner(null, true);
   }
 
   @Override
@@ -152,11 +158,12 @@ public class MainActivity extends BaseGameActivity
   private void handleMatchSelected(Intent intent) {
     Log.d(TAG, "handleMatchSelected.");
     final TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
-    updateMatchSpinner(match.getMatchId());
+    updateMatchSpinner(match.getMatchId(), false);
   }
 
   @Override
   public void onSignInFailed() {
+    Log.d(TAG, "onSignInFailed");
     invalidateOptionsMenu();
     getCurrentFragment().onSignInFailed();
     setWaitingScreenVisible(false);
@@ -164,10 +171,12 @@ public class MainActivity extends BaseGameActivity
 
   @Override
   public void onSignInSucceeded() {
+    Log.d(TAG, "onSignInSucceeded");
     invalidateOptionsMenu();
     getCurrentFragment().onSignInSucceeded();
     TurnBasedMultiplayer.registerMatchUpdateListener(getApiClient(), this);
     TurnBasedMatch signedInMatchId = mHelper.getTurnBasedMatch();
+    Log.d(TAG, "onSignInSucceeded: signedInMatchId = " + signedInMatchId);
     updateMatchSpinner(signedInMatchId == null ? null : signedInMatchId.getMatchId(), true);
   }
 
@@ -175,9 +184,8 @@ public class MainActivity extends BaseGameActivity
    * Update asynchronously the spinner with all the current games, and run the given callback.
    */
   private void updateMatchSpinner(@Nullable final String matchId, final boolean dismissWaitingScreen) {
-    int selectedNavigationIndex = getActionBar().getSelectedNavigationIndex();
-    final String previousMatchId = selectedNavigationIndex == -1 ? null
-        : navigationSpinnerAdapter.getItem(selectedNavigationIndex).getMatchId();
+    Log.d(TAG, "updateMatchSpinner: matchId = " + matchId);
+    final String previousMatchId = getCurrentMatchId();
 
     PendingResult<TurnBasedMultiplayer.LoadMatchesResult> matchListResult = TurnBasedMultiplayer.loadMatchesByStatus(getApiClient(),
         Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
@@ -198,7 +206,10 @@ public class MainActivity extends BaseGameActivity
             matchMenuItems.addAll(newMatchMenuItems);
             navigationSpinnerAdapter.notifyDataSetChanged();
 
-            selectMenuItem(matchId == null ? previousMatchId : matchId);
+            int selectedIndex = selectMenuItem(matchId == null ? previousMatchId : matchId);
+            if (matchId == null || selectedIndex == 0) {
+              handleMatchMenuItemSelection(getCurrentMatchMenuItem());
+            }
             if (dismissWaitingScreen) {
               setWaitingScreenVisible(false);
             }
@@ -207,12 +218,25 @@ public class MainActivity extends BaseGameActivity
     matchListResult.setResultCallback(matchListResultCallBack);
   }
 
-  private void updateMatchSpinner() {
-    updateMatchSpinner(null, false);
+  @Nullable
+  private String getCurrentMatchId() {
+    MatchMenuItem item = getCurrentMatchMenuItem();
+    return getMatchId(item);
   }
 
-  private void updateMatchSpinner(String matchId) {
-    updateMatchSpinner(matchId, false);
+  @Nullable
+  private String getMatchId(@Nullable MatchMenuItem item) {
+    return item == null ? null : item.getMatchId();
+  }
+
+  @Nullable
+  private MatchMenuItem getCurrentMatchMenuItem() {
+    int selectedNavigationIndex = getActionBar().getSelectedNavigationIndex();
+    return selectedNavigationIndex == -1 ? null : navigationSpinnerAdapter.getItem(selectedNavigationIndex);
+  }
+
+  private void updateMatchSpinner() {
+    updateMatchSpinner(null, false);
   }
 
   private List<MatchMenuItem> getMatchMenuItems(TurnBasedMatchBuffer matchBuffer) {
@@ -239,15 +263,15 @@ public class MainActivity extends BaseGameActivity
   }
 
   private GoBlobBaseFragment getCurrentFragment() {
-    return (GoBlobBaseFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+    return (GoBlobBaseFragment) getSupportFragmentManager().findFragmentById(R.id.current_fragment);
   }
 
   private void displayFragment(GoBlobBaseFragment fragment) {
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-    // Replace whatever is in the fragment_container view with this fragment,
+    // Replace whatever is the current_fragment view with this fragment,
     // and add the transaction to the back stack
-    ft.replace(R.id.fragment_container, fragment);
+    ft.replace(R.id.current_fragment, fragment);
 
     // Commit the transaction
     ft.commit();
@@ -302,22 +326,27 @@ public class MainActivity extends BaseGameActivity
   }
 
   /**
-   * Selects the given match, or leave the current selection if the matchId does not exist.
+   * Selects the given match (or the first one) and return its index.
    */
-  private void selectMenuItem(String matchId) {
+  private int selectMenuItem(@Nullable String matchId) {
+    Log.d(TAG, "selectMenuItem matchId = " + matchId);
     for (int index = 0 ; index < navigationSpinnerAdapter.getCount() ; index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
         getActionBar().setSelectedNavigationItem(index);
-        return;
+        return index;
       }
     }
+    Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
+    getActionBar().setSelectedNavigationItem(0);
+    return 0;
   }
 
   public void giveTurn(GoGameController goGameController) {
     Log.d(TAG, "giveTurn: " + goGameController);
     String myId = getMyId();
     takeTurn(goGameController, getOpponentId(myId));
+    updateMatchSpinner();
   }
 
   public void keepTurn(GoGameController goGameController) {
@@ -331,12 +360,12 @@ public class MainActivity extends BaseGameActivity
     String myId = getMyId();
     takeTurn(goGameController, myId);
     TurnBasedMultiplayer.finishMatch(getApiClient(), turnBasedMatch.getMatchId());
+    updateMatchSpinner();
   }
 
   private void takeTurn(GoGameController goGameController, String myId) {
     byte[] gameDataBytes = goGameController.getGameData().toByteArray();
     TurnBasedMultiplayer.takeTurn(getApiClient(), turnBasedMatch.getMatchId(), gameDataBytes, myId);
-    updateMatchSpinner(null);
   }
 
   public AvatarManager getAvatarManager() {
@@ -472,7 +501,7 @@ public class MainActivity extends BaseGameActivity
   @Override
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
-    updateMatchSpinner(null);
+    updateMatchSpinner();
     // While the spinner is updating, we can reload the game, that is already displayed.
     if (sameMatchId(turnBasedMatch, this.turnBasedMatch)) {
       loadGame(turnBasedMatch);
@@ -486,7 +515,7 @@ public class MainActivity extends BaseGameActivity
   @Override
   public void onTurnBasedMatchRemoved(String s) {
     Log.d(TAG, "onTurnBasedMatchRemoved: " + s);
-    updateMatchSpinner(null);
+    updateMatchSpinner();
   }
 
   public void unlockAchievement(String achievementId) {
@@ -501,6 +530,12 @@ public class MainActivity extends BaseGameActivity
   public boolean onNavigationItemSelected(int itemPosition, long itemId) {
     MatchMenuItem item = navigationSpinnerAdapter.getItem(itemPosition);
     Log.e(TAG, "onNavigationItemSelected: " + item.getMatchId());
+    handleMatchMenuItemSelection(item);
+    return true;
+  }
+
+  private void handleMatchMenuItemSelection(MatchMenuItem item) {
+    Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
     GameStarter gameStarter = new GameStarter() {
       @Override
       public void startNewGame() {
@@ -519,7 +554,6 @@ public class MainActivity extends BaseGameActivity
       }
     };
     item.start(gameStarter);
-    return true;
   }
 
   public void setWaitingScreenVisible(boolean visible) {

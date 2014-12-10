@@ -1,11 +1,13 @@
 High priority:
-- Bug refresh: when receiving a move while off-screen, there is no fragment update.
+- On signout, update combo and fragment
 - Support for local games: add the local game in the combo
 - remove handicap
-- Improve winning message
+- Improve winning message (name of player)
+- fix score (count stones)
 
 Medium (probably before release)
 - improve move picking accuracy
+- toast when another game is updated
 
 Longer term:
 - Be smarter when marking stones
