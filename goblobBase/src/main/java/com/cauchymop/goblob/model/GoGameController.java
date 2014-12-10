@@ -104,9 +104,8 @@ public class GoGameController implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, moves=%s, end=%s)",
-        goGame, getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), moves,
-        matchEndStatus);
+    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, end=%s)",
+        goGame, getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), matchEndStatus);
   }
 
   public GoGame getGame() {
