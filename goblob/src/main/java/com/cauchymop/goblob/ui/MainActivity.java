@@ -1,11 +1,12 @@
 package com.cauchymop.goblob.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -75,7 +76,10 @@ public class MainActivity extends BaseGameActivity
     }
 
     // Set up the action bar to show a dropdown list.
-    final ActionBar actionBar = getActionBar();
+    Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+    setSupportActionBar(toolbar);
+
+    final ActionBar actionBar = getSupportActionBar();
     actionBar.setDisplayShowTitleEnabled(false);
     actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
@@ -247,7 +251,7 @@ public class MainActivity extends BaseGameActivity
 
   @Nullable
   private MatchMenuItem getCurrentMatchMenuItem() {
-    int selectedNavigationIndex = getActionBar().getSelectedNavigationIndex();
+    int selectedNavigationIndex = getSupportActionBar().getSelectedNavigationIndex();
     return selectedNavigationIndex == -1 ? null : navigationSpinnerAdapter.getItem(selectedNavigationIndex);
   }
 
@@ -358,12 +362,12 @@ public class MainActivity extends BaseGameActivity
     for (int index = 0 ; index < navigationSpinnerAdapter.getCount() ; index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
-        getActionBar().setSelectedNavigationItem(index);
+        getSupportActionBar().setSelectedNavigationItem(index);
         return index;
       }
     }
     Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
-    getActionBar().setSelectedNavigationItem(0);
+    getSupportActionBar().setSelectedNavigationItem(0);
     return 0;
   }
 
@@ -564,6 +568,9 @@ public class MainActivity extends BaseGameActivity
   }
 
   private void handleMatchMenuItemSelection(MatchMenuItem item) {
+    if (item == null) {
+      return;
+    }
     Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
     GameStarter gameStarter = new GameStarter() {
       @Override
