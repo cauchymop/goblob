@@ -31,8 +31,6 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
 
     ImageView iconView = (ImageView) matchRowView.findViewById( R.id.match_type_icon);
     iconView.setImageDrawable(item.getIcon(getContext()));
-    // May have been set to GONE if it was a closed view.
-    iconView.setVisibility(View.VISIBLE);
 
     return matchRowView;
   }
@@ -40,9 +38,6 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
     // TODO: Add number of games by turn status
-    final View matchRowView = getDropDownView(position, convertView, parent);
-    View icon = matchRowView.findViewById(R.id.match_type_icon);
-    icon.setVisibility(View.GONE);
-    return matchRowView;
+    return getDropDownView(position, convertView, parent);
   }
 }
