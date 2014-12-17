@@ -1,13 +1,17 @@
-High priority:
-- Support for local games: add the local game in the combo
+Before Beta:
+- Improve label for games
+- Release beta
 
-Medium (probably before release)
+High priority:
+- improve debug level log management
 - improve move picking accuracy (pinch)
+
+Medium priority:
 - toast when another game is updated
+- buzz when any game is updated
 - Improve winning message (name of player)
 - kill StoneColor
 - back button
-- improve debug level log management
 - restore rotation
 
 Longer term:
