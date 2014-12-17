@@ -255,6 +255,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void updateAchievements() {
+    if (!isSignedIn()) {
+      return;
+    }
     getGoBlobActivity().unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGameController.getGame().getBoardSize()) {
       case 9:
