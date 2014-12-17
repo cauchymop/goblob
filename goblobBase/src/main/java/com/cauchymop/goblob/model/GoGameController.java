@@ -186,6 +186,11 @@ public class GoGameController implements Serializable {
         .build();
   }
 
+  public boolean isLocalGame() {
+    return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL
+        && getOpponent().getType() == GoPlayer.PlayerType.LOCAL;
+  }
+
   public enum Mode {
     START_GAME_NEGOTIATION,
     IN_GAME,
