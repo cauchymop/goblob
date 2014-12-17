@@ -1,9 +1,9 @@
 High priority:
+- fix score (count stones)
 - On signout, update combo and fragment
 - Support for local games: add the local game in the combo
 - remove handicap
 - Improve winning message (name of player)
-- fix score (count stones)
 
 Medium (probably before release)
 - improve move picking accuracy

@@ -27,10 +27,10 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
       Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_player_choice, container, false);
 
-    opponentRadioGroup = (RadioGroup) v.findViewById(R.id.opponent_radio_group);
+    opponentRadioGroup = (RadioGroup) v.findViewById(R.id.game_type_radio_group);
     boardSizeRadioGroup = (RadioGroup) v.findViewById(R.id.board_size_radio_group);
 
-    RadioButton localHumanButton = (RadioButton) v.findViewById(R.id.opponent_human_local_radio);
+    RadioButton localHumanButton = (RadioButton) v.findViewById(R.id.game_type_radio_local);
     localHumanButton.setChecked(true);
     updateBoardSizes();
 
@@ -78,11 +78,11 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
 
     switch (opponentRadioGroup.getCheckedRadioButtonId()) {
       default:
-      case R.id.opponent_human_local_radio:
+      case R.id.game_type_radio_local:
         opponentType = GoPlayer.PlayerType.LOCAL;
         opponentDefaultName = getString(R.string.opponent_default_name);
         break;
-      case R.id.opponent_human_remote_friend_radio:
+      case R.id.game_type_radio_remote:
         opponentType = GoPlayer.PlayerType.REMOTE;
         opponentDefaultName = null;
         break;
@@ -115,10 +115,10 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
   }
 
   private void updateRemotePlayerRadios() {
-    RadioButton radioButton = (RadioButton) getView().findViewById(R.id.opponent_human_remote_friend_radio);
+    RadioButton radioButton = (RadioButton) getView().findViewById(R.id.game_type_radio_remote);
     radioButton.setEnabled(isSignedIn());
     if (radioButton.isChecked()) {
-      RadioButton localHumanButton = (RadioButton) getView().findViewById(R.id.opponent_human_local_radio);
+      RadioButton localHumanButton = (RadioButton) getView().findViewById(R.id.game_type_radio_local);
       localHumanButton.setChecked(true);
     }
   }

@@ -26,27 +26,27 @@
 
             <TextView
                     style="@style/Title"
-                    android:text="@string/choose_opponent_label"/>
+                    android:text="@string/choose_game_type_label"/>
 
             <RadioGroup
-                    android:id="@+id/opponent_radio_group"
+                    android:id="@+id/game_type_radio_group"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="left">
 
                 <RadioButton
-                        android:id="@+id/opponent_human_local_radio"
+                        android:id="@+id/game_type_radio_local"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="@string/human_local_opponent_label"/>
+                        android:text="@string/game_type_local_label"/>
 
                 <RadioButton
-                        android:id="@+id/opponent_human_remote_friend_radio"
+                        android:id="@+id/game_type_radio_remote"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:enabled="false"
-                        android:text="@string/human_remote_friend_label"/>
+                        android:text="@string/game_type_remote_label"/>
             </RadioGroup>
 
             <TextView
