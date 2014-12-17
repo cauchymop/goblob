@@ -63,6 +63,7 @@ public class MainActivity extends BaseGameActivity
   private TurnBasedMatch turnBasedMatch;
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
+  private GoGameController localGameController;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -221,6 +222,9 @@ public class MainActivity extends BaseGameActivity
       String previousMatchId) {
     matchMenuItems.clear();
     matchMenuItems.addAll(newMatchMenuItems);
+    if (localGameController != null) {
+      matchMenuItems.add(new LocalMatchMenuItem(localGameController));
+    }
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
 
@@ -336,6 +340,15 @@ public class MainActivity extends BaseGameActivity
 
   public void loadGame(GoGameController goGameController) {
     displayFragment(GameFragment.newInstance(goGameController));
+  }
+
+  public void startLocalGame(GoGameController goGameController) {
+    if (!goGameController.isLocalGame()) {
+      throw new RuntimeException("startLocalGame() with non local game");
+    }
+    localGameController = goGameController;
+    updateMatchSpinner(LocalMatchMenuItem.LOCAL_MATCH_ID, false);
+    loadGame(goGameController);
   }
 
   /**
