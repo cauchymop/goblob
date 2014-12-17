@@ -4,7 +4,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:focusable="true"
-                android:focusableInTouchMode="true">
+                android:focusableInTouchMode="true"
+                android:padding="@dimen/default_gap">
 
     <Button
             android:id="@+id/start_game_button"
@@ -140,17 +141,42 @@
                 </TableRow>
             </TableLayout>
 
+          <LinearLayout android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal">
+
             <TextView
-                    style="@style/Title"
-                    android:text="@string/handicap_label"/>
+                style="@style/Title"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:text="@string/handicap_label"
+                android:layout_weight="1"/>
+            <EditText
+              android:id="@+id/handicap_value"
+              android:layout_width="0dip"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="0"
+              android:enabled="false"/>
+          </LinearLayout>
 
-            <SeekBar
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:max="9"
-                    android:layout_margin="15dip"
-                    android:id="@+id/handicap_bar"/>
-
+          <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+            <TextView
+                style="@style/Title"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:text="@string/komi_label"
+                android:layout_weight="1"/>
+            <EditText
+                android:id="@+id/komi_value"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="7.5"
+                android:enabled="false"/>
+          </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

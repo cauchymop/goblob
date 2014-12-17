@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
@@ -34,6 +35,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   private int boardSize;
   private GoPlayer opponentPlayer;
   private GoPlayer homePlayer;
+  private EditText handicapText;
+  private EditText komiText;
 
   public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
     GameConfigurationFragment instance = new GameConfigurationFragment();
@@ -85,6 +88,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
+
+    handicapText = (EditText) v.findViewById(R.id.handicap_value);
+    komiText = (EditText) v.findViewById(R.id.komi_value);
 
     Button startGameButton = (Button) v.findViewById(R.id.start_game_button);
     startGameButton.setOnClickListener(new View.OnClickListener() {
