@@ -40,4 +40,5 @@
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
   <string name="button_done_label">Done</string>
   <string name="marking_message">Marking…</string>
+  <string name="komi_label">Komi</string>
 </resources>
