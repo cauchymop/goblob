@@ -1,13 +1,14 @@
 High priority:
-- fix score (count stones)
 - On signout, update combo and fragment
 - Support for local games: add the local game in the combo
-- remove handicap
-- Improve winning message (name of player)
 
 Medium (probably before release)
 - improve move picking accuracy
 - toast when another game is updated
+- Improve winning message (name of player)
+- kill StoneColor
+- back button
+- improve debug level log management
 
 Longer term:
 - Be smarter when marking stones

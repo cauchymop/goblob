@@ -22,9 +22,33 @@ public class ScoreGenerator {
   private ImmutableMap<StoneColor, HashSet<Position>> territories = ImmutableMap.of(
       StoneColor.Black, Sets.<Position>newHashSet(), StoneColor.White, Sets.<Position>newHashSet());
   private float komi;
+  private int blackStoneCount;
+  private int whiteStoneCount;
 
-  public ScoreGenerator(GoBoard board, Collection<Position> deadStones, float komi) {
+  public ScoreGenerator(GoBoard board, Set<Position> deadStones, float komi) {
     this.komi = komi;
+    findTerritories(board, deadStones);
+    countLiveStones(board, deadStones);
+  }
+
+  private void countLiveStones(GoBoard board, Set<Position> deadStones) {
+    for (int x=0 ; x<board.getSize() ; x++) {
+      for (int y=0 ; y<board.getSize() ; y++) {
+        Position position = Position.newBuilder().setX(x).setY(y).build();
+        if (deadStones.contains(position)) {
+          continue;
+        }
+        if (board.getColor(x, y) == StoneColor.Black) {
+          blackStoneCount++;
+        }
+        if (board.getColor(x, y) == StoneColor.White) {
+          whiteStoneCount++;
+        }
+      }
+    }
+  }
+
+  private void findTerritories(GoBoard board, Set<Position> deadStones) {
     Set<Position> unknownTerritories = getEmptyPositions(board);
     while (!unknownTerritories.isEmpty()) {
       Position position = Iterables.getFirst(unknownTerritories, null);
@@ -40,8 +64,8 @@ public class ScoreGenerator {
   }
 
   public Score getScore() {
-    float blackScore = territories.get(StoneColor.Black).size();
-    float whiteScore = territories.get(StoneColor.White).size() + komi;
+    float blackScore = territories.get(StoneColor.Black).size() + blackStoneCount;
+    float whiteScore = territories.get(StoneColor.White).size() + whiteStoneCount + komi;
     return Score.newBuilder()
         .addAllBlackTerritory(territories.get(StoneColor.Black))
         .addAllWhiteTerritory(territories.get(StoneColor.White))
@@ -50,7 +74,7 @@ public class ScoreGenerator {
         .build();
   }
 
-  private void fill(GoBoard board, Collection<Position> deadStones, Position seed,
+  private void fill(GoBoard board, Set<Position> deadStones, Position seed,
       Set<Position> painted, Set<StoneColor> colors) {
     List<Position> seeds = Lists.newArrayList(seed);
     while (!seeds.isEmpty()) {

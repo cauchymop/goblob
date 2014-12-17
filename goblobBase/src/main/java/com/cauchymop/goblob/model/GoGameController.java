@@ -3,6 +3,7 @@ package com.cauchymop.goblob.model;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.List;
@@ -41,8 +42,8 @@ public class GoGameController implements Serializable {
   }
 
   private void updateScore() {
-    ScoreGenerator scoreGenerator =
-        new ScoreGenerator(goGame.getBoard(), getDeadStones(), gameConfiguration.getKomi());
+    ScoreGenerator scoreGenerator = new ScoreGenerator(goGame.getBoard(),
+        Sets.newHashSet(getDeadStones()), gameConfiguration.getKomi());
     score = scoreGenerator.getScore();
   }
 
