@@ -30,6 +30,7 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.example.games.basegameutils.BaseGameActivity;
@@ -187,10 +188,15 @@ public class MainActivity extends BaseGameActivity
     Log.d(TAG, "updateMatchSpinner: matchId = " + matchId);
     final String previousMatchId = getCurrentMatchId();
 
-    PendingResult<TurnBasedMultiplayer.LoadMatchesResult> matchListResult = TurnBasedMultiplayer.loadMatchesByStatus(getApiClient(),
-        Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
-        new int[]{TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN}
-    );
+    if (!isSignedIn()) {
+      setMatchMenuItems(ImmutableList.<MatchMenuItem>of(), matchId, previousMatchId);
+      return;
+    }
+
+    PendingResult<TurnBasedMultiplayer.LoadMatchesResult> matchListResult =
+        TurnBasedMultiplayer.loadMatchesByStatus(getApiClient(),
+            Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
+            new int[]{TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN});
     ResultCallback<TurnBasedMultiplayer.LoadMatchesResult> matchListResultCallBack =
         new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
           @Override
@@ -200,22 +206,28 @@ public class MainActivity extends BaseGameActivity
             List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
             newMatchMenuItems.addAll(getMatchMenuItems(matches.getMyTurnMatches()));
             newMatchMenuItems.addAll(getMatchMenuItems(matches.getTheirTurnMatches()));
-            newMatchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
 
-            matchMenuItems.clear();
-            matchMenuItems.addAll(newMatchMenuItems);
-            navigationSpinnerAdapter.notifyDataSetChanged();
 
-            int selectedIndex = selectMenuItem(matchId == null ? previousMatchId : matchId);
-            if (matchId == null || selectedIndex == 0) {
-              handleMatchMenuItemSelection(getCurrentMatchMenuItem());
-            }
+            setMatchMenuItems(newMatchMenuItems, matchId, previousMatchId);
             if (dismissWaitingScreen) {
               setWaitingScreenVisible(false);
             }
           }
         };
     matchListResult.setResultCallback(matchListResultCallBack);
+  }
+
+  private void setMatchMenuItems(List<MatchMenuItem> newMatchMenuItems, String matchId,
+      String previousMatchId) {
+    matchMenuItems.clear();
+    matchMenuItems.addAll(newMatchMenuItems);
+    matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
+    navigationSpinnerAdapter.notifyDataSetChanged();
+
+    int selectedIndex = selectMenuItem(matchId == null ? previousMatchId : matchId);
+    if (matchId == null || selectedIndex == 0) {
+      handleMatchMenuItemSelection(getCurrentMatchMenuItem());
+    }
   }
 
   @Nullable
@@ -285,6 +297,7 @@ public class MainActivity extends BaseGameActivity
   public void onSignOut() {
     invalidateOptionsMenu();
     getCurrentFragment().onSignOut();
+    updateMatchSpinner();
   }
 
   public void checkMatches() {
