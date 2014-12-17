@@ -22,7 +22,7 @@ public class LocalMatchMenuItem extends MatchMenuItem {
   @Override
   public String getDisplayName(Context context) {
     PlayGameData.GameConfiguration conf = gameController.getGameConfiguration();
-    return context.getString(R.string.match_label_format, context.getString(R.string.human_local_opponent_label), conf.getBoardSize());
+    return context.getString(R.string.match_label_format, context.getString(R.string.game_type_local_label), conf.getBoardSize());
   }
 
   @Override
