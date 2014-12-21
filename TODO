@@ -1,10 +1,5 @@
-Before Beta:
-- Improve label for games
-- Release beta
-
 High priority:
 - improve debug level log management
-- improve move picking accuracy (pinch)
 
 Medium priority:
 - toast when another game is updated
@@ -15,7 +10,6 @@ Medium priority:
 - restore rotation
 
 Longer term:
-- Be smarter when marking stones
 - Move to a NavigationDrawer or keep spinner in toolbar
 - Kill BaseGameActivity
 - continue a game in remote mode
