@@ -36,7 +36,9 @@
   <string name="player_avatar_content_description">player_avatar</string>
   <string name="player_stonecolor_content_description">Player Color Icon</string>
   <string name="new_game_label">New Game</string>
-  <string name="match_label_format">"%1$s (%2$s x %2$s)"</string>
+  <string name="match_label_remote_first_line_format">"%1$s vs %2$s"</string>
+  <string name="match_label_remote_second_line_format">"%1$d x %1$d - %2$s"</string>
+  <string name="match_label_local_second_line_format">"%1$d x %1$d"</string>
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
   <string name="button_done_label">Done</string>
   <string name="marking_message">Marking…</string>

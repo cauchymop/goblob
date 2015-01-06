@@ -20,9 +20,14 @@ public class LocalMatchMenuItem extends MatchMenuItem {
   }
 
   @Override
-  public String getDisplayName(Context context) {
+  public String getFirstLine(Context context) {
+    return context.getString(R.string.local_match_item_label);
+  }
+
+  @Override
+  public String getSecondLine(Context context) {
     PlayGameData.GameConfiguration conf = gameController.getGameConfiguration();
-    return context.getString(R.string.match_label_format, context.getString(R.string.local_match_item_label), conf.getBoardSize());
+    return context.getString(R.string.match_label_local_second_line_format, conf.getBoardSize());
   }
 
   @Override

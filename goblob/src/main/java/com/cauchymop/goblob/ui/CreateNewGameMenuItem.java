@@ -18,8 +18,13 @@ public class CreateNewGameMenuItem extends MatchMenuItem {
   }
 
   @Override
-  public String getDisplayName(Context context) {
+  public String getFirstLine(Context context) {
     return label;
+  }
+
+  @Override
+  public String getSecondLine(Context context) {
+    return null;
   }
 
   @Override

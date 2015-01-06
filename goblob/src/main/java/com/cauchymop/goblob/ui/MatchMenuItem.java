@@ -11,7 +11,8 @@ import com.google.common.base.Objects;
 public abstract class MatchMenuItem {
   private final String matchId;
 
-  public abstract String getDisplayName(Context context);
+  public abstract String getFirstLine(Context context);
+  public abstract String getSecondLine(Context context);
   public abstract Drawable getIcon(Context context);
   public abstract void start(GameStarter gameStarter);
 

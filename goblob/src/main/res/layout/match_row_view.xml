@@ -1,31 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="54dp"
               android:gravity="center_vertical">
 
   <ImageView
       android:layout_width="50dp"
       android:layout_height="50dp"
       android:id="@+id/match_type_icon"
-      android:paddingBottom="10dp"
-      android:paddingTop="10dp"
+      android:paddingBottom="2dp"
+      android:paddingTop="2dp"
       android:paddingLeft="10dp"
-      android:paddingRight="2dp"
+      android:paddingRight="4dp"
+      android:layout_alignParentLeft="true"
+      android:layout_centerVertical="true"
       android:scaleType="centerCrop"
-      android:layout_gravity="center"
       />
 
   <TextView
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:textAppearance="?android:attr/textAppearanceMedium"
-      android:id="@+id/label"
-      android:paddingBottom="10dp"
-      android:paddingTop="10dp"
+      android:id="@+id/label_first_line"
+      android:paddingBottom="2dp"
+      android:paddingTop="4dp"
       android:paddingLeft="2dp"
       android:paddingRight="10dp"
+      android:layout_toRightOf="@id/match_type_icon"
+      android:layout_alignParentTop="true"
+      android:ellipsize="end"
+      android:singleLine="true"
       android:layout_gravity="center"/>
-</LinearLayout>
+
+  <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textAppearance="?android:attr/textAppearanceMedium"
+      android:id="@+id/label_second_line"
+      android:paddingBottom="4dp"
+      android:paddingTop="2dp"
+      android:paddingLeft="2dp"
+      android:paddingRight="10dp"
+      android:layout_toRightOf="@id/match_type_icon"
+      android:layout_alignParentBottom="true"
+      android:layout_gravity="center"/>
+</RelativeLayout>

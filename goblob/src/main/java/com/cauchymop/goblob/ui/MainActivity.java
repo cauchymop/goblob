@@ -259,8 +259,7 @@ public class MainActivity extends BaseGameActivity
     List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
     for (int i = 0; i < matchBuffer.getCount(); i++) {
       TurnBasedMatch match = matchBuffer.get(i);
-      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(match.getCreationTimestamp(),
-          match.getLastUpdatedTimestamp(), match.getVariant(), match.getTurnStatus(), match.getMatchId());
+      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(new MatchDescription(match));
       matchMenuItems.add(matchMenuItem);
     }
     matchBuffer.close();
@@ -290,7 +289,7 @@ public class MainActivity extends BaseGameActivity
     ft.replace(R.id.current_fragment, fragment);
 
     // Commit the transaction
-    ft.commit();
+    ft.commitAllowingStateLoss();
   }
 
   @Override
@@ -509,19 +508,23 @@ public class MainActivity extends BaseGameActivity
   }
 
   private GoPlayer createGoPlayer(String participantId, PlayerType playerType) {
+    return createGoPlayer(turnBasedMatch, participantId, playerType);
+  }
+
+  private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId, PlayerType playerType) {
     GoPlayer goPlayer;
-    if (isParticipantAutoMatch(participantId)) {
+    if (isParticipantAutoMatch(match, participantId)) {
       goPlayer = new GoPlayer(playerType, participantId, getString(R.string.opponent_default_name));
     } else {
-      Player player = turnBasedMatch.getParticipant(participantId).getPlayer();
+      Player player = match.getParticipant(participantId).getPlayer();
       goPlayer = new GoPlayer(playerType, participantId, player.getDisplayName());
       getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     }
     return goPlayer;
   }
 
-  private boolean isParticipantAutoMatch(String participantId) {
-    return participantId == null || turnBasedMatch.getParticipant(participantId).getPlayer() == null;
+  private boolean isParticipantAutoMatch(TurnBasedMatch match, String participantId) {
+    return participantId == null || match.getParticipant(participantId).getPlayer() == null;
   }
 
   @Override
@@ -584,5 +587,58 @@ public class MainActivity extends BaseGameActivity
 
   public void setWaitingScreenVisible(boolean visible) {
     findViewById(R.id.waiting_view).setVisibility(visible ? View.VISIBLE : View.GONE);
+  }
+
+  public class MatchDescription {
+    private final long creationTimestamp;
+    private final long lastUpdateTimestamp;
+    private final int turnStatus;
+    private final String matchId;
+    private final GameData gameData;
+    private final GoPlayer blackPlayer;
+    private final GoPlayer whitePlayer;
+
+    public MatchDescription(TurnBasedMatch match) {
+      this.creationTimestamp = match.getCreationTimestamp();
+      this.lastUpdateTimestamp = match.getLastUpdatedTimestamp();
+      this.turnStatus = match.getTurnStatus();
+      this.matchId = match.getMatchId();
+      try {
+        this.gameData = GameData.parseFrom(match.getData());
+      } catch (InvalidProtocolBufferException e) {
+        throw new RuntimeException("Invalid GameData: " + match.getData());
+      }
+
+      this.blackPlayer = createGoPlayer(match, gameData.getGameConfiguration().getBlackId(), null);
+      this.whitePlayer = createGoPlayer(match, gameData.getGameConfiguration().getWhiteId(), null);
+    }
+
+    public long getCreationTimestamp() {
+      return creationTimestamp;
+    }
+
+    public long getLastUpdateTimestamp() {
+      return lastUpdateTimestamp;
+    }
+
+    public int getTurnStatus() {
+      return turnStatus;
+    }
+
+    public String getMatchId() {
+      return matchId;
+    }
+
+    public GameData getGameData() {
+      return gameData;
+    }
+
+    public GoPlayer getBlackPlayer() {
+      return blackPlayer;
+    }
+
+    public GoPlayer getWhitePlayer() {
+      return whitePlayer;
+    }
   }
 }
