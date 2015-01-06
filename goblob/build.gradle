@@ -22,8 +22,8 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "0.9"
         minSdkVersion 14
         targetSdkVersion 21
     }
@@ -35,8 +35,8 @@ android {
         release {
             storeFile file("release.keystore")
             keyAlias "game of go"
-            keyPassword System.getenv("KEY_PASSWORD")
-            storePassword System.getenv("KEY_PASSWORD")
+            keyPassword System.getenv("GOBLOB_KEY_PASSWORD")
+            storePassword System.getenv("GOBLOB_KEY_PASSWORD")
         }
     }
 
