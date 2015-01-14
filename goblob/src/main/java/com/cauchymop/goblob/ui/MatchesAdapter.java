@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.cauchymop.goblob.R;
 
 import java.util.List;
-import java.util.zip.Inflater;
 
 /**
  * Adapter displaying MatchMenuItem from the actionbar navigation spinner.
