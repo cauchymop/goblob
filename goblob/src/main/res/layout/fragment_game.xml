@@ -35,7 +35,7 @@
   </LinearLayout>
 
   <FrameLayout
-      android:background="@drawable/board_bg"
+      android:background="@android:color/transparent"
       android:layout_gravity="center"
       android:gravity="center"
       android:id="@+id/boardViewContainer"

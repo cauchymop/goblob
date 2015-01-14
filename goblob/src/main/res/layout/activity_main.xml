@@ -6,29 +6,50 @@
                 android:orientation="vertical"
                 tools:context=".MainActivity">
 
+  <android.support.v7.widget.Toolbar
+      android:id="@+id/app_toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:minHeight="?attr/actionBarSize"
+      android:background="@color/toolbar_bg">
+
+    <Spinner
+        android:id="@+id/actionbar_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        />
+    <!--android:popupBackground="?attr/colorPrimary"-->
+    <!--android:dropDownSelector="?attr/colorPrimaryDark"-->
+
+  </android.support.v7.widget.Toolbar>
+
   <FrameLayout
       android:id="@+id/current_fragment"
+      android:layout_below="@id/app_toolbar"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="match_parent"/>
 
-    <LinearLayout
-        android:id="@+id/waiting_view"
+  <LinearLayout
+      android:id="@+id/waiting_view"
+      android:layout_below="@id/app_toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="center"
+      android:orientation="vertical"
+      android:background="@android:color/transparent"
+      android:layout_gravity="start|center_vertical">
+
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical"
-        android:background="@drawable/board_bg"
-        android:layout_gravity="left|center_vertical">
-      <TextView
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:gravity="center"
-          android:text="@string/please_wait"
-          android:textAppearance="?android:attr/textAppearanceLarge"/>
-      <ProgressBar
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:indeterminate="true" />
-    </LinearLayout>
+        android:text="@string/please_wait"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"/>
+  </LinearLayout>
 
 </RelativeLayout>
