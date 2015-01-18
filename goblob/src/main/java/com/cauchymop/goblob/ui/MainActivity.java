@@ -1,15 +1,18 @@
 package com.cauchymop.goblob.ui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
@@ -49,7 +52,7 @@ import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 import static com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchResult;
 
 public class MainActivity extends BaseGameActivity
-    implements OnTurnBasedMatchUpdateReceivedListener, ActionBar.OnNavigationListener {
+    implements OnTurnBasedMatchUpdateReceivedListener {
 
   public static final int REQUEST_ACHIEVEMENTS = 1;
   public static final int SELECT_PLAYER = 2;
@@ -64,6 +67,7 @@ public class MainActivity extends BaseGameActivity
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
   private GoGameController localGameController;
+  private Spinner spinner;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -74,23 +78,36 @@ public class MainActivity extends BaseGameActivity
       turnBasedMatch = savedInstanceState.getParcelable(CURRENT_MATCH);
     }
 
-    // Set up the action bar to show a dropdown list.
-    final ActionBar actionBar = getActionBar();
-    actionBar.setDisplayShowTitleEnabled(false);
-    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-
-    // Specify a SpinnerAdapter to populate the dropdown list.
-    // use getActionBar().getThemedContext() to ensure
-    // that the text color is always appropriate for the action bar
-    // background rather than the activity background.
-    navigationSpinnerAdapter = new MatchesAdapter(actionBar.getThemedContext(), matchMenuItems);
-
-    // Set up the dropdown list navigation in the action bar.
-    actionBar.setListNavigationCallbacks(navigationSpinnerAdapter, this);
+    setUpToolbar();
 
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment());
     }
+  }
+
+  private void setUpToolbar() {
+    // Set up the action bar to show a dropdown list.
+    Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+    setSupportActionBar(toolbar);
+
+    ActionBar supportActionBar = getSupportActionBar();
+    supportActionBar.setDisplayShowTitleEnabled(false);
+    navigationSpinnerAdapter = new MatchesAdapter(supportActionBar.getThemedContext(), matchMenuItems);
+
+    spinner = (Spinner) toolbar.findViewById(R.id.actionbar_spinner);
+    spinner.setAdapter(navigationSpinnerAdapter);
+    spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+      @Override
+      public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
+        MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
+        Log.e(TAG, "onItemSelected: " + item.getMatchId());
+        handleMatchMenuItemSelection(item);
+      }
+
+      @Override
+      public void onNothingSelected(AdapterView<?> adapterView) {
+      }
+    });
   }
 
   @Override
@@ -247,8 +264,7 @@ public class MainActivity extends BaseGameActivity
 
   @Nullable
   private MatchMenuItem getCurrentMatchMenuItem() {
-    int selectedNavigationIndex = getActionBar().getSelectedNavigationIndex();
-    return selectedNavigationIndex == -1 ? null : navigationSpinnerAdapter.getItem(selectedNavigationIndex);
+    return (MatchMenuItem) spinner.getSelectedItem();
   }
 
   private void updateMatchSpinner() {
@@ -355,15 +371,15 @@ public class MainActivity extends BaseGameActivity
    */
   private int selectMenuItem(@Nullable String matchId) {
     Log.d(TAG, "selectMenuItem matchId = " + matchId);
-    for (int index = 0 ; index < navigationSpinnerAdapter.getCount() ; index++) {
+    for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
-        getActionBar().setSelectedNavigationItem(index);
+        spinner.setSelection(index);
         return index;
       }
     }
     Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
-    getActionBar().setSelectedNavigationItem(0);
+    spinner.setSelection(0);
     return 0;
   }
 
@@ -555,13 +571,6 @@ public class MainActivity extends BaseGameActivity
     return Players.getCurrentPlayer(getApiClient());
   }
 
-  @Override
-  public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-    MatchMenuItem item = navigationSpinnerAdapter.getItem(itemPosition);
-    Log.e(TAG, "onNavigationItemSelected: " + item.getMatchId());
-    handleMatchMenuItemSelection(item);
-    return true;
-  }
 
   private void handleMatchMenuItemSelection(MatchMenuItem item) {
     Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
@@ -606,7 +615,7 @@ public class MainActivity extends BaseGameActivity
       try {
         this.gameData = GameData.parseFrom(match.getData());
       } catch (InvalidProtocolBufferException e) {
-        throw new RuntimeException("Invalid GameData: " + match.getData());
+        throw new RuntimeException("Invalid GameData");
       }
 
       this.blackPlayer = createGoPlayer(match, gameData.getGameConfiguration().getBlackId(), null);
