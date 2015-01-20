@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
+import com.google.common.base.Strings;
 
 import java.util.List;
 
@@ -39,7 +40,9 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
     firstLineLabelView.setText(item.getFirstLine(getContext()));
 
     TextView secondLineLabelView = (TextView) matchRowView.findViewById( R.id.label_second_line);
-    secondLineLabelView.setText(item.getSecondLine(getContext()));
+    String secondLine = item.getSecondLine(getContext());
+    secondLineLabelView.setText(secondLine);
+    secondLineLabelView.setVisibility(Strings.isNullOrEmpty(secondLine) ? View.GONE : View.VISIBLE);
 
     ImageView iconView = (ImageView) matchRowView.findViewById( R.id.match_type_icon);
     iconView.setImageDrawable(item.getIcon(getContext()));
