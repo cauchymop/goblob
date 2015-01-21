@@ -19,7 +19,6 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
@@ -44,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.cauchymop.goblob.model.GoPlayer.PlayerType;
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
@@ -486,8 +486,8 @@ public class MainActivity extends BaseGameActivity
 
     GoGameController goGameController = new GoGameController(gameData);
     GameConfiguration gameConfiguration = goGameController.getGameConfiguration();
-    goGameController.setGoPlayer(StoneColor.Black, goPlayers.get(gameConfiguration.getBlackId()));
-    goGameController.setGoPlayer(StoneColor.White, goPlayers.get(gameConfiguration.getWhiteId()));
+    goGameController.setGoPlayer(Color.BLACK, goPlayers.get(gameConfiguration.getBlackId()));
+    goGameController.setGoPlayer(Color.WHITE, goPlayers.get(gameConfiguration.getWhiteId()));
 
     return goGameController;
   }

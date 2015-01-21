@@ -3,6 +3,8 @@ package com.cauchymop.goblob.model;
 import java.io.IOException;
 import java.io.StringReader;
 
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
+
 /**
  * Class to convert between a {@link GoBoard} and its text representation.
  */
@@ -19,14 +21,14 @@ public class TextBoard {
     return buf.toString();
   }
 
-  private static char getChar(StoneColor color) {
+  private static char getChar(Color color) {
     if (color == null) {
       return '.';
     }
     switch (color) {
-      case Black:
+      case BLACK:
         return '●';
-      case White:
+      case WHITE:
         return '○';
     }
     throw new RuntimeException("Invalid color");
@@ -53,12 +55,12 @@ public class TextBoard {
             break;
           case '●':
           case 'X':
-            board.play(StoneColor.Black, board.getPos(x, y));
+            board.play(Color.BLACK, board.getPos(x, y));
             x++;
             break;
           case '○':
           case 'O':
-            board.play(StoneColor.White, board.getPos(x, y));
+            board.play(Color.WHITE, board.getPos(x, y));
             x++;
             break;
         }

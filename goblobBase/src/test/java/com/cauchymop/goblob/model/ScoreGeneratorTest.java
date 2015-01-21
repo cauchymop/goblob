@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.Position;
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -29,7 +30,7 @@ public class ScoreGeneratorTest {
 
   @Test
   public void testGetTerritories_oneStone() throws Exception {
-    board.play(StoneColor.Black, 0);
+    board.play(Color.BLACK, 0);
     PlayGameData.Score score = new ScoreGenerator(board, EMPTY_SET, TEST_KOMI).getScore();
     assertThat(score.getBlackTerritoryList()).hasSize(24);
     assertThat(score.getWhiteTerritoryList()).isEmpty();
@@ -37,8 +38,8 @@ public class ScoreGeneratorTest {
 
   @Test
   public void testGetTerritories_mixed() throws Exception {
-    board.play(StoneColor.Black, 0);
-    board.play(StoneColor.White, 1);
+    board.play(Color.BLACK, 0);
+    board.play(Color.WHITE, 1);
     PlayGameData.Score score = new ScoreGenerator(board, EMPTY_SET, TEST_KOMI).getScore();
     assertThat(score.getBlackTerritoryList()).isEmpty();
     assertThat(score.getWhiteTerritoryList()).isEmpty();
@@ -46,8 +47,8 @@ public class ScoreGeneratorTest {
 
   @Test
   public void testGetTerritories_mixed_prisoner() throws Exception {
-    board.play(StoneColor.Black, 0);
-    board.play(StoneColor.White, 1);
+    board.play(Color.BLACK, 0);
+    board.play(Color.WHITE, 1);
     PlayGameData.Score score = new ScoreGenerator(board, ImmutableSet.of(getPosition(0, 0)), TEST_KOMI).getScore();
     assertThat(score.getBlackTerritoryList()).isEmpty();
     assertThat(score.getWhiteTerritoryList()).hasSize(24);
@@ -55,11 +56,11 @@ public class ScoreGeneratorTest {
 
   @Test
   public void testGetTerritories_enclosed() throws Exception {
-    board.play(StoneColor.Black, board.getPos(0, 1));
-    board.play(StoneColor.Black, board.getPos(1, 1));
-    board.play(StoneColor.Black, board.getPos(2, 1));
-    board.play(StoneColor.Black, board.getPos(2, 0));
-    board.play(StoneColor.White, board.getPos(3, 0));  // Make outside neutral.
+    board.play(Color.BLACK, board.getPos(0, 1));
+    board.play(Color.BLACK, board.getPos(1, 1));
+    board.play(Color.BLACK, board.getPos(2, 1));
+    board.play(Color.BLACK, board.getPos(2, 0));
+    board.play(Color.WHITE, board.getPos(3, 0));  // Make outside neutral.
     PlayGameData.Score score = new ScoreGenerator(board, EMPTY_SET, TEST_KOMI).getScore();
     assertThat(score.getBlackTerritoryList()).hasSize(2);
     assertThat(score.getWhiteTerritoryList()).isEmpty();
@@ -67,12 +68,12 @@ public class ScoreGeneratorTest {
 
   @Test
   public void testGetTerritories_enclosed_prisoner() throws Exception {
-    board.play(StoneColor.Black, board.getPos(0, 1));
-    board.play(StoneColor.Black, board.getPos(1, 1));
-    board.play(StoneColor.Black, board.getPos(2, 1));
-    board.play(StoneColor.Black, board.getPos(2, 0));
-    board.play(StoneColor.White, board.getPos(0, 0));  // Prisoner.
-    board.play(StoneColor.White, board.getPos(3, 0));  // Make outside neutral.
+    board.play(Color.BLACK, board.getPos(0, 1));
+    board.play(Color.BLACK, board.getPos(1, 1));
+    board.play(Color.BLACK, board.getPos(2, 1));
+    board.play(Color.BLACK, board.getPos(2, 0));
+    board.play(Color.WHITE, board.getPos(0, 0));  // Prisoner.
+    board.play(Color.WHITE, board.getPos(3, 0));  // Make outside neutral.
     PlayGameData.Score score = new ScoreGenerator(board, ImmutableSet.of(getPosition(0, 0)), TEST_KOMI).getScore();
     assertThat(score.getBlackTerritoryList()).hasSize(2);
     assertThat(score.getWhiteTerritoryList()).isEmpty();
@@ -81,71 +82,71 @@ public class ScoreGeneratorTest {
   @Test
   public void testGetScore() {
     // 10 points of territory+stones for black.
-    board.play(StoneColor.Black, board.getPos(1,0));
-    board.play(StoneColor.Black, board.getPos(1,1));
-    board.play(StoneColor.Black, board.getPos(1,2));
-    board.play(StoneColor.Black, board.getPos(1,3));
-    board.play(StoneColor.Black, board.getPos(1,4));
+    board.play(Color.BLACK, board.getPos(1,0));
+    board.play(Color.BLACK, board.getPos(1,1));
+    board.play(Color.BLACK, board.getPos(1,2));
+    board.play(Color.BLACK, board.getPos(1,3));
+    board.play(Color.BLACK, board.getPos(1,4));
 
     // 15 points of territory+stones for white.
-    board.play(StoneColor.White, board.getPos(2,0));
-    board.play(StoneColor.White, board.getPos(2,1));
-    board.play(StoneColor.White, board.getPos(2,2));
-    board.play(StoneColor.White, board.getPos(2,3));
-    board.play(StoneColor.White, board.getPos(2,4));
+    board.play(Color.WHITE, board.getPos(2,0));
+    board.play(Color.WHITE, board.getPos(2,1));
+    board.play(Color.WHITE, board.getPos(2,2));
+    board.play(Color.WHITE, board.getPos(2,3));
+    board.play(Color.WHITE, board.getPos(2,4));
 
     PlayGameData.Score score = new ScoreGenerator(board, EMPTY_SET, TEST_KOMI).getScore();
-    assertThat(score.getWinner()).isEqualTo(PlayGameData.Color.WHITE);
+    assertThat(score.getWinner()).isEqualTo(Color.WHITE);
     assertThat(score.getWonBy()).isEqualTo(12.5f);
   }
 
   @Test
   public void testGetScore_aliveStones() {
     // 10 points of territory+stones for black.
-    board.play(StoneColor.Black, board.getPos(1,0));
-    board.play(StoneColor.Black, board.getPos(1,1));
-    board.play(StoneColor.Black, board.getPos(1,2));
-    board.play(StoneColor.Black, board.getPos(1,3));
-    board.play(StoneColor.Black, board.getPos(1,4));
+    board.play(Color.BLACK, board.getPos(1,0));
+    board.play(Color.BLACK, board.getPos(1,1));
+    board.play(Color.BLACK, board.getPos(1,2));
+    board.play(Color.BLACK, board.getPos(1,3));
+    board.play(Color.BLACK, board.getPos(1,4));
 
     // 15 points of territory+stones for white.
-    board.play(StoneColor.White, board.getPos(2,0));
-    board.play(StoneColor.White, board.getPos(2,1));
-    board.play(StoneColor.White, board.getPos(2,2));
-    board.play(StoneColor.White, board.getPos(2,3));
-    board.play(StoneColor.White, board.getPos(2,4));
+    board.play(Color.WHITE, board.getPos(2,0));
+    board.play(Color.WHITE, board.getPos(2,1));
+    board.play(Color.WHITE, board.getPos(2,2));
+    board.play(Color.WHITE, board.getPos(2,3));
+    board.play(Color.WHITE, board.getPos(2,4));
 
     // Extra stones.
-    board.play(StoneColor.White, board.getPos(3,2));
-    board.play(StoneColor.White, board.getPos(3,3));
+    board.play(Color.WHITE, board.getPos(3,2));
+    board.play(Color.WHITE, board.getPos(3,3));
 
     PlayGameData.Score score = new ScoreGenerator(board, EMPTY_SET, TEST_KOMI).getScore();
-    assertThat(score.getWinner()).isEqualTo(PlayGameData.Color.WHITE);
+    assertThat(score.getWinner()).isEqualTo(Color.WHITE);
     assertThat(score.getWonBy()).isEqualTo(12.5f);
   }
 
   @Test
   public void testGetScore_deadStones() {
     // 10 points of territory+stones for black.
-    board.play(StoneColor.Black, board.getPos(1,0));
-    board.play(StoneColor.Black, board.getPos(1,1));
-    board.play(StoneColor.Black, board.getPos(1,2));
-    board.play(StoneColor.Black, board.getPos(1,3));
-    board.play(StoneColor.Black, board.getPos(1,4));
+    board.play(Color.BLACK, board.getPos(1,0));
+    board.play(Color.BLACK, board.getPos(1,1));
+    board.play(Color.BLACK, board.getPos(1,2));
+    board.play(Color.BLACK, board.getPos(1,3));
+    board.play(Color.BLACK, board.getPos(1,4));
 
     // 15 points of territory+stones for white.
-    board.play(StoneColor.White, board.getPos(2,0));
-    board.play(StoneColor.White, board.getPos(2,1));
-    board.play(StoneColor.White, board.getPos(2,2));
-    board.play(StoneColor.White, board.getPos(2,3));
-    board.play(StoneColor.White, board.getPos(2,4));
+    board.play(Color.WHITE, board.getPos(2,0));
+    board.play(Color.WHITE, board.getPos(2,1));
+    board.play(Color.WHITE, board.getPos(2,2));
+    board.play(Color.WHITE, board.getPos(2,3));
+    board.play(Color.WHITE, board.getPos(2,4));
 
     // Extra dead stones.
-    board.play(StoneColor.Black, board.getPos(3,2));
-    board.play(StoneColor.Black, board.getPos(3,3));
+    board.play(Color.BLACK, board.getPos(3,2));
+    board.play(Color.BLACK, board.getPos(3,3));
 
     PlayGameData.Score score = new ScoreGenerator(board, ImmutableSet.of(getPosition(3, 2), getPosition(3, 3)), TEST_KOMI).getScore();
-    assertThat(score.getWinner()).isEqualTo(PlayGameData.Color.WHITE);
+    assertThat(score.getWinner()).isEqualTo(Color.WHITE);
     assertThat(score.getWonBy()).isEqualTo(12.5f);
   }
 

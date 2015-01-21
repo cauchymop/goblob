@@ -9,16 +9,17 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.NumberPicker;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
+import com.cauchymop.goblob.model.GoBoard;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.GoPlayer.PlayerType;
-import com.cauchymop.goblob.model.StoneColor;
 import com.google.android.gms.games.Player;
+
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
  * Home Page Fragment.
@@ -136,22 +137,22 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       homePlayer.setName(homePayerNameText.toString());
     }
 
-    final StoneColor homePlayerColor = (StoneColor) homePlayerColorSpinner.getSelectedItem();
-    String blackId = homePlayerColor == StoneColor.Black ? homePlayer.getId() : opponentPlayer.getId();
-    String whiteId = homePlayerColor == StoneColor.Black ? opponentPlayer.getId() : homePlayer.getId();
+    final Color homePlayerColor = (Color) homePlayerColorSpinner.getSelectedItem();
+    String blackId = homePlayerColor == Color.BLACK ? homePlayer.getId() : opponentPlayer.getId();
+    String whiteId = homePlayerColor == Color.BLACK ? opponentPlayer.getId() : homePlayer.getId();
 
     GoGameController goGameController =
         new GoGameController(GameDatas.createGameData(boardSize, GameDatas.DEFAULT_HANDICAP, GameDatas.DEFAULT_KOMI, blackId, whiteId));
     goGameController.setGoPlayer(homePlayerColor, homePlayer);
-    goGameController.setGoPlayer(homePlayerColor.getOpponent(), opponentPlayer);
+    goGameController.setGoPlayer(GoBoard.getOpponent(homePlayerColor), opponentPlayer);
 
     getGoBlobActivity().startLocalGame(goGameController);
   }
 
-  private class PlayerTypeAdapter extends ArrayAdapter<StoneColor> {
+  private class PlayerTypeAdapter extends ArrayAdapter<Color> {
 
     public PlayerTypeAdapter() {
-      super(getGoBlobActivity(), android.R.layout.simple_spinner_item, StoneColor.values());
+      super(getGoBlobActivity(), android.R.layout.simple_spinner_item, Color.values());
     }
   }
 }
