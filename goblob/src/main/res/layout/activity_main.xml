@@ -36,7 +36,7 @@
       android:layout_height="match_parent"
       android:gravity="center"
       android:orientation="vertical"
-      android:background="@android:color/transparent"
+      android:background="@drawable/board_bg"
       android:layout_gravity="start|center_vertical">
 
     <TextView
