@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -19,7 +20,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
  */
 public class GoGameController implements Serializable {
 
-  private Map<StoneColor, GoPlayer> players = Maps.newHashMap();
+  private Map<Color, GoPlayer> players = Maps.newHashMap();
   private List<Move> moves = Lists.newArrayList();
   private final GoGame goGame;
   private GameConfiguration gameConfiguration;
@@ -59,7 +60,7 @@ public class GoGameController implements Serializable {
 
   private void checkForMatchEnd() {
     if (goGame.isGameEnd()) {
-      PlayGameData.Color lastModifier = goGame.getCurrentColor().getOpponent().getGameDataColor();
+      Color lastModifier = GoBoard.getOpponent(goGame.getCurrentColor());
       matchEndStatus = MatchEndStatus.newBuilder()
           .setLastModifier(lastModifier)
           .setTurn(lastModifier)
@@ -85,28 +86,28 @@ public class GoGameController implements Serializable {
   }
 
   public GoPlayer getOpponent() {
-    return getGoPlayer(getCurrentColor().getOpponent());
+    return getGoPlayer(GoBoard.getOpponent(getCurrentColor()));
   }
 
-  public StoneColor getCurrentColor() {
+  public Color getCurrentColor() {
     if (getMode() == Mode.IN_GAME) {
       return goGame.getCurrentColor();
     }
-    return StoneColor.getStoneColor(matchEndStatus.getTurn());
+    return matchEndStatus.getTurn();
   }
 
-  public GoPlayer getGoPlayer(StoneColor color) {
+  public GoPlayer getGoPlayer(Color color) {
     return players.get(color);
   }
 
-  public void setGoPlayer(StoneColor color, GoPlayer player) {
+  public void setGoPlayer(Color color, GoPlayer player) {
     players.put(color, player);
   }
 
   @Override
   public String toString() {
     return String.format("GoGameController(GoGame=%s, black=%s, white=%s, end=%s)",
-        goGame, getGoPlayer(StoneColor.Black), getGoPlayer(StoneColor.White), matchEndStatus);
+        goGame, getGoPlayer(Color.BLACK), getGoPlayer(Color.WHITE), matchEndStatus);
   }
 
   public GoGame getGame() {
@@ -172,7 +173,7 @@ public class GoGameController implements Serializable {
 
   private boolean isEndGameStatusLastModifiedByCurrentPlayer() {
     return getMode() == Mode.END_GAME_NEGOTIATION
-        && matchEndStatus.getLastModifier().equals(getCurrentColor().getGameDataColor());
+        && matchEndStatus.getLastModifier().equals(getCurrentColor());
   }
 
   public void markingTurnDone() {
@@ -182,7 +183,7 @@ public class GoGameController implements Serializable {
           .build();
     }
     matchEndStatus = matchEndStatus.toBuilder()
-        .setTurn(getCurrentColor().getOpponent().getGameDataColor())
+        .setTurn(GoBoard.getOpponent(getCurrentColor()))
         .build();
   }
 

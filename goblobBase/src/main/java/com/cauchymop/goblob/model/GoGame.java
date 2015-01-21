@@ -6,11 +6,11 @@ import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
  * Class to represent the state of a Go game, and enforce the rules of the game to play moves.
@@ -21,7 +21,7 @@ public class GoGame implements Serializable {
 
   private int boardSize;
   private GoBoard board;
-  private StoneColor currentColor;
+  private Color currentColor;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
   private ArrayList<Integer> moveHistory = Lists.newArrayList();
   // Instance pool management.
@@ -29,7 +29,7 @@ public class GoGame implements Serializable {
 
   public GoGame(int boardSize) {
     this.boardSize = boardSize;
-    currentColor = StoneColor.Black;
+    currentColor = Color.BLACK;
     board = getNewBoard();
     boardHistory.add(board);
   }
@@ -69,11 +69,11 @@ public class GoGame implements Serializable {
     boardHistory.add(newBoard);
     moveHistory.add(move);
     board = newBoard;
-    currentColor = currentColor.getOpponent();
+    currentColor = GoBoard.getOpponent(currentColor);
   }
 
   public void undo() {
-    currentColor = currentColor.getOpponent();
+    currentColor = GoBoard.getOpponent(currentColor);
     recycleBoard(boardHistory.remove(boardHistory.size() - 1));
     moveHistory.remove(moveHistory.size() - 1);
     board = boardHistory.get(boardHistory.size() - 1);
@@ -101,11 +101,11 @@ public class GoGame implements Serializable {
     return lastMove == passMove && previousMove == passMove;
   }
 
-  public StoneColor getColor(int x, int y) {
+  public Color getColor(int x, int y) {
     return board.getColor(x, y);
   }
 
-  public StoneColor getCurrentColor() {
+  public Color getCurrentColor() {
     return currentColor;
   }
 

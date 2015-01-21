@@ -13,7 +13,6 @@ import android.view.View;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.StoneColor;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Sets;
 
@@ -186,7 +185,7 @@ public class GoBoardView extends View {
       int centerY = startLineY + cellSizeInPixels * y;
       int markSize = cellSizeInPixels / 6;
       canvas.drawRect(centerX - markSize, centerY - markSize, centerX + markSize, centerY + markSize,
-          gameController.getGame().getColor(x, y) == StoneColor.Black ? whiteFillPaint : blackFillPaint);
+          gameController.getGame().getColor(x, y) == PlayGameData.Color.BLACK ? whiteFillPaint : blackFillPaint);
     }
   }
 
@@ -203,10 +202,10 @@ public class GoBoardView extends View {
     }
   }
 
-  private void drawStone(Canvas canvas, int radius, StoneColor contentColor,
+  private void drawStone(Canvas canvas, int radius, PlayGameData.Color contentColor,
       int centerX, int centerY) {
     if (contentColor != null) {
-      Bitmap stoneBitmap = (contentColor == StoneColor.Black)
+      Bitmap stoneBitmap = (contentColor == PlayGameData.Color.BLACK)
           ? blackStoneBitmap : whiteStoneBitmap;
       rect.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
       canvas.drawBitmap(stoneBitmap, null, rect, null);

@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model;
 
+import com.cauchymop.goblob.proto.PlayGameData.Color;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -85,13 +86,13 @@ public class GoBoard implements Serializable {
    *
    * @return whether the move was valid and played (if it was not, this instance can't be used anymore)
    */
-  public boolean play(StoneColor color, int move) {
+  public boolean play(Color color, int move) {
     if (groupByPosition[move] != 0) {
       return false;
     }
 
     BitSet friendField = getField(color);
-    BitSet foeField = getField(color.getOpponent());
+    BitSet foeField = getField(getOpponent(color));
     friendField.set(move);
 
     int group = getAvailableGroup(color);
@@ -130,19 +131,31 @@ public class GoBoard implements Serializable {
     return true;
   }
 
-  private BitSet getField(StoneColor color) {
-    return (color == StoneColor.Black) ? blackField : whiteField;
+  public static Color getOpponent(Color color) {
+    switch (color) {
+      case WHITE:
+        return Color.BLACK;
+      case BLACK:
+        return Color.WHITE;
+      default:
+        throw new RuntimeException("Invalid color");
+    }
+
   }
 
-  private int getAvailableGroup(StoneColor color) {
-    int groupStart = (color == StoneColor.Black) ? BLACK_GROUP_START : whiteGroupStart;
+  private BitSet getField(Color color) {
+    return (color == Color.BLACK) ? blackField : whiteField;
+  }
+
+  private int getAvailableGroup(Color color) {
+    int groupStart = (color == Color.BLACK) ? BLACK_GROUP_START : whiteGroupStart;
     for (int group = groupStart; ; group++) {
       if (stoneFieldByGroup[group].isEmpty()) return group;
     }
   }
 
   private void capture(int group) {
-    StoneColor foeColor = getColorByGroup(group).getOpponent();
+    Color foeColor = getOpponent(getColorByGroup(group));
     for (int pos = stoneFieldByGroup[group].nextSetBit(0); pos != -1;
          pos = stoneFieldByGroup[group].nextSetBit(pos + 1)) {
       // Remove the stone.
@@ -161,16 +174,16 @@ public class GoBoard implements Serializable {
     }
   }
 
-  private StoneColor getColorByGroup(int group) {
+  private Color getColorByGroup(int group) {
     if (group == 0) return null;
-    return (group < whiteGroupStart) ? StoneColor.Black : StoneColor.White;
+    return (group < whiteGroupStart) ? Color.BLACK : Color.WHITE;
   }
 
-  public StoneColor getColor(int x, int y) {
+  public Color getColor(int x, int y) {
     return getColor(getPos(x, y));
   }
 
-  public StoneColor getColor(int pos) {
+  public Color getColor(int pos) {
     return getColorByGroup(groupByPosition[pos]);
   }
 
@@ -196,7 +209,7 @@ public class GoBoard implements Serializable {
     return blackField.cardinality() - whiteField.cardinality();
   }
 
-  public boolean isEyeFilling(int position, StoneColor color) {
+  public boolean isEyeFilling(int position, Color color) {
     int[] neighborPositions = neighborPositionsByPosition[position];
     for (int neighborPosition : neighborPositions) {
       if (getColor(neighborPosition) != color) {

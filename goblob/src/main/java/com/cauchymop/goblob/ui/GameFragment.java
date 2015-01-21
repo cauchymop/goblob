@@ -16,14 +16,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.cauchymop.goblob.BuildConfig;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.MonteCarlo;
-import com.cauchymop.goblob.model.StoneColor;
 import com.cauchymop.goblob.proto.PlayGameData;
+
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
  * Game Page Fragment.
@@ -75,21 +75,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
-    if (BuildConfig.DEBUG) {
-      menu.add(Menu.NONE, R.id.menu_imfeelinglucky, Menu.NONE, R.string.imfeelinglucky);
-    }
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    if (item.getItemId() == R.id.menu_imfeelinglucky) {
-      int bestMove = MonteCarlo.getBestMove(goGameController.getGame(), 1000);
-      int boardSize = goGameController.getGameConfiguration().getBoardSize();
-      int x = bestMove % boardSize;
-      int y = bestMove / boardSize;
-      goGameController.playMove(GameDatas.createMove(x, y));
-    }
-    return super.onOptionsItemSelected(item);
   }
 
   @Override
@@ -154,7 +139,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void endTurn() {
-    updateAchievements();
     sendRemoteMessages();
     getGoBlobActivity().loadGame(goGameController);
   }
@@ -220,6 +204,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       public void run() {
         initTitleArea();
         initMessageArea();
+        updateAchievements();
       }
     });
   }
@@ -229,7 +214,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
     final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
-    titleImage.setImageResource(goGameController.getCurrentColor() == StoneColor.White ? R.drawable.white_stone : R.drawable.black_stone);
+    titleImage.setImageResource(goGameController.getCurrentColor() == Color.WHITE ? R.drawable.white_stone : R.drawable.black_stone);
     ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
     getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getName());
   }
@@ -255,10 +240,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void updateAchievements() {
-    if (!isSignedIn()) {
+    if (!isSignedIn() || !goGameController.isGameFinished()) {
       return;
     }
-    getGoBlobActivity().unlockAchievement(getString(R.string.achievements_gamers));
     switch (goGameController.getGame().getBoardSize()) {
       case 9:
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_9x9));
@@ -272,7 +256,13 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     }
     switch (goGameController.getOpponent().getType()) {
       case LOCAL:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_human));
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
+        break;
+      case REMOTE:
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
+        if (goGameController.getGoPlayer(goGameController.getScore().getWinner()).getType() == GoPlayer.PlayerType.LOCAL) {
+          getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
+        }
         break;
     }
   }
@@ -286,5 +276,13 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       System.err.println("Exception while buzzing");
       e.printStackTrace();
     }
+  }
+
+  private void playMonteCarloMove() {
+    int bestMove = MonteCarlo.getBestMove(goGameController.getGame(), 1000);
+    int boardSize = goGameController.getGameConfiguration().getBoardSize();
+    int x = bestMove % boardSize;
+    int y = bestMove / boardSize;
+    goGameController.playMove(GameDatas.createMove(x, y));
   }
 }

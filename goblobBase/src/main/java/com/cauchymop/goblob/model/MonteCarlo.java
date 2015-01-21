@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import java.util.Random;
 import java.util.Set;
 
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
+
 /**
  * Implementation of Monte-Carlo Tree Search.
  */
@@ -20,7 +22,7 @@ public class MonteCarlo {
   public static int getBestMove(GoGame game, int iterations) {
     int nbPos = game.getBoardSize() * game.getBoardSize() + 1;
     // Root has the opponent color, so that the first move has the current color.
-    TreeNode root = new TreeNode(nbPos, game.getCurrentColor().getOpponent());
+    TreeNode root = new TreeNode(nbPos, GoBoard.getOpponent(game.getCurrentColor()));
     for(int i = 0 ; i<iterations ; i++) {
 //      System.err.println("Iteration " + i);
       root.runAndRestore(game);
@@ -69,14 +71,14 @@ public class MonteCarlo {
 
   private static class TreeNode {
     private TreeNode[] children;
-    private final StoneColor stoneColor;
+    private final Color stoneColor;
     private int move;
     private final int nbPos;
     private double nVisits;
     private double totValue;
     private boolean isInvalid;
 
-    private TreeNode(int nbPos, StoneColor stoneColor) {
+    private TreeNode(int nbPos, Color stoneColor) {
       this.nbPos = nbPos;
       this.stoneColor = stoneColor;
     }
@@ -87,7 +89,7 @@ public class MonteCarlo {
 
     private void updateStats(double value) {
       nVisits++;
-      totValue += stoneColor == StoneColor.Black ? value : -value;
+      totValue += stoneColor == Color.BLACK ? value : -value;
     }
 
     private boolean isLeaf() {
@@ -97,7 +99,7 @@ public class MonteCarlo {
     private void expand() {
       children = new TreeNode[nbPos];
       for (int i=0; i< nbPos; i++) {
-        children[i] = new TreeNode(nbPos, stoneColor.getOpponent());
+        children[i] = new TreeNode(nbPos, GoBoard.getOpponent(stoneColor));
         children[i].move = i;
       }
     }

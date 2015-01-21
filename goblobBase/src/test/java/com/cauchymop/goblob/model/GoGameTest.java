@@ -5,6 +5,7 @@ import com.google.common.testing.SerializableTester;
 
 import org.junit.Test;
 
+import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -110,8 +111,8 @@ public class GoGameTest {
     GoGame goGame = new GoGame(9);
     assertThat(goGame.play(3)).isTrue();
     assertThat(goGame.getMoveHistory()).containsExactly(3);
-    assertThat(goGame.getColor(3, 0)).isEqualTo(StoneColor.Black);
-    assertThat(goGame.getCurrentColor()).isEqualTo(StoneColor.White);
+    assertThat(goGame.getColor(3, 0)).isEqualTo(Color.BLACK);
+    assertThat(goGame.getCurrentColor()).isEqualTo(Color.WHITE);
     assertThat(goGame.isLastMovePass()).isFalse();
   }
 
@@ -120,8 +121,8 @@ public class GoGameTest {
     GoGame goGame = new GoGame(9);
     goGame.play(3);
     assertThat(goGame.getMoveHistory()).containsExactly(3);
-    assertThat(goGame.getColor(3, 0)).isEqualTo(StoneColor.Black);
-    assertThat(goGame.getCurrentColor()).isEqualTo(StoneColor.White);
+    assertThat(goGame.getColor(3, 0)).isEqualTo(Color.BLACK);
+    assertThat(goGame.getCurrentColor()).isEqualTo(Color.WHITE);
     assertThat(goGame.isLastMovePass()).isFalse();
   }
 
@@ -130,7 +131,7 @@ public class GoGameTest {
     GoGame goGame = new GoGame(9);
     assertThat(goGame.play(goGame.getPassValue())).isTrue();
     assertThat(goGame.getMoveHistory()).containsExactly(goGame.getPassValue());
-    assertThat(goGame.getCurrentColor()).isEqualTo(StoneColor.White);
+    assertThat(goGame.getCurrentColor()).isEqualTo(Color.WHITE);
     assertThat(goGame.isLastMovePass()).isTrue();
   }
 
