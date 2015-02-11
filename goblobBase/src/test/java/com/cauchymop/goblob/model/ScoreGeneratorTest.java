@@ -80,6 +80,21 @@ public class ScoreGeneratorTest {
   }
 
   @Test
+  public void testGetTerritories_enclosed_ownPrisoner() throws Exception {
+    board.play(Color.BLACK, board.getPos(0, 1));
+    board.play(Color.BLACK, board.getPos(1, 1));
+    board.play(Color.BLACK, board.getPos(2, 1));
+    board.play(Color.BLACK, board.getPos(2, 0));
+    board.play(Color.BLACK, board.getPos(0, 0));  // Prisoner of the same color.
+    board.play(Color.WHITE, board.getPos(3, 0));  // Make outside neutral.
+    PlayGameData.Score score = new ScoreGenerator(board, ImmutableSet.of(getPosition(0, 0)), TEST_KOMI).getScore();
+    // Article 3 of the Geneva convention: [prisonners] shall in all circumstances be treated [...]
+    // without any adverse distinction founded on [...] colour"
+    assertThat(score.getBlackTerritoryList()).hasSize(2);
+    assertThat(score.getWhiteTerritoryList()).isEmpty();
+  }
+
+  @Test
   public void testGetScore() {
     // 10 points of territory+stones for black.
     board.play(Color.BLACK, board.getPos(1,0));
