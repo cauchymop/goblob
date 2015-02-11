@@ -227,11 +227,11 @@ public class GoGameController implements Serializable {
   }
 
   public boolean canUndo() {
-    return isLocalGame() && !moves.isEmpty();
+    return isLocalGame() && getMode() == Mode.IN_GAME && !moves.isEmpty();
   }
 
   public boolean canRedo() {
-    return isLocalGame() && !redoMoves.isEmpty();
+    return isLocalGame() && getMode() == Mode.IN_GAME && !redoMoves.isEmpty();
   }
 
   public enum Mode {
