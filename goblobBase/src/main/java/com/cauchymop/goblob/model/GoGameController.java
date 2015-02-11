@@ -3,11 +3,15 @@ package com.cauchymop.goblob.model;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
@@ -21,7 +25,8 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
 public class GoGameController implements Serializable {
 
   private Map<Color, GoPlayer> players = Maps.newHashMap();
-  private List<Move> moves = Lists.newArrayList();
+  private ArrayDeque<Move> moves = Queues.newArrayDeque();
+  private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();
   private final GoGame goGame;
   private GameConfiguration gameConfiguration;
   private MatchEndStatus matchEndStatus;
@@ -31,7 +36,7 @@ public class GoGameController implements Serializable {
     gameConfiguration = gameData.getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize());
     matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
-    moves = Lists.newArrayList(gameData.getMoveList());
+    moves = Queues.newArrayDeque(gameData.getMoveList());
     for (Move move : moves) {
       goGame.play(getPos(move));
     }
@@ -42,6 +47,23 @@ public class GoGameController implements Serializable {
     return score;
   }
 
+  public boolean undo() {
+    if (canUndo()) {
+      redoMoves.addFirst(moves.removeLast());
+      goGame.undo();
+      return true;
+    }
+    return false;
+  }
+
+  public boolean redo() {
+    if (canRedo()) {
+      playMove(redoMoves.peekFirst());
+      return true;
+    }
+    return false;
+  }
+
   private void updateScore() {
     ScoreGenerator scoreGenerator = new ScoreGenerator(goGame.getBoard(),
         Sets.newHashSet(getDeadStones()), gameConfiguration.getKomi());
@@ -50,12 +72,24 @@ public class GoGameController implements Serializable {
 
   public boolean playMove(Move move) {
     if (getMode() == Mode.IN_GAME && goGame.play(getPos(move))) {
+      updateRedoForMove(move);
       moves.add(move);
       checkForMatchEnd();
       updateScore();
       return true;
     }
     return false;
+  }
+
+  private void updateRedoForMove(Move move) {
+    if (redoMoves.isEmpty()) {
+      return;
+    }
+    if (move.equals(redoMoves.peekFirst())) {
+      redoMoves.removeFirst();
+    } else {
+      redoMoves.clear();
+    }
   }
 
   private void checkForMatchEnd() {
@@ -190,6 +224,14 @@ public class GoGameController implements Serializable {
   public boolean isLocalGame() {
     return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL
         && getOpponent().getType() == GoPlayer.PlayerType.LOCAL;
+  }
+
+  public boolean canUndo() {
+    return isLocalGame() && getMode() == Mode.IN_GAME && !moves.isEmpty();
+  }
+
+  public boolean canRedo() {
+    return isLocalGame() && getMode() == Mode.IN_GAME && !redoMoves.isEmpty();
   }
 
   public enum Mode {

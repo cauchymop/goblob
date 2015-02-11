@@ -3,5 +3,7 @@
     <item type="id" name="board_size_9x9"/>
     <item type="id" name="board_size_13x13"/>
     <item type="id" name="board_size_19x19"/>
+    <item type="id" name="menu_undo"/>
+    <item type="id" name="menu_redo"/>
     <string name="app_id">26793315354</string>
 </resources>

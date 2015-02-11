@@ -75,6 +75,29 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
+    if (goGameController.canUndo()) {
+      menu.add(Menu.NONE, R.id.menu_undo, Menu.NONE, R.string.undo);
+    }
+    if (goGameController.canRedo()) {
+      menu.add(Menu.NONE, R.id.menu_redo, Menu.NONE, R.string.redo);
+    }
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    int id = item.getItemId();
+    if (id == R.id.menu_undo) {
+      if (goGameController.undo()) {
+        endTurn();
+      }
+      return true;
+    } else if (id == R.id.menu_redo) {
+      if (goGameController.redo()) {
+        endTurn();
+      }
+      return true;
+    }
+    return super.onOptionsItemSelected(item);
   }
 
   @Override
