@@ -44,6 +44,6 @@
   <string name="marking_message">Marking…</string>
   <string name="komi_label">Komi</string>
   <string name="local_match_item_label">Current local game</string>
-    <string name="undo">Undo</string>
-    <string name="redo">Redo</string>
+  <string name="undo">Undo</string>
+  <string name="redo">Redo</string>
 </resources>
