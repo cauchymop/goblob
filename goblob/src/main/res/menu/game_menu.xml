@@ -1,28 +1,29 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
   <!-- menu group -->
   <group android:id="@+id/group_signedIn">
     <item
         android:id="@+id/menu_signout"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/sign_out"/>
     <item
         android:id="@+id/menu_achievements"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/achievements"/>
     <item
         android:id="@+id/menu_check_matches"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/button_label_check_matches"/>
   </group>
   <group android:id="@+id/group_signedOut">
     <item
         android:id="@+id/menu_signin"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/sign_in"/>
   </group>
 
