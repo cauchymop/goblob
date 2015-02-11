@@ -177,7 +177,7 @@ public class GoGameController implements Serializable {
   }
 
   public void markingTurnDone() {
-    if (!isEndGameStatusLastModifiedByCurrentPlayer()) {
+    if (isLocalGame() || !isEndGameStatusLastModifiedByCurrentPlayer()) {
       matchEndStatus = matchEndStatus.toBuilder()
           .setGameFinished(true)
           .build();
