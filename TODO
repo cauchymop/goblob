@@ -1,6 +1,7 @@
 On going:
-- button is gray
-- popup background is white
+- Create a ZoomableView, which GoboardView will extend.
+- OnTouchEvent is inspired from ZoomLayout and calls zoom/scroll/click, the last one implemented
+by GoboardView.
 
 High priority:
 - improve debug level log management

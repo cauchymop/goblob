@@ -6,10 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
@@ -20,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 @SuppressLint("DrawAllocation")
-public class GoBoardView extends View {
+public class GoBoardView extends ZoomableView {
 
   private static final Paint lastMovePaint = createLinePaint(0xFFFF0000, 5);
   private static final Paint linePaint = createLinePaint(0xFF000000, 1);
@@ -30,7 +28,6 @@ public class GoBoardView extends View {
   private static final double STONE_RATIO = 0.95;
 
   private GoGameController gameController;
-  private Point lastClickedCellCoord = null;
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
@@ -42,7 +39,7 @@ public class GoBoardView extends View {
   private Rect rect = new Rect();  // For draw() usage.
 
   public GoBoardView(Context context, GoGameController gameController) {
-    super(context, null);
+    super(context);
     this.gameController = gameController;
     this.boardSize = gameController.getGame().getBoardSize();
     setClickable(true);
@@ -82,42 +79,12 @@ public class GoBoardView extends View {
   }
 
   @Override
-  public boolean onTouchEvent(MotionEvent event) {
-    if (!isClickable()) {
-      return false;
-    }
-    final int action = event.getAction();
-    int nb_fingers = event.getPointerCount();
-
-    if (nb_fingers != 1) {
-      return false;
-    }
-
+  protected boolean onClick(MotionEvent event) {
     int x = (int) ((event.getX() - marginX) / cellSizeInPixels);
     int y = (int) ((event.getY() - marginY) / cellSizeInPixels);
-    if (y < 0 || y >= boardSize || x < 0 || x >= boardSize) {
-      lastClickedCellCoord = null;
-      return false;
-    }
-    switch (action & MotionEvent.ACTION_MASK) {
-      case MotionEvent.ACTION_DOWN: {
-        // Log.i("TOUCH EVENT", "ACTION_DOWN: row:" + row +" col:" + col);
-        lastClickedCellCoord = new Point(x, y);
-        return true;
-      }
-
-      case MotionEvent.ACTION_UP: {
-        // Log.i("TOUCH EVENT", "ACTION_UP: row:" + row +" col:" + col);
-        if (lastClickedCellCoord != null && lastClickedCellCoord.x == x
-            && lastClickedCellCoord.y == y) {
-          firePlayed(x, y);
-          lastClickedCellCoord = null;
-          return true;
-        }
-      }
-    }
-
-    return false;
+    firePlayed(x, y);
+    lastClickedCellCoord = null;
+    return true;
   }
 
   private void firePlayed(int x, int y) {
