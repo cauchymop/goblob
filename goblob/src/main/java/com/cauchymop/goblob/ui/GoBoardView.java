@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.MotionEvent;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
@@ -79,11 +78,10 @@ public class GoBoardView extends ZoomableView {
   }
 
   @Override
-  protected boolean onClick(MotionEvent event) {
-    int x = (int) ((event.getX() - marginX) / cellSizeInPixels);
-    int y = (int) ((event.getY() - marginY) / cellSizeInPixels);
-    firePlayed(x, y);
-    lastClickedCellCoord = null;
+  public boolean onClick(float x, float y) {
+    int xPos = (int) ((x - marginX) / cellSizeInPixels);
+    int yPos = (int) ((y - marginY) / cellSizeInPixels);
+    firePlayed(xPos, yPos);
     return true;
   }
 
