@@ -19,6 +19,8 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
   protected PointF lastCoord = null;
   private boolean isDrag = false;
   private boolean multiFinger;
+  private MotionEvent.PointerCoords pointerCoord = new MotionEvent.PointerCoords();
+  private int lastPointerCount = 0;
 
   public ZoomableContainer(Context context) {
     super(context);
@@ -43,39 +45,65 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
       public boolean onTouch(View view, MotionEvent motionEvent) {
 //        Log.i(TAG, "onTouch " + motionEvent.getX() + "," + motionEvent.getY());
         scaleDetector.onTouchEvent(motionEvent);
-        if (motionEvent.getPointerCount() > 1) {
+        PointF centerPoint = getCenterPoint(motionEvent);
+        if (motionEvent.getPointerCount() != lastPointerCount) {
+          Log.i(TAG, "xxx !=");
+          lastCoord = centerPoint;
+          isDrag = false;
+        }
+        lastPointerCount = motionEvent.getPointerCount();
+        if (lastPointerCount > 1) {
+          Log.i(TAG, "xxx multi");
           multiFinger = true;
         }
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
           case MotionEvent.ACTION_DOWN:
-            Log.i(TAG, "onTouchEvent ACTION_DOWN: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
-            lastCoord = getPoint(motionEvent);
-            isDrag = false;
-            multiFinger = false;
+//            Log.i(TAG, "onTouchEvent ACTION_DOWN: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
             break;
           case MotionEvent.ACTION_MOVE:
-            if (lastCoord != null && (isDrag || dist(getPoint(motionEvent), lastCoord) > MIN_MOVE)) {
+            Log.i(TAG, "xxx move?");
+            if (isDrag || dist(centerPoint, lastCoord) > MIN_MOVE) {
+              Log.i(TAG, "xxx move.");
               isDrag = true;
-              float dx = motionEvent.getX() - lastCoord.x;
-              float dy = motionEvent.getY() - lastCoord.y;
-//              Log.i(TAG, "onTouchEvent move: translation = " + getTranslation(getChild()) + " delta = " + new PointF(dx, dy));
+              float dx = centerPoint.x - lastCoord.x;
+              float dy = centerPoint.y - lastCoord.y;
+//              Log.i(TAG, String.format("onTouchEvent mov: tr=%f,%f d=%f,%f",
+//                  getChild().getTranslationX(), getChild().getTranslationY(), dx, dy));
               translate(dx, dy);
-              lastCoord = getPoint(motionEvent);
+              lastCoord = centerPoint;
             }
             break;
           case MotionEvent.ACTION_UP:
-            Log.i(TAG, "onTouchEvent ACTION_UP: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
-            if (lastCoord != null && !isDrag && !multiFinger) {
-              Log.i(TAG, "onTouchEvent click: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
-              lastCoord = null;
+//            Log.i(TAG, "onTouchEvent ACTION_UP: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
+            if (!isDrag && !multiFinger) {
+//              Log.i(TAG, "onTouchEvent click: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
               fireClick(motionEvent);
             }
+            Log.i(TAG, "xxx up ");
+            multiFinger = false;
+            lastPointerCount = 0;
             break;
         }
 
         return true;
       }
     });
+  }
+
+  private PointF getCenterPoint(MotionEvent motionEvent) {
+    int nbFingers = motionEvent.getPointerCount();
+    if (nbFingers == 1) {
+      return getPoint(motionEvent);
+    } else if (nbFingers >= 2) {
+      motionEvent.getPointerCoords(0, pointerCoord);
+      float x1 = pointerCoord.x;
+      float y1 = pointerCoord.y;
+      motionEvent.getPointerCoords(1, pointerCoord);
+      float x2 = pointerCoord.x;
+      float y2 = pointerCoord.y;
+      return new PointF((x1+x2)/2, (y1+y2)/2);
+    }
+    return null;
   }
 
   private void translate(float dx, float dy) {
@@ -129,14 +157,20 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
   @Override
   public boolean onScale(ScaleGestureDetector scaleDetector) {
     float scaleFactor = scaleDetector.getScaleFactor();
-//    Log.i(TAG, "onScale " + getScaleX() + " * " + scaleFactor);
     ZoomableView child = getChild();
+//    Log.i(TAG, String.format("onScale %f*%f - (translate x:%f y:%f)", child.getScaleX(), scaleFactor, child.getTranslationX(), child.getTranslationY()));
     float scale = child.getScaleX() * scaleFactor;
     if (scale < 1) {
       scale = 1;
     }
     child.setScaleX(scale);
     child.setScaleY(scale);
+
+    float newX = child.getTranslationX() * scaleFactor;
+    float newY = child.getTranslationY() * scaleFactor;
+    child.setTranslationX(newX);
+    child.setTranslationY(newY);
+
     translate(0, 0);
     return true;
   }

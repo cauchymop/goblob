@@ -6,11 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import java.util.List;
@@ -20,11 +22,12 @@ import java.util.Set;
 public class GoBoardView extends ZoomableView {
 
   private static final Paint lastMovePaint = createLinePaint(0xFFFF0000, 5);
-  private static final Paint linePaint = createLinePaint(0xFF000000, 1);
+  private static final Paint linePaint = createLinePaint(0xFF000000, 2);
   private static final Paint whiteFillPaint = createFillPaint(0xFFFFFFFF);
   private static final Paint blackFillPaint = createFillPaint(0xFF000000);
 
   private static final double STONE_RATIO = 0.95;
+  public static final float HOSHI_SIZE = .1F;
 
   private GoGameController gameController;
   private int marginX;
@@ -75,6 +78,7 @@ public class GoBoardView extends ZoomableView {
     marginX = (getWidth() - boardSizeInPixels) / 2;
     marginY = (getHeight() - boardSizeInPixels) / 2;
     cellSizeInPixels = boardSizeInPixels / boardSize;
+    linePaint.setStrokeWidth(cellSizeInPixels / 25);
   }
 
   @Override
@@ -108,6 +112,7 @@ public class GoBoardView extends ZoomableView {
     int startLineX = marginX + cellSizeInPixels / 2;
     int startLineY = marginY + cellSizeInPixels / 2;
     drawBoardLines(canvas, startLineX, startLineY);
+    drawHoshis(canvas, startLineX, startLineY);
     drawBoardContent(canvas, startLineX, startLineY);
     drawEndGameStatus(canvas, startLineX, startLineY);
   }
@@ -185,6 +190,42 @@ public class GoBoardView extends ZoomableView {
       canvas.drawLine(startLineX + cellSizeInPixels * x, startLineY,
           startLineX + cellSizeInPixels * x, startLineY + lineLength, linePaint);
     }
+  }
+
+  private void drawHoshis(Canvas canvas, int startLineX, int startLineY) {
+    for (Point point : getHoshiCoords()) {
+      canvas.drawCircle(startLineX + cellSizeInPixels * point.x,
+          startLineY + cellSizeInPixels * point.y,
+          cellSizeInPixels * HOSHI_SIZE, blackFillPaint);
+    }
+  }
+
+  private List<Point> getHoshiCoords() {
+    List<Point> res = Lists.newArrayList();
+    if (boardSize >= 9 && boardSize <= 12) {
+      int far = boardSize - 3;
+      res.add(new Point(2, 2));
+      res.add(new Point(far, 2));
+      res.add(new Point(2, far));
+      res.add(new Point(far, far));
+    }
+    if (boardSize >= 13) {
+      int far = boardSize - 4;
+      res.add(new Point(3, 3));
+      res.add(new Point(far, 3));
+      res.add(new Point(3, far));
+      res.add(new Point(far, far));
+    }
+    if (boardSize >= 17 && boardSize % 2 == 1) {
+      int far = boardSize - 4;
+      int center = (boardSize - 1) / 2;
+      res.add(new Point(3, center));
+      res.add(new Point(far, center));
+      res.add(new Point(center, 3));
+      res.add(new Point(center, far));
+      res.add(new Point(center, center));
+    }
+    return res;
   }
 
   public interface Listener {
