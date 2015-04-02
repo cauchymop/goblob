@@ -34,15 +34,14 @@
         android:layout_gravity="left|center_vertical"/>
   </LinearLayout>
 
-  <FrameLayout
+  <com.cauchymop.goblob.ui.ZoomableContainer
       android:background="@android:color/transparent"
       android:layout_gravity="center"
       android:gravity="center"
       android:id="@+id/boardViewContainer"
       android:layout_width="match_parent"
       android:layout_height="0dip"
-      android:layout_weight="1">
-  </FrameLayout>
+      android:layout_weight="1"/>
 
   <LinearLayout
       android:layout_width="fill_parent"
