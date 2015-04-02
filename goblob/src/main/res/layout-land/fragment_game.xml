@@ -13,15 +13,7 @@
       android:id="@+id/boardViewContainer"
       android:layout_width="0dip"
       android:layout_height="match_parent"
-      android:layout_weight="60">
-    <TextView
-        android:id="@+id/waiting_textview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:text="@string/please_wait"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-  </FrameLayout>
+      android:layout_weight="60"/>
 
   <LinearLayout
       android:layout_width="0dip"
@@ -77,13 +69,8 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/pass_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingLeft="20dip"
-        android:paddingRight="20dip"
-        android:visibility="gone"
-        android:text="@string/button_pass_label"/>
+        android:id="@+id/action_button"
+        style="@style/GameAction"/>
 
   </LinearLayout>
 
