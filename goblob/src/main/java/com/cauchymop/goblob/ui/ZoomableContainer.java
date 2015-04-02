@@ -47,13 +47,11 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
         scaleDetector.onTouchEvent(motionEvent);
         PointF centerPoint = getCenterPoint(motionEvent);
         if (motionEvent.getPointerCount() != lastPointerCount) {
-          Log.i(TAG, "xxx !=");
           lastCoord = centerPoint;
           isDrag = false;
         }
         lastPointerCount = motionEvent.getPointerCount();
         if (lastPointerCount > 1) {
-          Log.i(TAG, "xxx multi");
           multiFinger = true;
         }
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
@@ -61,9 +59,7 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
 //            Log.i(TAG, "onTouchEvent ACTION_DOWN: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
             break;
           case MotionEvent.ACTION_MOVE:
-            Log.i(TAG, "xxx move?");
             if (isDrag || dist(centerPoint, lastCoord) > MIN_MOVE) {
-              Log.i(TAG, "xxx move.");
               isDrag = true;
               float dx = centerPoint.x - lastCoord.x;
               float dy = centerPoint.y - lastCoord.y;
@@ -79,7 +75,6 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
 //              Log.i(TAG, "onTouchEvent click: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
               fireClick(motionEvent);
             }
-            Log.i(TAG, "xxx up ");
             multiFinger = false;
             lastPointerCount = 0;
             break;
@@ -166,12 +161,10 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
     child.setScaleX(scale);
     child.setScaleY(scale);
 
-    float newX = child.getTranslationX() * scaleFactor;
-    float newY = child.getTranslationY() * scaleFactor;
-    child.setTranslationX(newX);
-    child.setTranslationY(newY);
+    float dx = child.getTranslationX() * (scaleFactor - 1);
+    float dy = child.getTranslationY() * (scaleFactor - 1);
 
-    translate(0, 0);
+    translate(dx, dy);
     return true;
   }
 
