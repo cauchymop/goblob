@@ -117,6 +117,12 @@ public class GoBoardView extends ZoomableView {
     drawEndGameStatus(canvas, startLineX, startLineY);
   }
 
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    int minSize = Math.min(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
+    setMeasuredDimension(minSize, minSize);
+  }
+
   private void drawBoardContent(Canvas canvas, int startLineX, int startLineY) {
     int radius = cellSizeInPixels / 2;
     int lastMove = gameController.getGame().getLastMove();

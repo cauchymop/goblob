@@ -5,61 +5,10 @@
               android:orientation="vertical"
               tools:context=".MainActivity">
 
-  <LinearLayout
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:padding="10dip"
-      android:layout_gravity="center_horizontal|top">
+  <include layout="@layout/title_area"/>
 
-    <ImageView
-        android:layout_width="44dip"
-        android:layout_height="44dip"
-        android:id="@+id/titleImage"
-        android:contentDescription="@string/player_stonecolor_content_description"
-        android:layout_gravity="left|center_vertical"/>
+  <include layout="@layout/boardview_container"/>
 
-    <TextView
-        style="@style/Title"
-        android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_gravity="left|center_vertical"/>
-
-    <ImageView
-        android:layout_width="44dip"
-        android:layout_height="44dip"
-        android:id="@+id/avatarImage"
-        android:contentDescription="@string/player_avatar_content_description"
-        android:layout_gravity="left|center_vertical"/>
-  </LinearLayout>
-
-  <com.cauchymop.goblob.ui.ZoomableContainer
-      android:background="@android:color/transparent"
-      android:layout_gravity="center"
-      android:gravity="center"
-      android:id="@+id/boardViewContainer"
-      android:layout_width="match_parent"
-      android:layout_height="0dip"
-      android:layout_weight="1"/>
-
-  <LinearLayout
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:orientation="vertical"
-      android:gravity="center"
-      android:layout_gravity="center">
-
-    <TextView
-        android:id="@+id/message_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-    <Button
-        android:id="@+id/action_button"
-        style="@style/GameAction"/>
-  </LinearLayout>
+  <include layout="@layout/message_area"/>
 
 </LinearLayout>
