@@ -8,10 +8,8 @@ import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
@@ -44,7 +42,11 @@ public class GoGameController implements Serializable {
   }
 
   public PlayGameData.Score getScore() {
-    return score;
+    if (isGameFinished()) {
+      return matchEndStatus.getScore();
+    } else {
+      return score;
+    }
   }
 
   public boolean undo() {
@@ -120,7 +122,11 @@ public class GoGameController implements Serializable {
   }
 
   public GoPlayer getOpponent() {
-    return getGoPlayer(GoBoard.getOpponent(getCurrentColor()));
+    return getGoPlayer(getOpponentColor());
+  }
+
+  private Color getOpponentColor() {
+    return GoBoard.getOpponent(getCurrentColor());
   }
 
   public Color getCurrentColor() {
@@ -217,7 +223,7 @@ public class GoGameController implements Serializable {
           .build();
     }
     matchEndStatus = matchEndStatus.toBuilder()
-        .setTurn(GoBoard.getOpponent(getCurrentColor()))
+        .setTurn(getOpponentColor())
         .build();
   }
 
@@ -232,6 +238,15 @@ public class GoGameController implements Serializable {
 
   public boolean canRedo() {
     return isLocalGame() && getMode() == Mode.IN_GAME && !redoMoves.isEmpty();
+  }
+
+  public void resign() {
+    matchEndStatus = MatchEndStatus.newBuilder()
+        .setGameFinished(true)
+        .setScore(PlayGameData.Score.newBuilder()
+            .setWinner(getOpponentColor())
+            .setResigned(true))
+        .build();
   }
 
   public enum Mode {

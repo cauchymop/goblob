@@ -38,8 +38,10 @@ message GameConfiguration {
 
 // Next ID: 6
 message MatchEndStatus {
-  required Color last_modifier = 1;
-  required Color turn = 2;
+  // last_modifier and turn only used in eng game negotiation (game_finished = false).
+  optional Color last_modifier = 1;
+  optional Color turn = 2;
+
   repeated Position dead_stone = 3;
   optional bool game_finished = 4;
   optional Score score = 5;
@@ -50,10 +52,11 @@ enum Color {
   WHITE = 1;
 }
 
-// Next ID: 5
+// Next ID: 6
 message Score {
   required Color winner = 1;
-  required float won_by = 2;
+  optional bool resigned = 5;
+  optional float won_by = 2;
   repeated Position black_territory = 3;
   repeated Position white_territory = 4;
 }

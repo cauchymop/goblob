@@ -81,6 +81,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     if (goGameController.canRedo()) {
       menu.add(Menu.NONE, R.id.menu_redo, Menu.NONE, R.string.redo);
     }
+    if (goGameController.isLocalTurn()) {
+      menu.add(Menu.NONE, R.id.menu_resign, Menu.NONE, R.string.resign);
+    }
   }
 
   @Override
@@ -95,6 +98,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       if (goGameController.redo()) {
         endTurn();
       }
+      return true;
+    } else if (id == R.id.menu_resign) {
+      goGameController.resign();
+      endTurn();
       return true;
     }
     return super.onOptionsItemSelected(item);
@@ -249,7 +256,11 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     final String message;
     if (goGameController.isGameFinished()) {
       PlayGameData.Score score = goGameController.getScore();
-      message = getString(R.string.end_of_game_message, score.getWinner(), score.getWonBy());
+      if (score.getResigned()) {
+        message = getString(R.string.end_of_game_resigned_message, score.getWinner());
+      } else {
+        message = getString(R.string.end_of_game_message, score.getWinner(), score.getWonBy());
+      }
     } else if (goGameController.getMode() == GoGameController.Mode.END_GAME_NEGOTIATION) {
       message = getString(R.string.marking_message);
     } else if (goGameController.getGame().isLastMovePass()) {
