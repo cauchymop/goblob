@@ -10,16 +10,10 @@ public class GoBlobBaseFragment extends Fragment {
     return ((MainActivity)getActivity());
   }
 
-  public void onSignOut() {
-  }
-
-  public void onSignInSucceeded() {
+  public void updateFromConnectionStatus() {
   }
 
   protected boolean isSignedIn() {
     return getGoBlobActivity().isSignedIn();
-  }
-
-  public void onSignInFailed() {
   }
 }

@@ -1,20 +1,14 @@
-On going:
-- Create a ZoomableView, which GoboardView will extend.
-- OnTouchEvent is inspired from ZoomLayout and calls zoom/scroll/click, the last one implemented
-by GoboardView.
-
-High priority:
-- improve debug level log management
+Urgent:
+- the player can play when it's not their turn
+- rotation displays wrong intermediate screens
+- do we have to unregister on disconnect/suspend
 
 Medium priority:
 - toast when another game is updated
 - buzz when any game is updated
 - Improve winning message (name of player)
-- kill StoneColor
-- back button
-- restore rotation
+- improve debug level log management
 
 Longer term:
 - Move to a NavigationDrawer or keep spinner in toolbar
-- Kill BaseGameActivity
 - continue a game in remote mode
