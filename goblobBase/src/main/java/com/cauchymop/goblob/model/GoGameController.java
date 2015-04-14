@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
-import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
+import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
 
 /**
@@ -28,7 +28,6 @@ public class GoGameController implements Serializable {
   private final GoGame goGame;
   private GameConfiguration gameConfiguration;
   private MatchEndStatus matchEndStatus;
-  private PlayGameData.Score score;
 
   public GoGameController(GameData gameData) {
     gameConfiguration = gameData.getGameConfiguration();
@@ -38,15 +37,10 @@ public class GoGameController implements Serializable {
     for (Move move : moves) {
       goGame.play(getPos(move));
     }
-    updateScore();
   }
 
   public PlayGameData.Score getScore() {
-    if (isGameFinished()) {
-      return matchEndStatus.getScore();
-    } else {
-      return score;
-    }
+    return matchEndStatus.getScore();
   }
 
   public boolean undo() {
@@ -66,10 +60,10 @@ public class GoGameController implements Serializable {
     return false;
   }
 
-  private void updateScore() {
+  private PlayGameData.Score calculateScore() {
     ScoreGenerator scoreGenerator = new ScoreGenerator(goGame.getBoard(),
         Sets.newHashSet(getDeadStones()), gameConfiguration.getKomi());
-    score = scoreGenerator.getScore();
+    return scoreGenerator.getScore();
   }
 
   public boolean playMove(Move move) {
@@ -77,7 +71,6 @@ public class GoGameController implements Serializable {
       updateRedoForMove(move);
       moves.add(move);
       checkForMatchEnd();
-      updateScore();
       return true;
     }
     return false;
@@ -100,7 +93,7 @@ public class GoGameController implements Serializable {
       matchEndStatus = MatchEndStatus.newBuilder()
           .setLastModifier(lastModifier)
           .setTurn(lastModifier)
-          .setScore(score)
+          .setScore(calculateScore())
           .build();
     }
   }
@@ -200,7 +193,9 @@ public class GoGameController implements Serializable {
           .setLastModifier(matchEndStatus.getTurn())
           .build();
     }
-    updateScore();
+    matchEndStatus = matchEndStatus.toBuilder()
+        .setScore(calculateScore())
+        .build();
     return true;
   }
 
