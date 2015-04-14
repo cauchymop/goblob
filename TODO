@@ -1,6 +1,7 @@
 Urgent:
 - rotation displays wrong intermediate screens
 - do we have to unregister on disconnect/suspend
+- signout/signin doesn't work anymore
 
 Medium priority:
 - toast when another game is updated
