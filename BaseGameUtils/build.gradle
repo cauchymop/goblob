@@ -1,9 +1,5 @@
 apply plugin: 'com.android.library'
 
-repositories {
-    mavenCentral()
-}
-
 buildscript {
     repositories {
         mavenCentral()
@@ -15,13 +11,28 @@ buildscript {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.android.support:support-v4:21.0.3'
-    compile 'com.google.android.gms:play-services:6.5.87'
+    // Set defaults so that BaseGameUtils can be used outside of BasicSamples
+    if (!hasProperty('appcompat_library_version')) {
+        ext.appcompat_library_version = '20.0.+'
+    }
+    if (!hasProperty('gms_library_version')) {
+        ext.gms_library_version = '6.5+'
+    }
+
+    compile "com.android.support:appcompat-v7:${appcompat_library_version}"
+    compile "com.google.android.gms:play-services:${gms_library_version}"
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    // Set defaults so that BaseGameUtils can be used outside of BasicSamples
+    if (!hasProperty('android_compile_version')) {
+        ext.android_compile_version = 22
+    }
+    if (!hasProperty('android_version')) {
+        ext.android_version = '22'
+    }
+
+    compileSdkVersion android_compile_version
+    buildToolsVersion android_version
 }
 

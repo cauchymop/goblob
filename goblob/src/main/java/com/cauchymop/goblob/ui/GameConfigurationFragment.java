@@ -110,8 +110,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   }
 
   @Override
-  public void onSignInSucceeded() {
-    super.onSignInSucceeded();
+  public void updateFromConnectionStatus() {
     configureCurrentPlayerFromGooglePlusAccount();
   }
 
