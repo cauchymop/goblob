@@ -83,6 +83,9 @@ public class GoBoardView extends ZoomableView {
 
   @Override
   public boolean onClick(float x, float y) {
+    if (!isClickable()) {
+      return false;
+    }
     int xPos = (int) ((x - marginX) / cellSizeInPixels);
     int yPos = (int) ((y - marginY) / cellSizeInPixels);
     firePlayed(xPos, yPos);

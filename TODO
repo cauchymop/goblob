@@ -1,5 +1,4 @@
 Urgent:
-- the player can play when it's not their turn
 - rotation displays wrong intermediate screens
 - do we have to unregister on disconnect/suspend
 
