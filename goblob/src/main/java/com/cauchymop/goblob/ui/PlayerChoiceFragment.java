@@ -103,14 +103,8 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
   }
 
   @Override
-  public void onSignOut() {
-    super.onSignOut();
-    updateRemotePlayerRadios();
-  }
-
-  @Override
-  public void onSignInSucceeded() {
-    super.onSignInSucceeded();
+  public void updateFromConnectionStatus() {
+    super.updateFromConnectionStatus();
     updateRemotePlayerRadios();
   }
 

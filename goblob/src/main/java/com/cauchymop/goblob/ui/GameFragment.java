@@ -107,21 +107,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     return super.onOptionsItemSelected(item);
   }
 
-  @Override
-  public void onSignInSucceeded() {
-    super.onSignInSucceeded();
-  }
-
-  @Override
-  public void onSignInFailed() {
-    super.onSignInFailed();
-  }
-
-  @Override
-  public void onSignOut() {
-    super.onSignOut();
-  }
-
   private void initViews() {
     FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
