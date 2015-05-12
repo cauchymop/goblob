@@ -230,7 +230,7 @@ public class MainActivity extends ActionBarActivity
       turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
     }
 
-    updateMatchSpinner((turnBasedMatch != null)?turnBasedMatch.getMatchId():null);
+    updateMatchSpinner((turnBasedMatch != null) ? turnBasedMatch.getMatchId() : null);
   }
 
   @Override
@@ -263,7 +263,13 @@ public class MainActivity extends ActionBarActivity
   public void updateFromConnectionStatus() {
     Log.d(TAG, "updateFromConnectionStatus");
     invalidateOptionsMenu();
-    getCurrentFragment().updateFromConnectionStatus();
+
+    // When initial connection fails, there is no fragment yet.
+    GoBlobBaseFragment currentFragment = getCurrentFragment();
+    if (currentFragment != null) {
+      currentFragment.updateFromConnectionStatus();
+    }
+
     setWaitingScreenVisible(false);
   }
 
