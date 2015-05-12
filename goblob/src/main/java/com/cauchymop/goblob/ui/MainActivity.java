@@ -76,7 +76,7 @@ public class MainActivity extends ActionBarActivity
   private boolean resolvingError;
   private GoogleApiClient googleApiClient;
   private boolean signInClicked;
-  private boolean autoStartSignInFlow;
+  private boolean autoStartSignInFlow = true;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +163,8 @@ public class MainActivity extends ActionBarActivity
     } else if (id == R.id.menu_signout) {
       signOut();
     } else if (id == R.id.menu_signin) {
+      Log.d(TAG, "signIn from menu");
+      signInClicked = true;
       googleApiClient.connect();
     } else if (id == R.id.menu_check_matches) {
       checkMatches();
@@ -188,6 +190,15 @@ public class MainActivity extends ActionBarActivity
         }
         break;
       case RC_REQUEST_ACHIEVEMENTS:
+        break;
+      case RC_SIGN_IN:
+        signInClicked = false;
+        resolvingError = false;
+        if (responseCode == RESULT_OK) {
+          googleApiClient.connect();
+        } else {
+          BaseGameUtils.showActivityResultError(this,requestCode,responseCode, R.string.signin_other_error);
+        }
         break;
       default:
         Log.e(TAG, "onActivityResult unexpected requestCode " + requestCode);
@@ -217,7 +228,6 @@ public class MainActivity extends ActionBarActivity
     // Retrieve the TurnBasedMatch from the connectionHint
     if (bundle != null) {
       turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-
     }
 
     updateMatchSpinner((turnBasedMatch != null)?turnBasedMatch.getMatchId():null);
@@ -337,6 +347,9 @@ public class MainActivity extends ActionBarActivity
   }
 
   protected void signOut() {
+    Log.d(TAG, "signOut");
+    signInClicked = false;
+    Games.signOut(googleApiClient);
     googleApiClient.disconnect();
     updateMatchSpinner();
     updateFromConnectionStatus();
