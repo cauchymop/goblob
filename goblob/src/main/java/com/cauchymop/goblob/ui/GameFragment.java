@@ -154,31 +154,35 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void endTurn() {
-    sendRemoteMessages();
+    publishGameState();
     getGoBlobActivity().loadGame(goGameController);
   }
 
-  private void sendRemoteMessages() {
-    switch (goGameController.getMode()) {
-      case START_GAME_NEGOTIATION:
-        break;
-      case IN_GAME:
-        if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-          getGoBlobActivity().giveTurn(goGameController);
-        }
-        break;
-      case END_GAME_NEGOTIATION:
-        if (goGameController.getOpponent().getType() == GoPlayer.PlayerType.REMOTE) {
-          getGoBlobActivity().keepTurn(goGameController);
-        }
-        if (goGameController.getCurrentPlayer().getType() == GoPlayer.PlayerType.REMOTE) {
-          if (goGameController.isGameFinished()) {
-            getGoBlobActivity().finishTurn(goGameController);
-          } else {
+  private void publishGameState() {
+    switch (goGameController.getCurrentPlayer().getType()) {
+      case REMOTE:
+        switch (goGameController.getMode()) {
+          case START_GAME_NEGOTIATION:
+            // TODO
+            break;
+          case IN_GAME:
             getGoBlobActivity().giveTurn(goGameController);
-          }
+            break;
+          case END_GAME_NEGOTIATION:
+            getGoBlobActivity().keepTurn(goGameController);
+            if (goGameController.isGameFinished()) {
+              getGoBlobActivity().finishTurn(goGameController);
+            } else {
+              getGoBlobActivity().giveTurn(goGameController);
+            }
+            break;
         }
         break;
+      case LOCAL:
+        getGoBlobActivity().getLocalGameRepository().saveLocalGame(goGameController);
+        break;
+      default:
+        throw new RuntimeException("Invalid player type: " + goGameController.getCurrentPlayer().getType());
     }
   }
 

@@ -71,12 +71,12 @@ public class MainActivity extends ActionBarActivity
   private TurnBasedMatch turnBasedMatch;
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
-  private GoGameController localGameController;
   private Spinner spinner;
   private boolean resolvingError;
   private GoogleApiClient googleApiClient;
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
+  private LocalGameRepository localGameRepository;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +98,7 @@ public class MainActivity extends ActionBarActivity
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment());
     }
+    localGameRepository = new LocalGameRepository(getApplicationContext());
   }
 
   @Override
@@ -230,7 +231,12 @@ public class MainActivity extends ActionBarActivity
       turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
     }
 
-    updateMatchSpinner((turnBasedMatch != null) ? turnBasedMatch.getMatchId() : null);
+    updateMatchSpinner(getInitialMatchId());
+  }
+
+  private String getInitialMatchId() {
+    GoGameController localGame = localGameRepository.getLocalGame();
+    return (turnBasedMatch != null) ? turnBasedMatch.getMatchId() : localGame == null ? null : LocalMatchMenuItem.LOCAL_MATCH_ID;
   }
 
   @Override
@@ -309,8 +315,9 @@ public class MainActivity extends ActionBarActivity
       String previousMatchId) {
     matchMenuItems.clear();
     matchMenuItems.addAll(newMatchMenuItems);
-    if (localGameController != null) {
-      matchMenuItems.add(new LocalMatchMenuItem(localGameController));
+    GoGameController localGame = localGameRepository.getLocalGame();
+    if (localGame != null) {
+      matchMenuItems.add(new LocalMatchMenuItem(localGame));
     }
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
@@ -418,7 +425,7 @@ public class MainActivity extends ActionBarActivity
     if (!goGameController.isLocalGame()) {
       throw new RuntimeException("startLocalGame() with non local game");
     }
-    localGameController = goGameController;
+    localGameRepository.saveLocalGame(goGameController);
     updateMatchSpinner(LocalMatchMenuItem.LOCAL_MATCH_ID);
     loadGame(goGameController);
   }
@@ -657,6 +664,10 @@ public class MainActivity extends ActionBarActivity
 
   public boolean isSignedIn() {
     return googleApiClient.isConnected();
+  }
+
+  public LocalGameRepository getLocalGameRepository() {
+    return localGameRepository;
   }
 
   public class MatchDescription {
