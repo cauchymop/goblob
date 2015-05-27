@@ -1,4 +1,14 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
+
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
@@ -9,6 +19,7 @@ dependencies {
     compile "com.google.android.gms:play-services:${gms_library_version}"
     compile 'com.google.guava:guava:18.0'
     compile 'com.squareup.dagger:dagger:1.2.2'
+    apt 'com.squareup.dagger:dagger-compiler:1.2.2'
     compile project(':BaseGameUtils')
     compile project(':goblobBase')
 }

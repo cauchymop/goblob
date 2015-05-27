@@ -23,6 +23,8 @@ import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.MonteCarlo;
 import com.cauchymop.goblob.proto.PlayGameData;
 
+import javax.inject.Inject;
+
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
@@ -36,6 +38,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private GoGameController goGameController;
   private GoBoardView goBoardView;
 
+  @Inject
+  LocalGameRepository localGameRepository;
+
   public static GameFragment newInstance(GoGameController gameController) {
     GameFragment fragment = new GameFragment();
     Bundle args = new Bundle();
@@ -47,11 +52,14 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    ((GoApplication) getActivity().getApplication()).inject(this);
+
     setHasOptionsMenu(true);
     Log.d(TAG, "onCreate: " + getArguments());
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
       this.goGameController = (GoGameController) getArguments().getSerializable(EXTRA_GO_GAME);
     }
+
   }
 
   @Override
@@ -160,7 +168,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
 
   private void publishGameState() {
     if (goGameController.isLocalGame()) {
-      getGoBlobActivity().getLocalGameRepository().saveLocalGame(goGameController);
+      localGameRepository.saveLocalGame(goGameController);
     } else {
       publishRemoteGameState();
     }

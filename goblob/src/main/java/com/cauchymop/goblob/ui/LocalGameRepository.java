@@ -12,6 +12,8 @@ import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.google.protobuf.TextFormat;
 
+import javax.inject.Inject;
+
 /**
  * Class to persist the local game.
  */
@@ -24,11 +26,11 @@ public class LocalGameRepository {
   private static final String WHITE_NAME = "whiteName";
   private static final String WHITE_ID = "whiteId";
 
-  private final SharedPreferences prefs;
+  @Inject
+  SharedPreferences prefs;
   private GoGameController currentLocalGame;
 
-  public LocalGameRepository(Context context) {
-    prefs = PreferenceManager.getDefaultSharedPreferences(context);
+  public LocalGameRepository() {
   }
 
   public void saveLocalGame(GoGameController gameController) {

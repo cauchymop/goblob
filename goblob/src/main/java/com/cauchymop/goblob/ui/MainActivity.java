@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import static com.cauchymop.goblob.model.GoPlayer.PlayerType;
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -76,11 +78,15 @@ public class MainActivity extends ActionBarActivity
   private GoogleApiClient googleApiClient;
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
-  private LocalGameRepository localGameRepository;
+
+  @Inject
+  LocalGameRepository localGameRepository;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    ((GoApplication) getApplication()).inject(this);
+
     googleApiClient = new GoogleApiClient.Builder(this)
         .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
         .addApi(Games.API).addScope(Games.SCOPE_GAMES)
@@ -98,7 +104,6 @@ public class MainActivity extends ActionBarActivity
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment());
     }
-    localGameRepository = new LocalGameRepository(getApplicationContext());
   }
 
   @Override
@@ -664,10 +669,6 @@ public class MainActivity extends ActionBarActivity
 
   public boolean isSignedIn() {
     return googleApiClient.isConnected();
-  }
-
-  public LocalGameRepository getLocalGameRepository() {
-    return localGameRepository;
   }
 
   public class MatchDescription {
