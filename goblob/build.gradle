@@ -16,7 +16,8 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     compile "com.android.support:appcompat-v7:${appcompat_library_version}"
-    compile "com.google.android.gms:play-services:${gms_library_version}"
+    compile "com.google.android.gms:play-services-plus:${gms_library_version}"
+    compile "com.google.android.gms:play-services-games:${gms_library_version}"
     compile 'com.google.guava:guava:18.0'
     compile 'com.squareup.dagger:dagger:1.2.2'
     apt 'com.squareup.dagger:dagger-compiler:1.2.2'
