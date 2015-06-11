@@ -1,10 +1,10 @@
-Urgent:
-- rotation displays wrong intermediate screens
+Next things to do:
+- handicap in remote games
+- rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
 
 Medium priority:
-- rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
-- toast when another game is updated
-- buzz when any game is updated
+- toast/buzz when another game is updated
+- rotation displays wrong intermediate screens
 - Improve winning message (name of player)
 - improve debug level log management
 
