@@ -20,6 +20,7 @@ public class GoGame implements Serializable {
   public static final int NO_MOVE = -1;
 
   private int boardSize;
+  private int handicap;
   private GoBoard board;
   private Color currentColor;
   private ArrayList<GoBoard> boardHistory = Lists.newArrayList();
@@ -27,11 +28,39 @@ public class GoGame implements Serializable {
   // Instance pool management.
   private transient LinkedList<GoBoard> boardPool = Lists.newLinkedList();
 
-  public GoGame(int boardSize) {
+  public GoGame(int boardSize, int handicap) {
     this.boardSize = boardSize;
     currentColor = Color.BLACK;
     board = getNewBoard();
+    this.handicap = handicap;
+    placeHandicapStones();
     boardHistory.add(board);
+  }
+
+  private void placeHandicapStones() {
+    if (handicap == 0) {
+      return;
+    }
+    currentColor = Color.WHITE;
+    int pos1 = (boardSize == 9 ? 2 : 3);
+    int pos2 = boardSize - 1 - pos1;
+    int pos3 = (boardSize - 1) / 2;
+    board.play(Color.BLACK, board.getPos(pos1, pos1));
+    board.play(Color.BLACK, board.getPos(pos2, pos2));
+    if (handicap <= 2) return;
+    board.play(Color.BLACK, board.getPos(pos1, pos2));
+    if (handicap <= 3) return;
+    board.play(Color.BLACK, board.getPos(pos2, pos1));
+    if (handicap <= 4) return;
+    if (handicap % 2 == 1) {
+      board.play(Color.BLACK, board.getPos(pos3, pos3));
+    }
+    if (handicap <= 5) return;
+    board.play(Color.BLACK, board.getPos(pos1, pos3));
+    board.play(Color.BLACK, board.getPos(pos2, pos3));
+    if (handicap <= 7) return;
+    board.play(Color.BLACK, board.getPos(pos3, pos1));
+    board.play(Color.BLACK, board.getPos(pos3, pos2));
   }
 
   private GoBoard getNewBoard() {
@@ -80,7 +109,7 @@ public class GoGame implements Serializable {
   }
 
   public GoGame copy() {
-    GoGame copy = new GoGame(boardSize);
+    GoGame copy = new GoGame(boardSize, handicap);
     for (Integer move : moveHistory) {
       copy.play(move);
     }

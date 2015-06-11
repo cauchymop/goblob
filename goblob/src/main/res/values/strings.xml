@@ -42,11 +42,23 @@
   <string name="match_label_local_second_line_format">"%1$d x %1$d"</string>
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
   <string name="button_done_label">Done</string>
-  <string name="marking_message">Marking…</string>
+  <string name="marking_message">Marking dead stones…</string>
   <string name="komi_label">Komi</string>
   <string name="local_match_item_label">Current local game</string>
   <string name="undo">Undo</string>
   <string name="redo">Redo</string>
   <string name="resign">Resign</string>
   <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
+  <string name="handicap_even">Even</string>
+  <string-array name="handicap_values">
+    <item>@string/handicap_even</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+    <item>8</item>
+    <item>9</item>
+  </string-array>
 </resources>

@@ -36,7 +36,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   private int boardSize;
   private GoPlayer opponentPlayer;
   private GoPlayer homePlayer;
-  private EditText handicapText;
+  private Spinner handicapSpinner;
   private EditText komiText;
 
   public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
@@ -90,7 +90,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
 
-    handicapText = (EditText) v.findViewById(R.id.handicap_value);
+    handicapSpinner = (Spinner) v.findViewById(R.id.handicap_spinner);
     komiText = (EditText) v.findViewById(R.id.komi_value);
 
     Button startGameButton = (Button) v.findViewById(R.id.start_game_button);
@@ -141,11 +141,24 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     String whiteId = homePlayerColor == Color.BLACK ? opponentPlayer.getId() : homePlayer.getId();
 
     GoGameController goGameController =
-        new GoGameController(GameDatas.createGameData(boardSize, GameDatas.DEFAULT_HANDICAP, GameDatas.DEFAULT_KOMI, blackId, whiteId));
+        new GoGameController(GameDatas.createGameData(boardSize, getHandicap(), getKomi(), blackId, whiteId));
     goGameController.setGoPlayer(homePlayerColor, homePlayer);
     goGameController.setGoPlayer(GoBoard.getOpponent(homePlayerColor), opponentPlayer);
 
     getGoBlobActivity().startLocalGame(goGameController);
+  }
+
+  private int getHandicap() {
+    String selectedItem = (String) handicapSpinner.getSelectedItem();
+    try {
+      return Integer.valueOf(selectedItem);
+    } catch (NumberFormatException e) {
+      return 0;
+    }
+  }
+
+  private float getKomi() {
+    return Float.valueOf(komiText.getText().toString());
   }
 
   private class PlayerTypeAdapter extends ArrayAdapter<Color> {

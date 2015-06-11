@@ -11,7 +11,7 @@ public class MonteCarloTest {
 
   @Test
   public void testGetBestMove_endGame() {
-    GoGame game = new GoGame(6);
+    GoGame game = new GoGame(6, 0);
     TextBoard.fillBoard(game.getBoard(),
         ". ● ● ○ ○ .\n" +
         "● ● ● ● ○ ○\n" +

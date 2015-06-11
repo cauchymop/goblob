@@ -151,13 +151,15 @@
                 android:layout_height="wrap_content"
                 android:text="@string/handicap_label"
                 android:layout_weight="1"/>
-            <EditText
-              android:id="@+id/handicap_value"
-              android:layout_width="0dip"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
-              android:text="0"
-              android:enabled="false"/>
+            <Spinner
+                android:id="@+id/handicap_spinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:entries="@array/handicap_values"
+                android:layout_weight="1"
+                android:spinnerMode="dropdown">
+
+            </Spinner>
           </LinearLayout>
 
           <LinearLayout android:layout_width="match_parent"
@@ -174,8 +176,8 @@
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="7.5"
-                android:enabled="false"/>
+                android:inputType="numberDecimal"
+                android:text="7.5"/>
           </LinearLayout>
         </LinearLayout>
     </ScrollView>

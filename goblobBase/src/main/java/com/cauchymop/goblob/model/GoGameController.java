@@ -31,7 +31,7 @@ public class GoGameController implements Serializable {
 
   public GoGameController(GameData gameData) {
     gameConfiguration = gameData.getGameConfiguration();
-    goGame = new GoGame(gameConfiguration.getBoardSize());
+    goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
     matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
     moves = Queues.newArrayDeque(gameData.getMoveList());
     for (Move move : moves) {
