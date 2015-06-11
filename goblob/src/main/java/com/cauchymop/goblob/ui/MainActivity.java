@@ -520,12 +520,9 @@ public class MainActivity extends ActionBarActivity
               return;
             }
             turnBasedMatch = initiateMatchResult.getMatch();
-
+            // TODO: et first game conf here
             final GoGameController goGameController = createGoGameController();
-            if (turnBasedMatch.getData() == null) {
-              Log.d(TAG, "getData is null, saving a new game");
-              takeTurn(goGameController, getMyId());
-            }
+            takeTurn(goGameController, getMyId());
 
             Log.d(TAG, "Game created, starting game activity...");
             updateMatchSpinner(turnBasedMatch.getMatchId());
