@@ -2,6 +2,7 @@ package com.cauchymop.goblob.ui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
@@ -423,6 +424,7 @@ public class MainActivity extends ActionBarActivity
   }
 
   public void loadGame(GoGameController goGameController) {
+    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
     displayFragment(GameFragment.newInstance(goGameController));
   }
 
@@ -647,6 +649,7 @@ public class MainActivity extends ActionBarActivity
       @Override
       public void startNewGame() {
         turnBasedMatch = null;
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
         displayFragment(new PlayerChoiceFragment());
       }
 
