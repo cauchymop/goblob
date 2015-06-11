@@ -2,6 +2,7 @@ Urgent:
 - rotation displays wrong intermediate screens
 
 Medium priority:
+- rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
 - toast when another game is updated
 - buzz when any game is updated
 - Improve winning message (name of player)
