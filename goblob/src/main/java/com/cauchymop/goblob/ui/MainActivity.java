@@ -520,7 +520,6 @@ public class MainActivity extends ActionBarActivity
               return;
             }
             turnBasedMatch = initiateMatchResult.getMatch();
-            // TODO: et first game conf here
             final GoGameController goGameController = createGoGameController();
             takeTurn(goGameController, getMyId());
 
