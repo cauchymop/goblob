@@ -13,10 +13,10 @@ import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoBoard;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.GoPlayer.PlayerType;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.games.Player;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
@@ -137,13 +137,12 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     }
 
     final Color homePlayerColor = (Color) homePlayerColorSpinner.getSelectedItem();
-    String blackId = homePlayerColor == Color.BLACK ? homePlayer.getId() : opponentPlayer.getId();
-    String whiteId = homePlayerColor == Color.BLACK ? opponentPlayer.getId() : homePlayer.getId();
+    GoPlayer blackPlayer = homePlayerColor == Color.BLACK ? homePlayer : opponentPlayer;
+    GoPlayer whitePlayer = homePlayerColor == Color.WHITE ? homePlayer : opponentPlayer;
 
-    GoGameController goGameController =
-        new GoGameController(GameDatas.createGameData(boardSize, getHandicap(), getKomi(), blackId, whiteId));
-    goGameController.setGoPlayer(homePlayerColor, homePlayer);
-    goGameController.setGoPlayer(GoBoard.getOpponent(homePlayerColor), opponentPlayer);
+    PlayGameData.GameData gameData = GameDatas.createGameData(boardSize, getHandicap(), getKomi(),
+        blackPlayer.getId(), whitePlayer.getId());
+    GoGameController goGameController = new GoGameController(gameData, blackPlayer, whitePlayer);
 
     getGoBlobActivity().startLocalGame(goGameController);
   }

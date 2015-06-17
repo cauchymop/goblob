@@ -1,8 +1,6 @@
 package com.cauchymop.goblob.ui;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -54,11 +52,9 @@ public class LocalGameRepository {
       if (gameData == null) {
         return null;
       }
-      currentLocalGame = new GoGameController(gameData);
       GoPlayer blackPlayer = new GoPlayer(GoPlayer.PlayerType.LOCAL, prefs.getString(BLACK_ID, null), prefs.getString(BLACK_NAME, null));
       GoPlayer whitePlayer = new GoPlayer(GoPlayer.PlayerType.LOCAL, prefs.getString(WHITE_ID, null), prefs.getString(WHITE_NAME, null));
-      currentLocalGame.setGoPlayer(PlayGameData.Color.BLACK, blackPlayer);
-      currentLocalGame.setGoPlayer(PlayGameData.Color.WHITE, whitePlayer);
+      currentLocalGame = new GoGameController(gameData, blackPlayer, whitePlayer);
 
     }
     return currentLocalGame;
