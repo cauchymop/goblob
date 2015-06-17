@@ -1,6 +1,8 @@
 package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
+import com.google.common.collect.ImmutableList;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -13,6 +15,8 @@ public class GameDatas {
 
   public static final float DEFAULT_KOMI = 7.5f;
   public static final int DEFAULT_HANDICAP = 0;
+
+  public static final int VERSION = 1;
 
   public static Move createPassMove() {
     return Move.newBuilder().setType(Move.MoveType.PASS).build();
@@ -29,9 +33,20 @@ public class GameDatas {
 
   public static GameData createGameData(int size, int handicap, float komi, String blackId,
       String whiteId) {
-    return GameData.newBuilder()
-        .setGameConfiguration(createGameConfiguration(size, handicap, komi, blackId, whiteId))
-        .build();
+    return createGameData(createGameConfiguration(size, handicap, komi, blackId, whiteId),
+        ImmutableList.<Move>of(), null);
+  }
+
+  public static GameData createGameData(GameConfiguration gameConfiguration, Iterable<Move> moves,
+      MatchEndStatus matchEndStatus) {
+    GameData.Builder builder = GameData.newBuilder()
+        .setVersion(VERSION)
+        .setGameConfiguration(gameConfiguration)
+        .addAllMove(moves);
+    if (matchEndStatus != null) {
+      builder.setMatchEndStatus(matchEndStatus);
+    }
+    return builder.build();
   }
 
   public static GameConfiguration createGameConfiguration(int size, int handicap, float komi,

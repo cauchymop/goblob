@@ -145,13 +145,7 @@ public class GoGameController implements Serializable {
   }
 
   public GameData getGameData() {
-    GameData.Builder builder = GameData.newBuilder()
-        .setGameConfiguration(gameConfiguration)
-        .addAllMove(moves);
-    if (matchEndStatus != null) {
-      builder.setMatchEndStatus(matchEndStatus);
-    }
-    return builder.build();
+    return GameDatas.createGameData(gameConfiguration, moves, matchEndStatus);
   }
 
   public GameConfiguration getGameConfiguration() {
