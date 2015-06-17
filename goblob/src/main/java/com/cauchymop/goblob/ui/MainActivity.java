@@ -520,7 +520,11 @@ public class MainActivity extends ActionBarActivity
               return;
             }
             turnBasedMatch = initiateMatchResult.getMatch();
-            // TODO: et first game conf here
+            // TODO: start GameConfigurationFragment passing it both Players, and the board size
+            // The "extracting the players from a turnbasedmatch" part should be taken from our current
+            // implementation of createGoGameController.
+            // The new createGoGameController should probably move to the configuration fragment and use
+            // the players, size and GameData (handicap and komi) to create the controller.
             final GoGameController goGameController = createGoGameController();
             takeTurn(goGameController, getMyId());
 
@@ -552,10 +556,10 @@ public class MainActivity extends ActionBarActivity
         myId, createGoPlayer(myId, PlayerType.LOCAL),
         opponentId, createGoPlayer(opponentId, PlayerType.REMOTE));
 
-    GoGameController goGameController = new GoGameController(gameData);
-    GameConfiguration gameConfiguration = goGameController.getGameConfiguration();
-    goGameController.setGoPlayer(Color.BLACK, goPlayers.get(gameConfiguration.getBlackId()));
-    goGameController.setGoPlayer(Color.WHITE, goPlayers.get(gameConfiguration.getWhiteId()));
+    GameConfiguration gameConfiguration = gameData.getGameConfiguration();
+    GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
+    GoPlayer whitePlayer = goPlayers.get(gameConfiguration.getWhiteId());
+    GoGameController goGameController = new GoGameController(gameData, blackPlayer, whitePlayer);
 
     return goGameController;
   }

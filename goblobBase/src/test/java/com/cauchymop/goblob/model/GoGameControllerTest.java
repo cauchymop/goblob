@@ -26,7 +26,7 @@ public class GoGameControllerTest {
         .addMove(GameDatas.createMove(4, 5))
         .build();
 
-    GoGameController controller = new GoGameController(gameData);
+    GoGameController controller = new GoGameController(gameData, null, null);
 
     assertThat(controller.getGameData()).isEqualTo(gameData);
     GoGame goGame = controller.getGame();
@@ -39,7 +39,7 @@ public class GoGameControllerTest {
     PlayGameData.GameConfiguration gameConfiguration = GameDatas.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, TEST_BLACK_ID, TEST_WHITE_ID);
     GoGameController controller = new GoGameController(GameData.newBuilder()
         .setGameConfiguration(gameConfiguration)
-        .build());
+        .build(), null, null);
     controller.playMove(GameDatas.createMove(0, 0));
     controller.playMove(GameDatas.createMove(1, 1));
     controller.playMove(GameDatas.createPassMove());
@@ -52,7 +52,7 @@ public class GoGameControllerTest {
   }
 
   private GoGameController createGoGameController() {
-    return new GoGameController(GameDatas.createGameData(9, TEST_HANDICAP, 0, TEST_BLACK_ID, TEST_WHITE_ID));
+    return new GoGameController(GameDatas.createGameData(9, TEST_HANDICAP, 0, TEST_BLACK_ID, TEST_WHITE_ID), null, null);
   }
 
   @Test

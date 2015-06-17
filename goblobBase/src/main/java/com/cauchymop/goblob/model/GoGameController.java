@@ -2,14 +2,12 @@ package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Map;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -22,14 +20,17 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
  */
 public class GoGameController implements Serializable {
 
-  private Map<Color, GoPlayer> players = Maps.newHashMap();
   private ArrayDeque<Move> moves = Queues.newArrayDeque();
   private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();
   private final GoGame goGame;
   private GameConfiguration gameConfiguration;
   private MatchEndStatus matchEndStatus;
+  private final GoPlayer blackPlayer;
+  private final GoPlayer whitePlayer;
 
-  public GoGameController(GameData gameData) {
+  public GoGameController(GameData gameData, GoPlayer blackPlayer, GoPlayer whitePlayer) {
+    this.blackPlayer = blackPlayer;
+    this.whitePlayer = whitePlayer;
     gameConfiguration = gameData.getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
     matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
@@ -130,17 +131,13 @@ public class GoGameController implements Serializable {
   }
 
   public GoPlayer getGoPlayer(Color color) {
-    return players.get(color);
-  }
-
-  public void setGoPlayer(Color color, GoPlayer player) {
-    players.put(color, player);
+    return color == Color.BLACK ? blackPlayer : whitePlayer;
   }
 
   @Override
   public String toString() {
     return String.format("GoGameController(GoGame=%s, black=%s, white=%s, end=%s)",
-        goGame, getGoPlayer(Color.BLACK), getGoPlayer(Color.WHITE), matchEndStatus);
+        goGame, blackPlayer, whitePlayer, matchEndStatus);
   }
 
   public GoGame getGame() {
