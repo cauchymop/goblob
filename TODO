@@ -1,4 +1,6 @@
 Next things to do:
+- when the version of a game is too recent, link to play store
+- move players in gameConfiguration
 - handicap in remote games
 - rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
 
