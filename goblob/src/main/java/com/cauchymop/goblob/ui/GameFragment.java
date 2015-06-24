@@ -19,12 +19,13 @@ import android.widget.TextView;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.model.MonteCarlo;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 
 import javax.inject.Inject;
 
+import static com.cauchymop.goblob.proto.PlayGameData.*;
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
@@ -199,7 +200,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     play(GameDatas.createMove(x, y));
   }
 
-  private void play(PlayGameData.Move move) {
+  private void play(Move move) {
     boolean played = playMoveOrToggleDeadStone(move);
     if(played) {
       endTurn();
@@ -208,7 +209,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     }
   }
 
-  private boolean playMoveOrToggleDeadStone(PlayGameData.Move move) {
+  private boolean playMoveOrToggleDeadStone(Move move) {
     switch(goGameController.getMode()) {
       case IN_GAME:
         return goGameController.playMove(move);
@@ -252,7 +253,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private void initMessageArea() {
     final String message;
     if (goGameController.isGameFinished()) {
-      PlayGameData.Score score = goGameController.getScore();
+      Score score = goGameController.getScore();
       if (score.getResigned()) {
         message = getString(R.string.end_of_game_resigned_message, score.getWinner());
       } else {
@@ -291,7 +292,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
         break;
       case REMOTE:
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-        if (goGameController.getGoPlayer(goGameController.getScore().getWinner()).getType() == GoPlayer.PlayerType.LOCAL) {
+        if (goGameController.getGoPlayer(goGameController.getScore().getWinner()).getType() == PlayerType.LOCAL) {
           getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
         }
         break;

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
 
+import static com.cauchymop.goblob.proto.PlayGameData.*;
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -16,7 +17,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
 
 /**
- * Class to handle interactions between the {@link GoPlayer}s and the {@link GoGame}.
+ * Class to handle interactions between the players and the {@link GoGame}.
  */
 public class GoGameController implements Serializable {
 
@@ -28,10 +29,10 @@ public class GoGameController implements Serializable {
   private final GoPlayer blackPlayer;
   private final GoPlayer whitePlayer;
 
-  public GoGameController(GameData gameData, GoPlayer blackPlayer, GoPlayer whitePlayer) {
-    this.blackPlayer = blackPlayer;
-    this.whitePlayer = whitePlayer;
+  public GoGameController(GameData gameData) {
     gameConfiguration = gameData.getGameConfiguration();
+    blackPlayer = gameConfiguration.getBlack();
+    whitePlayer = gameConfiguration.getWhite();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
     matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
     moves = Queues.newArrayDeque(gameData.getMoveList());
@@ -40,7 +41,7 @@ public class GoGameController implements Serializable {
     }
   }
 
-  public PlayGameData.Score getScore() {
+  public Score getScore() {
     return matchEndStatus.getScore();
   }
 
@@ -61,7 +62,7 @@ public class GoGameController implements Serializable {
     return false;
   }
 
-  private PlayGameData.Score calculateScore() {
+  private Score calculateScore() {
     ScoreGenerator scoreGenerator = new ScoreGenerator(goGame.getBoard(),
         Sets.newHashSet(getDeadStones()), gameConfiguration.getKomi());
     return scoreGenerator.getScore();
@@ -102,7 +103,7 @@ public class GoGameController implements Serializable {
   private int getPos(Move move) {
     switch (move.getType()) {
       case MOVE:
-        PlayGameData.Position position = move.getPosition();
+        Position position = move.getPosition();
         return goGame.getPos(position.getX(), position.getY());
       case PASS:
         return goGame.getPassValue();
@@ -153,7 +154,7 @@ public class GoGameController implements Serializable {
   }
 
   public boolean isLocalTurn() {
-    return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL && !isGameFinished();
+    return getCurrentPlayer().getType() == PlayerType.LOCAL && !isGameFinished();
   }
 
   public boolean isGameFinished() {
@@ -168,7 +169,7 @@ public class GoGameController implements Serializable {
   }
 
   public boolean toggleDeadStone(Move move) {
-    PlayGameData.Position position = move.getPosition();
+    Position position = move.getPosition();
     if (goGame.getColor(position.getX(), position.getY()) == null) {
       return false;
     }
@@ -214,8 +215,8 @@ public class GoGameController implements Serializable {
   }
 
   public boolean isLocalGame() {
-    return getCurrentPlayer().getType() == GoPlayer.PlayerType.LOCAL
-        && getOpponent().getType() == GoPlayer.PlayerType.LOCAL;
+    return getCurrentPlayer().getType() == PlayerType.LOCAL
+        && getOpponent().getType() == PlayerType.LOCAL;
   }
 
   public boolean canUndo() {
@@ -229,7 +230,7 @@ public class GoGameController implements Serializable {
   public void resign() {
     matchEndStatus = MatchEndStatus.newBuilder()
         .setGameFinished(true)
-        .setScore(PlayGameData.Score.newBuilder()
+        .setScore(Score.newBuilder()
             .setWinner(getOpponentColor())
             .setResigned(true))
         .build();

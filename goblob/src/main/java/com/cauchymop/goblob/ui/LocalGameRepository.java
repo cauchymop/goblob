@@ -4,10 +4,12 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
+import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 import com.google.protobuf.TextFormat;
 
 import javax.inject.Inject;
@@ -52,9 +54,9 @@ public class LocalGameRepository {
       if (gameData == null) {
         return null;
       }
-      GoPlayer blackPlayer = new GoPlayer(GoPlayer.PlayerType.LOCAL, prefs.getString(BLACK_ID, null), prefs.getString(BLACK_NAME, null));
-      GoPlayer whitePlayer = new GoPlayer(GoPlayer.PlayerType.LOCAL, prefs.getString(WHITE_ID, null), prefs.getString(WHITE_NAME, null));
-      currentLocalGame = new GoGameController(gameData, blackPlayer, whitePlayer);
+      GoPlayer blackPlayer = GameDatas.createPlayer(PlayerType.LOCAL, prefs.getString(BLACK_ID, null), prefs.getString(BLACK_NAME, null));
+      GoPlayer whitePlayer = GameDatas.createPlayer(PlayerType.LOCAL, prefs.getString(WHITE_ID, null), prefs.getString(WHITE_NAME, null));
+      currentLocalGame = new GoGameController(gameData);
 
     }
     return currentLocalGame;

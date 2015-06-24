@@ -10,7 +10,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.model.GameDatas;
+
+import static com.cauchymop.goblob.proto.PlayGameData.*;
 
 /**
  * Home Page Fragment.
@@ -73,21 +75,21 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
   }
 
   private GoPlayer getOpponent() {
-    GoPlayer.PlayerType opponentType;
+    PlayerType opponentType;
     final String opponentDefaultName;
 
     switch (opponentRadioGroup.getCheckedRadioButtonId()) {
       default:
       case R.id.game_type_radio_local:
-        opponentType = GoPlayer.PlayerType.LOCAL;
+        opponentType = PlayerType.LOCAL;
         opponentDefaultName = getString(R.string.opponent_default_name);
         break;
       case R.id.game_type_radio_remote:
-        opponentType = GoPlayer.PlayerType.REMOTE;
+        opponentType = PlayerType.REMOTE;
         opponentDefaultName = null;
         break;
     }
-    return new GoPlayer(opponentType, OPPONENT_PARTICIPANT_ID, opponentDefaultName);
+    return GameDatas.createPlayer(opponentType, OPPONENT_PARTICIPANT_ID, opponentDefaultName);
   }
 
   public int getBoardSize() {
