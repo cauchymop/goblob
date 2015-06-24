@@ -20,7 +20,7 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.GoPlayer;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -49,8 +49,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import static com.cauchymop.goblob.model.GoPlayer.PlayerType;
-import static com.cauchymop.goblob.proto.PlayGameData.Color;
+import static com.cauchymop.goblob.proto.PlayGameData.*;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
@@ -456,20 +455,19 @@ public class MainActivity extends ActionBarActivity
 
   public void giveTurn(GoGameController goGameController) {
     Log.d(TAG, "giveTurn: " + goGameController);
-    String myId = getMyId();
-    takeTurn(goGameController, getOpponentId(myId));
+    takeTurn(goGameController, getOpponentIdFromCurrentMatch());
     updateMatchSpinner();
   }
 
   public void keepTurn(GoGameController goGameController) {
     Log.d(TAG, "keepTurn: " + goGameController);
-    String myId = getMyId();
+    String myId = getMyIdFromCurrentMatch();
     takeTurn(goGameController, myId);
   }
 
   public void finishTurn(GoGameController goGameController) {
     Log.d(TAG, "finishTurn: " + goGameController);
-    String myId = getMyId();
+    String myId = getMyIdFromCurrentMatch();
     takeTurn(goGameController, myId);
     TurnBasedMultiplayer.finishMatch(googleApiClient, turnBasedMatch.getMatchId());
     updateMatchSpinner();
@@ -520,15 +518,8 @@ public class MainActivity extends ActionBarActivity
               return;
             }
             turnBasedMatch = initiateMatchResult.getMatch();
-            // TODO: start GameConfigurationFragment passing it both Players, and the board size
-            // The "extracting the players from a turnbasedmatch" part should be taken from our current
-            // implementation of createGoGameController.
-            // The new createGoGameController should probably move to the configuration fragment and use
-            // the players, size and GameData (handicap and komi) to create the controller.
-            final GoGameController goGameController = createGoGameController();
-            takeTurn(goGameController, getMyId());
 
-            Log.d(TAG, "Game created, starting game activity...");
+            Log.d(TAG, "Game created...");
             updateMatchSpinner(turnBasedMatch.getMatchId());
           }
         });
@@ -540,10 +531,7 @@ public class MainActivity extends ActionBarActivity
       TurnBasedMultiplayer.finishMatch(googleApiClient, turnBasedMatch.getMatchId());
     }
 
-    String myId = getMyId();
-    String opponentId = getOpponentId(myId);
-
-    GameData gameData = getGameData(myId, opponentId);
+    GameData gameData = getGameDataFromCurrentGame();
 
     if (gameData.getMoveCount() == 0) {
       for (String participantId : turnBasedMatch.getParticipantIds()) {
@@ -552,15 +540,11 @@ public class MainActivity extends ActionBarActivity
       }
     }
 
-    Map<String, GoPlayer> goPlayers = ImmutableMap.of(
-        myId, createGoPlayer(myId, PlayerType.LOCAL),
-        opponentId, createGoPlayer(opponentId, PlayerType.REMOTE));
+    GoGameController goGameController = new GoGameController(gameData);
 
-    GameConfiguration gameConfiguration = gameData.getGameConfiguration();
-    GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
-    GoPlayer whitePlayer = goPlayers.get(gameConfiguration.getWhiteId());
-    GoGameController goGameController = new GoGameController(gameData, blackPlayer, whitePlayer);
-
+    if (gameData.getMoveCount() == 0) {
+      takeTurn(goGameController, getMyIdFromCurrentMatch());
+    }
     return goGameController;
   }
 
@@ -569,29 +553,62 @@ public class MainActivity extends ActionBarActivity
     return player == null ? null : player.getPlayerId();
   }
 
-  private GameData getGameData(String myId, String opponentId) {
+  private GameData getGameDataFromCurrentGame() {
+    return getGameData(turnBasedMatch);
+  }
+
+  private GameData getGameData(TurnBasedMatch turnBasedMatch) {
     try {
       if (turnBasedMatch.getData() == null) {
+        String myId = getMyId(turnBasedMatch);
+        String opponentId = getOpponentId(turnBasedMatch);
+        GoPlayer blackPlayer = createGoPlayer(myId, PlayerType.LOCAL);
+        GoPlayer whitePlayer = createGoPlayer(opponentId, PlayerType.REMOTE);
         return GameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
-            GameDatas.DEFAULT_KOMI, myId, opponentId);
+            GameDatas.DEFAULT_KOMI, blackPlayer, whitePlayer);
       } else {
-        return GameData.parseFrom(turnBasedMatch.getData());
+        GameData gameData = GameData.parseFrom(turnBasedMatch.getData());
+        if (!gameData.getGameConfiguration().hasBlack() || !gameData.getGameConfiguration().hasWhite()) {
+          String myId = getMyId(turnBasedMatch);
+          String opponentId = getOpponentId(turnBasedMatch);
+          Map<String, GoPlayer> goPlayers = ImmutableMap.of(
+              myId, createGoPlayer(myId, PlayerType.LOCAL),
+              opponentId, createGoPlayer(opponentId, PlayerType.REMOTE));
+          GameConfiguration gameConfiguration = gameData.getGameConfiguration();
+
+          GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
+          GoPlayer whitePlayer = goPlayers.get(gameConfiguration.getWhiteId());
+
+          GameData.Builder gameBuilder = gameData.toBuilder();
+          gameBuilder.getGameConfigurationBuilder().setBlack(blackPlayer).setWhite(whitePlayer);
+          gameData = gameBuilder.build();
+        }
+        return gameData;
       }
     } catch (InvalidProtocolBufferException exception) {
       throw new RuntimeException(exception);
     }
   }
 
-  private String getOpponentId(String id) {
+  private String getOpponentIdFromCurrentMatch() {
+    return getOpponentId(turnBasedMatch);
+  }
+
+  private String getOpponentId(TurnBasedMatch turnBasedMatch) {
+    String myId = getMyId(turnBasedMatch);
     for (String participantId : turnBasedMatch.getParticipantIds()) {
-      if (!participantId.equals(id)) {
+      if (!participantId.equals(myId)) {
         return participantId;
       }
     }
     return null;
   }
 
-  private String getMyId() {
+  private String getMyIdFromCurrentMatch() {
+    return getMyId(turnBasedMatch);
+  }
+
+  private String getMyId(TurnBasedMatch turnBasedMatch) {
     return turnBasedMatch.getParticipantId(Players.getCurrentPlayerId(googleApiClient));
   }
 
@@ -602,10 +619,10 @@ public class MainActivity extends ActionBarActivity
   private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId, PlayerType playerType) {
     GoPlayer goPlayer;
     if (isParticipantAutoMatch(match, participantId)) {
-      goPlayer = new GoPlayer(playerType, participantId, getString(R.string.opponent_default_name));
+      goPlayer = GameDatas.createPlayer(playerType, participantId, getString(R.string.opponent_default_name));
     } else {
       Player player = match.getParticipant(participantId).getPlayer();
-      goPlayer = new GoPlayer(playerType, participantId, player.getDisplayName());
+      goPlayer = GameDatas.createPlayer(playerType, participantId, player.getDisplayName());
       getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     }
     return goPlayer;
@@ -681,22 +698,13 @@ public class MainActivity extends ActionBarActivity
     private final int turnStatus;
     private final String matchId;
     private final GameData gameData;
-    private final GoPlayer blackPlayer;
-    private final GoPlayer whitePlayer;
 
     public MatchDescription(TurnBasedMatch match) {
       this.creationTimestamp = match.getCreationTimestamp();
       this.lastUpdateTimestamp = match.getLastUpdatedTimestamp();
       this.turnStatus = match.getTurnStatus();
       this.matchId = match.getMatchId();
-      try {
-        this.gameData = GameData.parseFrom(match.getData());
-      } catch (InvalidProtocolBufferException e) {
-        throw new RuntimeException("Invalid GameData");
-      }
-
-      this.blackPlayer = createGoPlayer(match, gameData.getGameConfiguration().getBlackId(), null);
-      this.whitePlayer = createGoPlayer(match, gameData.getGameConfiguration().getWhiteId(), null);
+      this.gameData = MainActivity.this.getGameData(match);
     }
 
     public long getCreationTimestamp() {
@@ -720,11 +728,11 @@ public class MainActivity extends ActionBarActivity
     }
 
     public GoPlayer getBlackPlayer() {
-      return blackPlayer;
+      return gameData.getGameConfiguration().getBlack();
     }
 
     public GoPlayer getWhitePlayer() {
-      return whitePlayer;
+      return gameData.getGameConfiguration().getWhite();
     }
   }
 }

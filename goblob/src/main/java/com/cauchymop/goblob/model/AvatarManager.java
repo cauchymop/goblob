@@ -10,7 +10,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 
 /**
- * Utility class storing avatars Uris for {@link GoPlayer}s and using them to load Avatar images in
+ * Utility class storing avatars Uris for players and using them to load Avatar images in
  * {@link ImageView}s on demand.
  */
 public class AvatarManager {

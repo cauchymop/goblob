@@ -14,9 +14,9 @@ import android.widget.Spinner;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.GoPlayer;
-import com.cauchymop.goblob.model.GoPlayer.PlayerType;
-import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
+import com.cauchymop.goblob.proto.PlayGameData.GameData;
+import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 import com.google.android.gms.games.Player;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
@@ -85,7 +85,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    homePlayer = new GoPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
+    homePlayer = GameDatas.createPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
@@ -118,7 +118,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     if (isSignedIn()) {
       final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
       final String homePlayerName = currentPlayer.getDisplayName();
-      homePlayer = new GoPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, homePlayerName);
+      homePlayer = GameDatas.createPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, homePlayerName);
       getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
           currentPlayer.getIconImageUri());
       homePlayerNameField.setText(homePlayer.getName());
@@ -128,23 +128,27 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   private void startGame() {
     final Editable opponentNameText = opponentNameField.getText();
     if (opponentNameText != null) {
-      opponentPlayer.setName(opponentNameText.toString());
+      opponentPlayer = updateName(opponentPlayer, opponentNameText.toString());
     }
 
     final Editable homePayerNameText = homePlayerNameField.getText();
     if (homePayerNameText != null) {
-      homePlayer.setName(homePayerNameText.toString());
+      homePlayer = updateName(homePlayer, homePayerNameText.toString());
     }
 
     final Color homePlayerColor = (Color) homePlayerColorSpinner.getSelectedItem();
     GoPlayer blackPlayer = homePlayerColor == Color.BLACK ? homePlayer : opponentPlayer;
     GoPlayer whitePlayer = homePlayerColor == Color.WHITE ? homePlayer : opponentPlayer;
 
-    PlayGameData.GameData gameData = GameDatas.createGameData(boardSize, getHandicap(), getKomi(),
-        blackPlayer.getId(), whitePlayer.getId());
-    GoGameController goGameController = new GoGameController(gameData, blackPlayer, whitePlayer);
+    GameData gameData = GameDatas.createGameData(boardSize, getHandicap(), getKomi(),
+        blackPlayer, whitePlayer);
+    GoGameController goGameController = new GoGameController(gameData);
 
     getGoBlobActivity().startLocalGame(goGameController);
+  }
+
+  private GoPlayer updateName(GoPlayer player, String name) {
+    return player.toBuilder().setName(name).build();
   }
 
   private int getHandicap() {
