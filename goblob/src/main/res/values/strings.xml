@@ -61,4 +61,7 @@
     <item>8</item>
     <item>9</item>
   </string-array>
+
+  <string name="update_app_message">The version of the application you are using is out of date and does not support the format of this game.\n\nPlease update the application to play this game.</string>
+  <string name="update_app_button_label">Update Application</string>
 </resources>

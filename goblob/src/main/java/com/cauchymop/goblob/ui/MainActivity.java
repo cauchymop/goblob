@@ -562,8 +562,8 @@ public class MainActivity extends ActionBarActivity
       if (turnBasedMatch.getData() == null) {
         String myId = getMyId(turnBasedMatch);
         String opponentId = getOpponentId(turnBasedMatch);
-        GoPlayer blackPlayer = createGoPlayer(myId, PlayerType.LOCAL);
-        GoPlayer whitePlayer = createGoPlayer(opponentId, PlayerType.REMOTE);
+        GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
+        GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE);
         return GameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
             GameDatas.DEFAULT_KOMI, blackPlayer, whitePlayer);
       } else {
@@ -572,8 +572,8 @@ public class MainActivity extends ActionBarActivity
           String myId = getMyId(turnBasedMatch);
           String opponentId = getOpponentId(turnBasedMatch);
           Map<String, GoPlayer> goPlayers = ImmutableMap.of(
-              myId, createGoPlayer(myId, PlayerType.LOCAL),
-              opponentId, createGoPlayer(opponentId, PlayerType.REMOTE));
+              myId, createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL),
+              opponentId, createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE));
           GameConfiguration gameConfiguration = gameData.getGameConfiguration();
 
           GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
@@ -610,10 +610,6 @@ public class MainActivity extends ActionBarActivity
 
   private String getMyId(TurnBasedMatch turnBasedMatch) {
     return turnBasedMatch.getParticipantId(Players.getCurrentPlayerId(googleApiClient));
-  }
-
-  private GoPlayer createGoPlayer(String participantId, PlayerType playerType) {
-    return createGoPlayer(turnBasedMatch, participantId, playerType);
   }
 
   private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId, PlayerType playerType) {
@@ -679,6 +675,11 @@ public class MainActivity extends ActionBarActivity
       @Override
       public void startLocalGame(GoGameController gameController) {
         loadGame(gameController);
+      }
+
+      @Override
+      public void showUpdateScreen() {
+        displayFragment(UpdateApplicationFragment.newInstance());
       }
     };
     item.start(gameStarter);

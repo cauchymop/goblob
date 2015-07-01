@@ -16,7 +16,6 @@ public class GameDatas {
 
   public static final float DEFAULT_KOMI = 7.5f;
   public static final int DEFAULT_HANDICAP = 0;
-
   public static final int VERSION = 1;
 
   public static Move createPassMove() {

@@ -21,7 +21,7 @@ message Move {
   optional Position position = 2;  // For MOVE.
 }
 
-// Next ID: 9
+// Next ID: 10
 message GameConfiguration {
 
   enum ScoreType {
@@ -37,6 +37,7 @@ message GameConfiguration {
   required ScoreType score_type = 6;
   optional GoPlayer black = 7;
   optional GoPlayer white = 8;
+  optional PlayerType game_type = 9;
 }
 
 // Next ID: 6
@@ -70,11 +71,11 @@ message Position {
   required int32 y = 2;
 }
 
-// Next ID:
+// Next ID: 4
 message GoPlayer {
   required string id = 1;
   required string name = 2;
-  required PlayerType type = 3;
+  required string google_id = 3;
 }
 
 enum PlayerType {

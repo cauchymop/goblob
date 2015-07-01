@@ -1,6 +1,7 @@
 package com.cauchymop.goblob.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,14 +36,17 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
     }
 
     MatchMenuItem item = getItem(position);
+    int textColor = item.isValid()? Color.BLACK:Color.RED;
 
     TextView firstLineLabelView = (TextView) matchRowView.findViewById( R.id.label_first_line);
     firstLineLabelView.setText(item.getFirstLine(getContext()));
+    firstLineLabelView.setTextColor(textColor);
 
     TextView secondLineLabelView = (TextView) matchRowView.findViewById( R.id.label_second_line);
     String secondLine = item.getSecondLine(getContext());
     secondLineLabelView.setText(secondLine);
     secondLineLabelView.setVisibility(Strings.isNullOrEmpty(secondLine) ? View.GONE : View.VISIBLE);
+    secondLineLabelView.setTextColor(textColor);
 
     ImageView iconView = (ImageView) matchRowView.findViewById( R.id.match_type_icon);
     iconView.setImageDrawable(item.getIcon(getContext()));

@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
 
+
+import javax.in.Provider;
+
 import static com.cauchymop.goblob.proto.PlayGameData.*;
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -28,8 +31,10 @@ public class GoGameController implements Serializable {
   private MatchEndStatus matchEndStatus;
   private final GoPlayer blackPlayer;
   private final GoPlayer whitePlayer;
+  private Provider<String> googleIdentityProvider;
 
-  public GoGameController(GameData gameData) {
+  public GoGameController(GameData gameData, Provider<String> googleIdentityProvider) {
+    this.googleIdentityProvider = googleIdentityProvider;
     gameConfiguration = gameData.getGameConfiguration();
     blackPlayer = gameConfiguration.getBlack();
     whitePlayer = gameConfiguration.getWhite();
@@ -215,8 +220,7 @@ public class GoGameController implements Serializable {
   }
 
   public boolean isLocalGame() {
-    return getCurrentPlayer().getType() == PlayerType.LOCAL
-        && getOpponent().getType() == PlayerType.LOCAL;
+    return getGameConfiguration().getGameType() == PlayerType.LOCAL;
   }
 
   public boolean canUndo() {
@@ -234,6 +238,14 @@ public class GoGameController implements Serializable {
             .setWinner(getOpponentColor())
             .setResigned(true))
         .build();
+  }
+
+  public GoPlayer getWinner() {
+    return getGoPlayer(matchEndStatus.getScore().getWinner());
+  }
+
+  public boolean isLocalPlayer(GoPlayer player) {
+    return isLocalGame() || player.getGoogleId().equals(googleIdentityProvider.get());
   }
 
   public enum Mode {

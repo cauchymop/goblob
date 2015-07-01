@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:gravity="center"
+              android:padding="@dimen/abc_dialog_padding_material"
+              tools:context="com.cauchymop.goblob.ui.UpdateApplicationFragment">
+
+  <TextView
+      android:id="@+id/update_message"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:gravity="center_vertical"
+      android:textSize="@dimen/abc_text_size_headline_material"
+      android:text="@string/update_app_message"/>
+<Button
+    android:id="@+id/update_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/update_app_button_label"/>
+
+</LinearLayout>
