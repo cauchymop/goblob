@@ -1,8 +1,4 @@
 Next things to do:
-- Implement a googleIdentityProvider and inject it in MainActivity, and pass it go GoGameController constructor
-- Fix all calls to player.getType into gameConfiguration.getType
-- in the protobuf, rename PlayerType into GameType
-
 - when the version of a game is too recent, link to play store
 - move players in gameConfiguration
 - handicap in remote games
