@@ -4,12 +4,8 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
-import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 import com.google.protobuf.TextFormat;
 
 import javax.inject.Inject;
@@ -21,10 +17,6 @@ public class LocalGameRepository {
 
   private static final String TAG = LocalGameRepository.class.getName();
   private static final String GAME_DATA = "gameData";
-  private static final String BLACK_NAME = "blackName";
-  private static final String BLACK_ID = "blackId";
-  private static final String WHITE_NAME = "whiteName";
-  private static final String WHITE_ID = "whiteId";
 
   @Inject
   SharedPreferences prefs;
@@ -37,12 +29,6 @@ public class LocalGameRepository {
     Log.i(TAG, "saveLocalGame");
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString(GAME_DATA, TextFormat.printToString(gameController.getGameData()));
-    GoPlayer blackPlayer = gameController.getGoPlayer(PlayGameData.Color.BLACK);
-    editor.putString(BLACK_NAME, blackPlayer.getName());
-    editor.putString(BLACK_ID, blackPlayer.getId());
-    GoPlayer whitePlayer = gameController.getGoPlayer(PlayGameData.Color.WHITE);
-    editor.putString(WHITE_NAME, whitePlayer.getName());
-    editor.putString(WHITE_ID, whitePlayer.getId());
     editor.apply();
     currentLocalGame = gameController;
   }
@@ -54,10 +40,7 @@ public class LocalGameRepository {
       if (gameData == null) {
         return null;
       }
-      GoPlayer blackPlayer = GameDatas.createPlayer(PlayerType.LOCAL, prefs.getString(BLACK_ID, null), prefs.getString(BLACK_NAME, null));
-      GoPlayer whitePlayer = GameDatas.createPlayer(PlayerType.LOCAL, prefs.getString(WHITE_ID, null), prefs.getString(WHITE_NAME, null));
-      currentLocalGame = new GoGameController(gameData);
-
+      currentLocalGame = new GoGameController(gameData, null);
     }
     return currentLocalGame;
   }

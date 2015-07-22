@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GameDatas;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 
 import java.text.DateFormat;
@@ -43,6 +44,19 @@ public class RemoteMatchMenuItem extends MatchMenuItem {
 
   @Override
   public void start(GameStarter gameStarter) {
-    gameStarter.startRemoteGame(getMatchId());
+    if (needsApplicationUpdate()) {
+      gameStarter.showUpdateScreen();
+    } else {
+      gameStarter.startRemoteGame(getMatchId());
+    }
+  }
+
+  @Override
+  public boolean isValid() {
+    return !needsApplicationUpdate();
+  }
+
+  private boolean needsApplicationUpdate() {
+    return matchDescription.getGameData().getVersion() > GameDatas.VERSION;
   }
 }

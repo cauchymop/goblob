@@ -3,6 +3,7 @@ package com.cauchymop.goblob.model;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
+import com.cauchymop.goblob.proto.PlayGameData.GameType;
 import com.google.common.collect.ImmutableList;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -16,8 +17,8 @@ public class GameDatas {
 
   public static final float DEFAULT_KOMI = 7.5f;
   public static final int DEFAULT_HANDICAP = 0;
-
   public static final int VERSION = 1;
+  public static final String OPPONENT_PARTICIPANT_ID = "opponent";
 
   public static Move createPassMove() {
     return Move.newBuilder().setType(Move.MoveType.PASS).build();
@@ -32,9 +33,9 @@ public class GameDatas {
         .build();
   }
 
-  public static GameData createGameData(int size, int handicap, float komi, GoPlayer blackPlayer,
+  public static GameData createGameData(int size, int handicap, float komi, GameType gameType, GoPlayer blackPlayer,
       GoPlayer whitePlayer) {
-    return createGameData(createGameConfiguration(size, handicap, komi, blackPlayer, whitePlayer),
+    return createGameData(createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer),
         ImmutableList.<Move>of(), null);
   }
 
@@ -51,7 +52,7 @@ public class GameDatas {
   }
 
   public static GameConfiguration createGameConfiguration(int size, int handicap, float komi,
-      GoPlayer blackPlayer, GoPlayer whitePlayer) {
+      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)
         .setHandicap(handicap)
@@ -60,14 +61,22 @@ public class GameDatas {
         .setWhiteId(whitePlayer.getId())
         .setBlack(blackPlayer)
         .setWhite(whitePlayer)
+        .setGameType(gameType)
         .setScoreType(GameConfiguration.ScoreType.JAPANESE)
         .build();
   }
 
-  public static GoPlayer createPlayer(PlayGameData.PlayerType type, String id, String name) {
+  public static GoPlayer createLocalGamePlayer(String id, String name) {
     return GoPlayer.newBuilder()
-        .setType(type)
         .setId(id)
+        .setName(name)
+        .build();
+  }
+
+  public static GoPlayer createRemoteGamePlayer(String id, String googleId, String name) {
+    return GoPlayer.newBuilder()
+        .setId(id)
+        .setGoogleId(googleId)
         .setName(name)
         .build();
   }

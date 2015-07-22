@@ -28,8 +28,10 @@ public class GoGameController implements Serializable {
   private MatchEndStatus matchEndStatus;
   private final GoPlayer blackPlayer;
   private final GoPlayer whitePlayer;
+  private final String localGoogleIdentity;
 
-  public GoGameController(GameData gameData) {
+  public GoGameController(GameData gameData, String localGoogleIdentity) {
+    this.localGoogleIdentity = localGoogleIdentity;
     gameConfiguration = gameData.getGameConfiguration();
     blackPlayer = gameConfiguration.getBlack();
     whitePlayer = gameConfiguration.getWhite();
@@ -154,7 +156,7 @@ public class GoGameController implements Serializable {
   }
 
   public boolean isLocalTurn() {
-    return getCurrentPlayer().getType() == PlayerType.LOCAL && !isGameFinished();
+    return isLocalPlayer(getCurrentPlayer()) && !isGameFinished();
   }
 
   public boolean isGameFinished() {
@@ -215,8 +217,7 @@ public class GoGameController implements Serializable {
   }
 
   public boolean isLocalGame() {
-    return getCurrentPlayer().getType() == PlayerType.LOCAL
-        && getOpponent().getType() == PlayerType.LOCAL;
+    return getGameConfiguration().getGameType() == GameType.LOCAL;
   }
 
   public boolean canUndo() {
@@ -234,6 +235,14 @@ public class GoGameController implements Serializable {
             .setWinner(getOpponentColor())
             .setResigned(true))
         .build();
+  }
+
+  public GoPlayer getWinner() {
+    return getGoPlayer(matchEndStatus.getScore().getWinner());
+  }
+
+  public boolean isLocalPlayer(GoPlayer player) {
+    return isLocalGame() || player.getGoogleId().equals(localGoogleIdentity);
   }
 
   public enum Mode {

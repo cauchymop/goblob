@@ -20,8 +20,6 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.MonteCarlo;
-import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 
 import javax.inject.Inject;
 
@@ -286,16 +284,13 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_19x19));
         break;
     }
-    switch (goGameController.getOpponent().getType()) {
-      case LOCAL:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
-        break;
-      case REMOTE:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-        if (goGameController.getGoPlayer(goGameController.getScore().getWinner()).getType() == PlayerType.LOCAL) {
-          getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
-        }
-        break;
+    if (goGameController.isLocalGame()) {
+      getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
+    } else {
+      getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
+      if (goGameController.isLocalPlayer(goGameController.getWinner())) {
+        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
+      }
     }
   }
 

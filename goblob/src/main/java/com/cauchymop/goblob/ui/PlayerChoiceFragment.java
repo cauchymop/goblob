@@ -10,16 +10,12 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.GameDatas;
-
-import static com.cauchymop.goblob.proto.PlayGameData.*;
 
 /**
  * Home Page Fragment.
  */
 public class PlayerChoiceFragment extends GoBlobBaseFragment {
 
-  private static final String OPPONENT_PARTICIPANT_ID = "opponent";
   private static final String TAG = PlayerChoiceFragment.class.getName();
   private RadioGroup opponentRadioGroup;
   private RadioGroup boardSizeRadioGroup;
@@ -40,10 +36,20 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
     configureGameButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        getGoBlobActivity().configureGame(getOpponent(), getBoardSize());
+        getGoBlobActivity().configureGame(isLocal(), getBoardSize());
       }
     });
     return v;
+  }
+
+  private boolean isLocal() {
+    switch (opponentRadioGroup.getCheckedRadioButtonId()) {
+      default:
+      case R.id.game_type_radio_local:
+        return true;
+      case R.id.game_type_radio_remote:
+        return false;
+    }
   }
 
   @Override
@@ -72,24 +78,6 @@ public class PlayerChoiceFragment extends GoBlobBaseFragment {
     newRadioButton.setText(label);
     newRadioButton.setId(id);
     boardSizeRadioGroup.addView(newRadioButton, layoutParams);
-  }
-
-  private GoPlayer getOpponent() {
-    PlayerType opponentType;
-    final String opponentDefaultName;
-
-    switch (opponentRadioGroup.getCheckedRadioButtonId()) {
-      default:
-      case R.id.game_type_radio_local:
-        opponentType = PlayerType.LOCAL;
-        opponentDefaultName = getString(R.string.opponent_default_name);
-        break;
-      case R.id.game_type_radio_remote:
-        opponentType = PlayerType.REMOTE;
-        opponentDefaultName = null;
-        break;
-    }
-    return GameDatas.createPlayer(opponentType, OPPONENT_PARTICIPANT_ID, opponentDefaultName);
   }
 
   public int getBoardSize() {
