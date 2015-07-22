@@ -20,7 +20,6 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -28,6 +27,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.turnbased.LoadMatchesResponse;
 import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdateReceivedListener;
@@ -392,13 +392,14 @@ public class MainActivity extends ActionBarActivity
     startActivityForResult(TurnBasedMultiplayer.getInboxIntent(googleApiClient), RC_CHECK_MATCHES);
   }
 
-  public void configureGame(GoPlayer opponentPlayer, int boardSize) {
+  public void configureGame(boolean isLocal, int boardSize) {
     this.boardSize = boardSize;
-    if (opponentPlayer.getType() == PlayerType.REMOTE) {
-      setWaitingScreenVisible(true);
-      startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1), RC_SELECT_PLAYER);
+    if (isLocal) {
+      GoPlayer player = GameDatas.createLocalGamePlayer(GameDatas.OPPONENT_PARTICIPANT_ID, getString(R.string.opponent_default_name));
+      displayGameConfigurationScreen(player, boardSize);
     } else {
-      displayGameConfigurationScreen(opponentPlayer, boardSize);
+      setWaitingScreenVisible(true);
+      startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1, false), RC_SELECT_PLAYER);
     }
   }
 
@@ -540,7 +541,7 @@ public class MainActivity extends ActionBarActivity
       }
     }
 
-    GoGameController goGameController = new GoGameController(gameData);
+    GoGameController goGameController = new GoGameController(gameData, getLocalGoogleId());
 
     if (gameData.getMoveCount() == 0) {
       takeTurn(goGameController, getMyIdFromCurrentMatch());
@@ -562,18 +563,18 @@ public class MainActivity extends ActionBarActivity
       if (turnBasedMatch.getData() == null) {
         String myId = getMyId(turnBasedMatch);
         String opponentId = getOpponentId(turnBasedMatch);
-        GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL);
-        GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE);
+        GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId);
+        GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
         return GameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
-            GameDatas.DEFAULT_KOMI, blackPlayer, whitePlayer);
+            GameDatas.DEFAULT_KOMI, GameType.REMOTE, blackPlayer, whitePlayer);
       } else {
         GameData gameData = GameData.parseFrom(turnBasedMatch.getData());
         if (!gameData.getGameConfiguration().hasBlack() || !gameData.getGameConfiguration().hasWhite()) {
           String myId = getMyId(turnBasedMatch);
           String opponentId = getOpponentId(turnBasedMatch);
           Map<String, GoPlayer> goPlayers = ImmutableMap.of(
-              myId, createGoPlayer(turnBasedMatch, myId, PlayerType.LOCAL),
-              opponentId, createGoPlayer(turnBasedMatch, opponentId, PlayerType.REMOTE));
+              myId, createGoPlayer(turnBasedMatch, myId),
+              opponentId, createGoPlayer(turnBasedMatch, opponentId));
           GameConfiguration gameConfiguration = gameData.getGameConfiguration();
 
           GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
@@ -609,23 +610,19 @@ public class MainActivity extends ActionBarActivity
   }
 
   private String getMyId(TurnBasedMatch turnBasedMatch) {
-    return turnBasedMatch.getParticipantId(Players.getCurrentPlayerId(googleApiClient));
+    return turnBasedMatch.getParticipantId(getLocalGoogleId());
   }
 
-  private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId, PlayerType playerType) {
+  public String getLocalGoogleId() {
+    return Players.getCurrentPlayerId(googleApiClient);
+  }
+
+  private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
     GoPlayer goPlayer;
-    if (isParticipantAutoMatch(match, participantId)) {
-      goPlayer = GameDatas.createPlayer(playerType, participantId, getString(R.string.opponent_default_name));
-    } else {
-      Player player = match.getParticipant(participantId).getPlayer();
-      goPlayer = GameDatas.createPlayer(playerType, participantId, player.getDisplayName());
-      getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
-    }
+    Player player = match.getParticipant(participantId).getPlayer();
+    goPlayer = GameDatas.createRemoteGamePlayer(participantId, player.getPlayerId(), player.getDisplayName());
+    getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     return goPlayer;
-  }
-
-  private boolean isParticipantAutoMatch(TurnBasedMatch match, String participantId) {
-    return participantId == null || match.getParticipant(participantId).getPlayer() == null;
   }
 
   @Override

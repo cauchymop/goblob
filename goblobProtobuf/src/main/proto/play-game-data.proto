@@ -37,7 +37,7 @@ message GameConfiguration {
   required ScoreType score_type = 6;
   optional GoPlayer black = 7;
   optional GoPlayer white = 8;
-  optional PlayerType game_type = 9;
+  optional GameType game_type = 9;
 }
 
 // Next ID: 6
@@ -75,10 +75,10 @@ message Position {
 message GoPlayer {
   required string id = 1;
   required string name = 2;
-  required string google_id = 3;
+  optional string google_id = 3;
 }
 
-enum PlayerType {
+enum GameType {
   LOCAL = 1;
   REMOTE = 2;
 }

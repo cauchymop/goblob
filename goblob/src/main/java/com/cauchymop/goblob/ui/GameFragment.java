@@ -20,8 +20,6 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.MonteCarlo;
-import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 
 import javax.inject.Inject;
 

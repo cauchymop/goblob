@@ -14,9 +14,9 @@ import android.widget.Spinner;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
-import com.cauchymop.goblob.proto.PlayGameData.PlayerType;
 import com.google.android.gms.games.Player;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
@@ -55,11 +55,11 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
     opponentColorSpinner = (Spinner) v.findViewById(R.id.opponent_color_spinner);
-    opponentColorSpinner.setAdapter(new PlayerTypeAdapter());
+    opponentColorSpinner.setAdapter(new PlayerColorAdapter());
     opponentColorSpinner.setEnabled(false);
 
     homePlayerColorSpinner = (Spinner) v.findViewById(R.id.home_player_color_spinner);
-    homePlayerColorSpinner.setAdapter(new PlayerTypeAdapter());
+    homePlayerColorSpinner.setAdapter(new PlayerColorAdapter());
     homePlayerColorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -85,7 +85,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    homePlayer = GameDatas.createPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
+    homePlayer = GameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
@@ -118,7 +118,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     if (isSignedIn()) {
       final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
       final String homePlayerName = currentPlayer.getDisplayName();
-      homePlayer = GameDatas.createPlayer(PlayerType.LOCAL, LOCAL_PARTICIPANT_ID, homePlayerName);
+      homePlayer = GameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, homePlayerName);
       getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
           currentPlayer.getIconImageUri());
       homePlayerNameField.setText(homePlayer.getName());
@@ -141,8 +141,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     GoPlayer whitePlayer = homePlayerColor == Color.WHITE ? homePlayer : opponentPlayer;
 
     GameData gameData = GameDatas.createGameData(boardSize, getHandicap(), getKomi(),
-        blackPlayer, whitePlayer);
-    GoGameController goGameController = new GoGameController(gameData);
+        PlayGameData.GameType.LOCAL, blackPlayer, whitePlayer);
+    GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
 
     getGoBlobActivity().startLocalGame(goGameController);
   }
@@ -164,9 +164,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     return Float.valueOf(komiText.getText().toString());
   }
 
-  private class PlayerTypeAdapter extends ArrayAdapter<Color> {
+  private class PlayerColorAdapter extends ArrayAdapter<Color> {
 
-    public PlayerTypeAdapter() {
+    public PlayerColorAdapter() {
       super(getGoBlobActivity(), android.R.layout.simple_spinner_item, Color.values());
     }
   }
