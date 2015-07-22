@@ -36,7 +36,7 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
     }
 
     MatchMenuItem item = getItem(position);
-    int textColor = item.isValid()? Color.BLACK:Color.RED;
+    int textColor = item.isValid() ? Color.BLACK : Color.RED;
 
     TextView firstLineLabelView = (TextView) matchRowView.findViewById( R.id.label_first_line);
     firstLineLabelView.setText(item.getFirstLine(getContext()));
