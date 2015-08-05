@@ -359,9 +359,17 @@ public class MainActivity extends ActionBarActivity
       TurnBasedMatch match = matchBuffer.get(i);
       MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(new MatchDescription(match));
       matchMenuItems.add(matchMenuItem);
+      updateAvatars(match);
     }
     matchBuffer.close();
     return matchMenuItems;
+  }
+
+  private void updateAvatars(TurnBasedMatch match) {
+    for (Participant participant : match.getParticipants()) {
+      Player player = participant.getPlayer();
+      getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
+    }
   }
 
   protected void signOut() {
