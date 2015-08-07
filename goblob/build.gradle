@@ -20,6 +20,7 @@ dependencies {
     compile "com.google.android.gms:play-services-games:${gms_library_version}"
     compile 'com.google.guava:guava:18.0'
     compile 'com.squareup.dagger:dagger:1.2.2'
+    compile 'com.jakewharton:butterknife:7.0.1'
     apt 'com.squareup.dagger:dagger-compiler:1.2.2'
     compile project(':BaseGameUtils')
     compile project(':goblobBase')
@@ -59,7 +60,8 @@ android {
     }
 
     lintOptions {
-        abortOnError false
+        abortOnError true
+        disable 'InvalidPackage'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7

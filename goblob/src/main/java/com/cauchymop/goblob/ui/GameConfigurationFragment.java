@@ -5,9 +5,7 @@ import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -15,9 +13,14 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
+import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.google.android.gms.games.Player;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.OnItemSelected;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
@@ -29,15 +32,17 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   public static final String EXTRA_OPPONENT = "opponent";
   public static final String EXTRA_BOARD_SIZE = "board_size";
   public static final String LOCAL_PARTICIPANT_ID = "local";
-  private Spinner opponentColorSpinner;
-  private Spinner homePlayerColorSpinner;
-  private EditText homePlayerNameField;
-  private EditText opponentNameField;
+
+  @Bind(R.id.opponent_color_spinner) Spinner opponentColorSpinner;
+  @Bind(R.id.home_player_color_spinner) Spinner homePlayerColorSpinner;
+  @Bind(R.id.home_player_name) EditText homePlayerNameField;
+  @Bind(R.id.opponent_player_name) EditText opponentNameField;
+  @Bind(R.id.handicap_spinner) Spinner handicapSpinner;
+  @Bind(R.id.komi_value) EditText komiText;
+
   private int boardSize;
   private GoPlayer opponentPlayer;
   private GoPlayer homePlayer;
-  private Spinner handicapSpinner;
-  private EditText komiText;
 
   public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
     GameConfigurationFragment instance = new GameConfigurationFragment();
@@ -54,25 +59,12 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
-    opponentColorSpinner = (Spinner) v.findViewById(R.id.opponent_color_spinner);
+    ButterKnife.bind(this, v);
+
     opponentColorSpinner.setAdapter(new PlayerColorAdapter());
     opponentColorSpinner.setEnabled(false);
 
-    homePlayerColorSpinner = (Spinner) v.findViewById(R.id.home_player_color_spinner);
     homePlayerColorSpinner.setAdapter(new PlayerColorAdapter());
-    homePlayerColorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        opponentColorSpinner.setSelection(1 - position);
-      }
-
-      @Override
-      public void onNothingSelected(AdapterView<?> parent) {
-      }
-    });
-
-    homePlayerNameField = (EditText) v.findViewById(R.id.home_player_name);
-    opponentNameField = (EditText) v.findViewById(R.id.opponent_player_name);
 
     final Bundle extras = getArguments();
     if (extras != null) {
@@ -90,17 +82,12 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
 
-    handicapSpinner = (Spinner) v.findViewById(R.id.handicap_spinner);
-    komiText = (EditText) v.findViewById(R.id.komi_value);
-
-    Button startGameButton = (Button) v.findViewById(R.id.start_game_button);
-    startGameButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        startGame();
-      }
-    });
     return v;
+  }
+
+  @Override public void onDestroyView() {
+    super.onDestroyView();
+    ButterKnife.unbind(this);
   }
 
   @Override
@@ -114,18 +101,13 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     configureCurrentPlayerFromGooglePlusAccount();
   }
 
-  private void configureCurrentPlayerFromGooglePlusAccount() {
-    if (isSignedIn()) {
-      final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
-      final String homePlayerName = currentPlayer.getDisplayName();
-      homePlayer = GameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, homePlayerName);
-      getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
-          currentPlayer.getIconImageUri());
-      homePlayerNameField.setText(homePlayer.getName());
-    }
+  @OnItemSelected(R.id.home_player_color_spinner)
+  void onHomePlayerColorSelected(int position) {
+    opponentColorSpinner.setSelection(1 - position);
   }
 
-  private void startGame() {
+  @OnClick(R.id.start_game_button)
+  void startGame() {
     final Editable opponentNameText = opponentNameField.getText();
     if (opponentNameText != null) {
       opponentPlayer = updateName(opponentPlayer, opponentNameText.toString());
@@ -145,6 +127,17 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
 
     getGoBlobActivity().startLocalGame(goGameController);
+  }
+
+  private void configureCurrentPlayerFromGooglePlusAccount() {
+    if (isSignedIn()) {
+      final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
+      final String homePlayerName = currentPlayer.getDisplayName();
+      homePlayer = GameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, homePlayerName);
+      getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
+          currentPlayer.getIconImageUri());
+      homePlayerNameField.setText(homePlayer.getName());
+    }
   }
 
   private GoPlayer updateName(GoPlayer player, String name) {

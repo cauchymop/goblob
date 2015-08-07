@@ -16,7 +16,7 @@ import com.google.common.base.Strings;
 import java.util.List;
 
 /**
- * Adapter displaying MatchMenuItem from the actionbar navigation spinner.
+ * Adapter displaying MatchMenuItem from the actionbar navigation matchesSpinner.
  */
 public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
 
