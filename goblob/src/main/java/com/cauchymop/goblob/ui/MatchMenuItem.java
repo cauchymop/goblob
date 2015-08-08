@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
 import com.google.common.base.Objects;
 
 /**
- * An ActionBar navigation matchesSpinner menu entry for a match.
+ * An ActionBar navigation spinner menu entry for a match.
  */
 public abstract class MatchMenuItem {
   private final String matchId;
