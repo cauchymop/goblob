@@ -288,7 +288,7 @@ public class MainActivity extends ActionBarActivity
   }
 
   /**
-   * Update asynchronously the matchesSpinner with all the current games, and run the given callback.
+   * Update asynchronously the spinner with all the current games, and run the given callback.
    */
   private void updateMatchSpinner(@Nullable final String matchId) {
     Log.d(TAG, "updateMatchSpinner: matchId = " + matchId);
@@ -640,7 +640,7 @@ public class MainActivity extends ActionBarActivity
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
     updateMatchSpinner();
-    // While the matchesSpinner is updating, we can reload the game, that is already displayed.
+    // While the spinner is updating, we can reload the game, that is already displayed.
     if (sameMatchId(turnBasedMatch, this.turnBasedMatch)) {
       loadGame(turnBasedMatch);
     }
