@@ -74,7 +74,7 @@ public class MainActivity extends ActionBarActivity
 
   private int boardSize = 9;
 
-  @Bind(R.id.toolbar_matches_spinner) Spinner matchesSpinner;
+  @Bind(R.id.toolbar_match_spinner) Spinner matchSpinner;
   @Bind(R.id.app_toolbar) Toolbar toolbar;
   @Bind(R.id.waiting_view) View waitingScreen;
 
@@ -138,10 +138,10 @@ public class MainActivity extends ActionBarActivity
     supportActionBar.setDisplayShowTitleEnabled(false);
     navigationSpinnerAdapter = new MatchesAdapter(supportActionBar.getThemedContext(), matchMenuItems);
 
-    matchesSpinner.setAdapter(navigationSpinnerAdapter);
+    matchSpinner.setAdapter(navigationSpinnerAdapter);
   }
 
-  @OnItemSelected(R.id.toolbar_matches_spinner)
+  @OnItemSelected(R.id.toolbar_match_spinner)
   void onMatchItemSelected(int position) {
     MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
     Log.e(TAG, "onItemSelected: " + item.getMatchId());
@@ -349,7 +349,7 @@ public class MainActivity extends ActionBarActivity
 
   @Nullable
   private MatchMenuItem getCurrentMatchMenuItem() {
-    return (MatchMenuItem) matchesSpinner.getSelectedItem();
+    return (MatchMenuItem) matchSpinner.getSelectedItem();
   }
 
   private void updateMatchSpinner() {
@@ -456,12 +456,12 @@ public class MainActivity extends ActionBarActivity
     for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
-        matchesSpinner.setSelection(index);
+        matchSpinner.setSelection(index);
         return index;
       }
     }
     Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
-    matchesSpinner.setSelection(0);
+    matchSpinner.setSelection(0);
     return 0;
   }
 
