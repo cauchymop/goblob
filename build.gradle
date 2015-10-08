@@ -20,6 +20,6 @@ allprojects {
 
         appcompat_library_version = '22.2.+'
         support_library_version = '22.2.+'
-        gms_library_version = '7.5.+'
+        gms_library_version = '7.8.+'
     }
 }
