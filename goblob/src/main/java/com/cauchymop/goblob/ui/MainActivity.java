@@ -90,7 +90,6 @@ public class MainActivity extends ActionBarActivity
   @Inject
   LocalGameRepository localGameRepository;
 
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
