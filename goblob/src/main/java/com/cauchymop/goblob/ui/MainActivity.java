@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
@@ -49,9 +48,14 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import static com.cauchymop.goblob.proto.PlayGameData.*;
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnItemSelected;
+
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
+import static com.cauchymop.goblob.proto.PlayGameData.GameType;
+import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.Players;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
@@ -69,11 +73,15 @@ public class MainActivity extends ActionBarActivity
   private static final String CURRENT_MATCH = "CURRENT_MATCH";
 
   private int boardSize = 9;
+
+  @Bind(R.id.toolbar_match_spinner) Spinner matchSpinner;
+  @Bind(R.id.app_toolbar) Toolbar toolbar;
+  @Bind(R.id.waiting_view) View waitingScreen;
+
   private AvatarManager avatarManager;
   private TurnBasedMatch turnBasedMatch;
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
-  private Spinner spinner;
   private boolean resolvingError;
   private GoogleApiClient googleApiClient;
   private boolean signInClicked;
@@ -94,6 +102,7 @@ public class MainActivity extends ActionBarActivity
         .addOnConnectionFailedListener(this)
         .build();
     setContentView(R.layout.activity_main);
+    ButterKnife.bind(this);
 
     if (savedInstanceState != null) {
       turnBasedMatch = savedInstanceState.getParcelable(CURRENT_MATCH);
@@ -122,27 +131,20 @@ public class MainActivity extends ActionBarActivity
 
   private void setUpToolbar() {
     // Set up the action bar to show a dropdown list.
-    Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
     setSupportActionBar(toolbar);
 
     ActionBar supportActionBar = getSupportActionBar();
     supportActionBar.setDisplayShowTitleEnabled(false);
     navigationSpinnerAdapter = new MatchesAdapter(supportActionBar.getThemedContext(), matchMenuItems);
 
-    spinner = (Spinner) toolbar.findViewById(R.id.actionbar_spinner);
-    spinner.setAdapter(navigationSpinnerAdapter);
-    spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
-        MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
-        Log.e(TAG, "onItemSelected: " + item.getMatchId());
-        handleMatchMenuItemSelection(item);
-      }
+    matchSpinner.setAdapter(navigationSpinnerAdapter);
+  }
 
-      @Override
-      public void onNothingSelected(AdapterView<?> adapterView) {
-      }
-    });
+  @OnItemSelected(R.id.toolbar_match_spinner)
+  void onMatchItemSelected(int position) {
+    MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
+    Log.e(TAG, "onItemSelected: " + item.getMatchId());
+    handleMatchMenuItemSelection(item);
   }
 
   @Override
@@ -346,7 +348,7 @@ public class MainActivity extends ActionBarActivity
 
   @Nullable
   private MatchMenuItem getCurrentMatchMenuItem() {
-    return (MatchMenuItem) spinner.getSelectedItem();
+    return (MatchMenuItem) matchSpinner.getSelectedItem();
   }
 
   private void updateMatchSpinner() {
@@ -453,12 +455,12 @@ public class MainActivity extends ActionBarActivity
     for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
-        spinner.setSelection(index);
+        matchSpinner.setSelection(index);
         return index;
       }
     }
     Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
-    spinner.setSelection(0);
+    matchSpinner.setSelection(0);
     return 0;
   }
 
@@ -691,7 +693,7 @@ public class MainActivity extends ActionBarActivity
   }
 
   public void setWaitingScreenVisible(boolean visible) {
-    findViewById(R.id.waiting_view).setVisibility(visible ? View.VISIBLE : View.GONE);
+    waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
   }
 
   public boolean isSignedIn() {

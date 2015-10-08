@@ -1,16 +1,16 @@
 package com.cauchymop.goblob.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.cauchymop.goblob.R;
+
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 
 public class UpdateApplicationFragment extends GoBlobBaseFragment {
@@ -35,16 +35,16 @@ public class UpdateApplicationFragment extends GoBlobBaseFragment {
       Bundle savedInstanceState) {
     // Inflate the layout for this fragment
     View view = inflater.inflate(R.layout.fragment_update_application, container, false);
-    Button updateButton = (Button) view.findViewById(R.id.update_button);
-    updateButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        update();
-      }
-    });
+    ButterKnife.bind(this, view);
     return view;
   }
 
+  @Override public void onDestroyView() {
+    super.onDestroyView();
+    ButterKnife.unbind(this);
+  }
+
+  @OnClick(R.id.update_button)
   public void update() {
     final String appPackageName = getActivity().getApplicationContext().getPackageName(); // getPackageName() from Context or Activity object
     try {

@@ -23,8 +23,13 @@ import com.cauchymop.goblob.model.MonteCarlo;
 
 import javax.inject.Inject;
 
-import static com.cauchymop.goblob.proto.PlayGameData.*;
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
+import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
+import static com.cauchymop.goblob.proto.PlayGameData.Move;
+import static com.cauchymop.goblob.proto.PlayGameData.Score;
 
 /**
  * Game Page Fragment.
@@ -39,6 +44,12 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
 
   @Inject
   LocalGameRepository localGameRepository;
+  @Bind(R.id.boardViewContainer) FrameLayout boardViewContainer;
+  @Bind(R.id.action_button) Button actionButton;
+  @Bind(R.id.title) TextView titleView;
+  @Bind(R.id.titleImage) ImageView titleImage;
+  @Bind(R.id.avatarImage) ImageView avatarImage;
+  @Bind(R.id.message_textview) TextView messageView;
 
   public static GameFragment newInstance(GoGameController gameController) {
     GameFragment fragment = new GameFragment();
@@ -63,7 +74,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.fragment_game, container, false);
+    View view = inflater.inflate(R.layout.fragment_game, container, false);
+    ButterKnife.bind(this, view);
+    return view;
   }
 
   @Override
@@ -77,6 +90,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     super.onDestroyView();
     Log.d(TAG, "onDestroyView");
     cleanBoardView();
+    ButterKnife.unbind(this);
   }
 
   @Override
@@ -115,7 +129,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void initViews() {
-    FrameLayout boardViewContainer = (FrameLayout) getView().findViewById(R.id.boardViewContainer);
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
     goBoardView.addListener(this);
     configureActionButton();
@@ -125,7 +138,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void enableInteractions(boolean enabled) {
-    Button actionButton = (Button) getView().findViewById(R.id.action_button);
     actionButton.setEnabled(enabled);
     goBoardView.setClickable(enabled);
   }
@@ -155,7 +167,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void configureActionButton(int buttonLabel, View.OnClickListener clickListener) {
-    Button actionButton = (Button) getView().findViewById(R.id.action_button);
     actionButton.setText(buttonLabel);
     actionButton.setOnClickListener(clickListener);
   }
@@ -236,12 +247,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void initTitleArea() {
-    TextView titleView = (TextView) getView().findViewById(R.id.title);
-    ImageView titleImage = (ImageView) getView().findViewById(R.id.titleImage);
     final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
     titleImage.setImageResource(goGameController.getCurrentColor() == Color.WHITE ? R.drawable.white_stone : R.drawable.black_stone);
-    ImageView avatarImage = (ImageView) getView().findViewById(R.id.avatarImage);
     getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getName());
   }
 
@@ -265,7 +273,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       message = null;
     }
 
-    TextView messageView = (TextView) getView().findViewById(R.id.message_textview);
     messageView.setText(message);
   }
 
