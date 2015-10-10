@@ -406,15 +406,19 @@ public class MainActivity extends ActionBarActivity
     this.boardSize = boardSize;
     if (isLocal) {
       GoPlayer player = GameDatas.createLocalGamePlayer(GameDatas.OPPONENT_PARTICIPANT_ID, getString(R.string.opponent_default_name));
-      displayGameConfigurationScreen(player, boardSize);
+      GameConfiguration localGameConfiguration = GameConfiguration.newBuilder()
+          .setBoardSize(boardSize)
+          .setWhite(player)
+          .build();
+      displayGameConfigurationScreen(localGameConfiguration);
     } else {
       setWaitingScreenVisible(true);
       startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1, false), RC_SELECT_PLAYER);
     }
   }
 
-  public void displayGameConfigurationScreen(GoPlayer opponentPlayer, int boardSize) {
-    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(opponentPlayer, boardSize);
+  public void displayGameConfigurationScreen(GameConfiguration localGameConfiguration) {
+    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(localGameConfiguration);
     displayFragment(gameConfigurationFragment);
   }
 

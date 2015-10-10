@@ -44,12 +44,23 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   private GoPlayer opponentPlayer;
   private GoPlayer homePlayer;
 
-  public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
+//  public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
+//    GameConfigurationFragment instance = new GameConfigurationFragment();
+//
+//    Bundle args = new Bundle();
+//    args.putSerializable(EXTRA_OPPONENT, opponent);
+//    args.putInt(EXTRA_BOARD_SIZE, boardSize);
+//    instance.setArguments(args);
+//
+//    return instance;
+//  }
+
+  public static GameConfigurationFragment newInstance(PlayGameData.GameConfiguration gameConfiguration) {
     GameConfigurationFragment instance = new GameConfigurationFragment();
 
     Bundle args = new Bundle();
-    args.putSerializable(EXTRA_OPPONENT, opponent);
-    args.putInt(EXTRA_BOARD_SIZE, boardSize);
+    args.putSerializable(EXTRA_OPPONENT, gameConfiguration.getWhite());
+    args.putInt(EXTRA_BOARD_SIZE, gameConfiguration.getBoardSize());
     instance.setArguments(args);
 
     return instance;

@@ -1,3 +1,8 @@
+In progress:
+- move gameconfiguration creation code from MainActivity.configureGame to GameDatas, with handicap, komi and score_type
+- make Player 1 (you) configuration part of the given GameConfiguration and use komi, handicap...
+- in onActivityResult, call displayGameConfiguration with a configured Remote GameConfigfuration
+
 Next things to do:
 - handicap in remote games
 - rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
@@ -11,3 +16,9 @@ Medium priority:
 Longer term:
 - Move to a NavigationDrawer or keep spinner in toolbar
 - continue a game in remote mode
+
+Crazy projects:
+- cardboard
+- TV (chromecast, TV)
+- Wear
+- IA
