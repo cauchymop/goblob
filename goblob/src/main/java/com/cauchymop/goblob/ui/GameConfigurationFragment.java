@@ -10,12 +10,15 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.google.android.gms.games.Player;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -39,6 +42,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @Bind(R.id.opponent_player_name) EditText opponentNameField;
   @Bind(R.id.handicap_spinner) Spinner handicapSpinner;
   @Bind(R.id.komi_value) EditText komiText;
+
+  @Inject GameDatas gameDatas;
 
   private int boardSize;
   private GoPlayer opponentPlayer;
@@ -67,6 +72,12 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   }
 
   @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    Injector.inject(this);
+  }
+
+  @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
@@ -88,7 +99,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
       throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
     }
 
-    homePlayer = GameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
+    homePlayer = gameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
 
     opponentNameField.setText(opponentPlayer.getName());
     homePlayerNameField.setText(homePlayer.getName());
@@ -133,7 +144,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     GoPlayer blackPlayer = homePlayerColor == Color.BLACK ? homePlayer : opponentPlayer;
     GoPlayer whitePlayer = homePlayerColor == Color.WHITE ? homePlayer : opponentPlayer;
 
-    GameData gameData = GameDatas.createGameData(boardSize, getHandicap(), getKomi(),
+    GameData gameData = gameDatas.createGameData(boardSize, getHandicap(), getKomi(),
         PlayGameData.GameType.LOCAL, blackPlayer, whitePlayer);
     GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
 
@@ -144,7 +155,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     if (isSignedIn()) {
       final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
       final String homePlayerName = currentPlayer.getDisplayName();
-      homePlayer = GameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, homePlayerName);
+      homePlayer = gameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, homePlayerName);
       getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
           currentPlayer.getIconImageUri());
       homePlayerNameField.setText(homePlayer.getName());

@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model;
 
+import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -8,6 +9,8 @@ import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import static com.cauchymop.goblob.proto.PlayGameData.*;
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
@@ -21,6 +24,8 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
  */
 public class GoGameController implements Serializable {
 
+  @Inject GameDatas gameDatas;
+
   private ArrayDeque<Move> moves = Queues.newArrayDeque();
   private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();
   private final GoGame goGame;
@@ -31,6 +36,7 @@ public class GoGameController implements Serializable {
   private final String localGoogleIdentity;
 
   public GoGameController(GameData gameData, String localGoogleIdentity) {
+    Injector.inject(this);
     this.localGoogleIdentity = localGoogleIdentity;
     gameConfiguration = gameData.getGameConfiguration();
     blackPlayer = gameConfiguration.getBlack();
@@ -148,7 +154,7 @@ public class GoGameController implements Serializable {
   }
 
   public GameData getGameData() {
-    return GameDatas.createGameData(gameConfiguration, moves, matchEndStatus);
+    return gameDatas.createGameData(gameConfiguration, moves, matchEndStatus);
   }
 
   public GameConfiguration getGameConfiguration() {

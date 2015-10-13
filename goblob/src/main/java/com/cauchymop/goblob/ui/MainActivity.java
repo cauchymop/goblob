@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
@@ -87,13 +88,13 @@ public class MainActivity extends ActionBarActivity
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
 
-  @Inject
-  LocalGameRepository localGameRepository;
+  @Inject GameDatas gameDatas;
+  @Inject LocalGameRepository localGameRepository;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ((GoApplication) getApplication()).inject(this);
+    Injector.inject(this);
 
     googleApiClient = new GoogleApiClient.Builder(this)
         .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
@@ -405,12 +406,7 @@ public class MainActivity extends ActionBarActivity
   public void configureGame(boolean isLocal, int boardSize) {
     this.boardSize = boardSize;
     if (isLocal) {
-      GoPlayer player = GameDatas.createLocalGamePlayer(GameDatas.OPPONENT_PARTICIPANT_ID, getString(R.string.opponent_default_name));
-      GameConfiguration localGameConfiguration = GameConfiguration.newBuilder()
-          .setBoardSize(boardSize)
-          .setWhite(player)
-          .build();
-      displayGameConfigurationScreen(localGameConfiguration);
+      displayGameConfigurationScreen(gameDatas.createLocalGameConfiguration(boardSize));
     } else {
       setWaitingScreenVisible(true);
       startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1, false), RC_SELECT_PLAYER);
@@ -579,7 +575,7 @@ public class MainActivity extends ActionBarActivity
         String opponentId = getOpponentId(turnBasedMatch);
         GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId);
         GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
-        return GameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
+        return gameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
             GameDatas.DEFAULT_KOMI, GameType.REMOTE, blackPlayer, whitePlayer);
       } else {
         GameData gameData = GameData.parseFrom(turnBasedMatch.getData());
@@ -634,7 +630,7 @@ public class MainActivity extends ActionBarActivity
   private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
     GoPlayer goPlayer;
     Player player = match.getParticipant(participantId).getPlayer();
-    goPlayer = GameDatas.createRemoteGamePlayer(participantId, player.getPlayerId(), player.getDisplayName());
+    goPlayer = gameDatas.createRemoteGamePlayer(participantId, player.getPlayerId(), player.getDisplayName());
     getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     return goPlayer;
   }

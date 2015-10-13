@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.MonteCarlo;
@@ -42,8 +43,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private GoGameController goGameController;
   private GoBoardView goBoardView;
 
-  @Inject
-  LocalGameRepository localGameRepository;
+  @Inject LocalGameRepository localGameRepository;
+  @Inject GameDatas gameDatas;
+
   @Bind(R.id.boardViewContainer) FrameLayout boardViewContainer;
   @Bind(R.id.action_button) Button actionButton;
   @Bind(R.id.title) TextView titleView;
@@ -62,7 +64,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ((GoApplication) getActivity().getApplication()).inject(this);
+    Injector.inject(this);
 
     setHasOptionsMenu(true);
     Log.d(TAG, "onCreate: " + getArguments());
@@ -150,7 +152,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
         configureActionButton(R.string.button_pass_label, new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            play(GameDatas.createPassMove());
+            play(gameDatas.createPassMove());
           }
         });
         break;
@@ -206,7 +208,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
 
   @Override
   public void played(int x, int y) {
-    play(GameDatas.createMove(x, y));
+    play(gameDatas.createMove(x, y));
   }
 
   private void play(Move move) {
@@ -317,6 +319,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     int boardSize = goGameController.getGameConfiguration().getBoardSize();
     int x = bestMove % boardSize;
     int y = bestMove / boardSize;
-    goGameController.playMove(GameDatas.createMove(x, y));
+    goGameController.playMove(gameDatas.createMove(x, y));
   }
 }

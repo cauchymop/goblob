@@ -1,10 +1,14 @@
 package com.cauchymop.goblob.model;
 
+import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.GameType;
 import com.google.common.collect.ImmutableList;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -20,26 +24,29 @@ public class GameDatas {
   public static final int VERSION = 1;
   public static final String OPPONENT_PARTICIPANT_ID = "opponent";
 
-  public static Move createPassMove() {
+  @Inject @Named("OpponentDefaultName")
+  String opponentDefaultName;
+
+  public Move createPassMove() {
     return Move.newBuilder().setType(Move.MoveType.PASS).build();
   }
 
-  public static Move createMove(int x, int y) {
+  public Move createMove(int x, int y) {
     return Move.newBuilder()
         .setType(Move.MoveType.MOVE)
         .setPosition(PlayGameData.Position.newBuilder()
-            .setX(x)
-            .setY(y))
+                .setX(x)
+                .setY(y))
         .build();
   }
 
-  public static GameData createGameData(int size, int handicap, float komi, GameType gameType, GoPlayer blackPlayer,
+  public GameData createGameData(int size, int handicap, float komi, GameType gameType, GoPlayer blackPlayer,
       GoPlayer whitePlayer) {
     return createGameData(createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer),
         ImmutableList.<Move>of(), null);
   }
 
-  public static GameData createGameData(GameConfiguration gameConfiguration, Iterable<Move> moves,
+  public GameData createGameData(GameConfiguration gameConfiguration, Iterable<Move> moves,
       MatchEndStatus matchEndStatus) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
@@ -51,7 +58,7 @@ public class GameDatas {
     return builder.build();
   }
 
-  public static GameConfiguration createGameConfiguration(int size, int handicap, float komi,
+  public GameConfiguration createGameConfiguration(int size, int handicap, float komi,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)
@@ -66,14 +73,26 @@ public class GameDatas {
         .build();
   }
 
-  public static GoPlayer createLocalGamePlayer(String id, String name) {
+    public GameConfiguration createLocalGameConfiguration(int boardSize) {
+        GoPlayer player = createLocalGamePlayer(GameDatas.OPPONENT_PARTICIPANT_ID, opponentDefaultName);
+        GameConfiguration localGameConfiguration = GameConfiguration.newBuilder()
+            .setHandicap(DEFAULT_HANDICAP)
+            .setKomi(DEFAULT_KOMI)
+            .setScoreType(GameConfiguration.ScoreType.CHINESE)
+            .setBoardSize(boardSize)
+            .setWhite(player)
+            .build();
+        return localGameConfiguration;
+    }
+
+  public GoPlayer createLocalGamePlayer(String id, String name) {
     return GoPlayer.newBuilder()
         .setId(id)
         .setName(name)
         .build();
   }
 
-  public static GoPlayer createRemoteGamePlayer(String id, String googleId, String name) {
+  public GoPlayer createRemoteGamePlayer(String id, String googleId, String name) {
     return GoPlayer.newBuilder()
         .setId(id)
         .setGoogleId(googleId)
