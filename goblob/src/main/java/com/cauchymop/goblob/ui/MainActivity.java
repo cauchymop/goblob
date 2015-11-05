@@ -630,7 +630,7 @@ public class MainActivity extends ActionBarActivity
   private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
     GoPlayer goPlayer;
     Player player = match.getParticipant(participantId).getPlayer();
-    goPlayer = gameDatas.createRemoteGamePlayer(participantId, player.getPlayerId(), player.getDisplayName());
+    goPlayer = gameDatas.createGamePlayer(participantId, player.getDisplayName(), player.getPlayerId());
     getAvatarManager().setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     return goPlayer;
   }

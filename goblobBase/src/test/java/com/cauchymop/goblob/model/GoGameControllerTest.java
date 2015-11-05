@@ -15,8 +15,8 @@ public class GoGameControllerTest {
 
   private static final int TEST_HANDICAP = 0;
   private static final float TEST_KOMI = 7.5f;
-  private static final GoPlayer TEST_BLACK_PLAYER = GameDatas.createLocalGamePlayer("blackid", "black");
-  private static final GoPlayer TEST_WHITE_PLAYER = GameDatas.createLocalGamePlayer("whiteid", "white");
+  private static final GoPlayer TEST_BLACK_PLAYER = GameDatas.createGamePlayer("blackid", "black");
+  private static final GoPlayer TEST_WHITE_PLAYER = GameDatas.createGamePlayer("whiteid", "white");
 
   @Test
   public void testNew_gameData() {

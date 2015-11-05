@@ -1,7 +1,8 @@
 In progress:
-- move gameconfiguration creation code from MainActivity.configureGame to GameDatas, with handicap, komi and score_type
-- make Player 1 (you) configuration part of the given GameConfiguration and use komi, handicap...
-- in onActivityResult, call displayGameConfiguration with a configured Remote GameConfigfuration
+- swap players
+- GoogleIdentity should be injected and in our GoogleIdentityProvider we should probably cache the avatar (getGoBlobActivity().getAvatarManager().setAvatarUri(playerName, currentPlayer.getIconImageUri());)
+- Use the GoogleIdentity in the Player One Default Name Provider
+- in onActivityResult, call displayGameConfiguration with a configured Remote GameConfiguration
 
 Next things to do:
 - handicap in remote games

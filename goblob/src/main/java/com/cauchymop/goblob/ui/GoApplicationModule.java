@@ -36,9 +36,16 @@ class GoApplicationModule {
   }
 
   @Provides
-  @Named("OpponentDefaultName")
-  String provideOpponentDefaultName() {
-    return applicationContext.getString(R.string.opponent_default_name);
+  @Named("PlayerOneDefaultName")
+  String providePlayerOneDefaultName() {
+    // TODO: Use Injected Google Identity to use Connected Google User Name instead if available
+    return applicationContext.getString(R.string.player_one_default_name);
+  }
+
+  @Provides
+  @Named("PlayerTwoDefaultName")
+  String providePlayerTwoDefaultName() {
+    return applicationContext.getString(R.string.player_two_default_name);
   }
 
   @Provides

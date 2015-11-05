@@ -1,11 +1,9 @@
 package com.cauchymop.goblob.ui;
 
 import android.os.Bundle;
-import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -14,58 +12,41 @@ import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
-import com.google.android.gms.games.Player;
 
 import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnItemSelected;
-
-import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
  * Home Page Fragment.
  */
 public class GameConfigurationFragment extends GoBlobBaseFragment {
 
-  public static final String EXTRA_OPPONENT = "opponent";
-  public static final String EXTRA_BOARD_SIZE = "board_size";
-  public static final String LOCAL_PARTICIPANT_ID = "local";
+  private static final String EXTRA_GAME_CONFIG = "game_configuration";
 
-  @Bind(R.id.opponent_color_spinner) Spinner opponentColorSpinner;
-  @Bind(R.id.home_player_color_spinner) Spinner homePlayerColorSpinner;
-  @Bind(R.id.home_player_name) EditText homePlayerNameField;
-  @Bind(R.id.opponent_player_name) EditText opponentNameField;
-  @Bind(R.id.handicap_spinner) Spinner handicapSpinner;
-  @Bind(R.id.komi_value) EditText komiText;
+  @Bind(R.id.black_player_name)
+  EditText blackPlayerNameField;
+  @Bind(R.id.white_player_name)
+  EditText whitePlayerNameField;
+  @Bind(R.id.handicap_spinner)
+  Spinner handicapSpinner;
+  @Bind(R.id.komi_value)
+  EditText komiText;
 
-  @Inject GameDatas gameDatas;
+  @Inject
+  GameDatas gameDatas;
 
-  private int boardSize;
-  private GoPlayer opponentPlayer;
-  private GoPlayer homePlayer;
-
-//  public static GameConfigurationFragment newInstance(GoPlayer opponent, int boardSize) {
-//    GameConfigurationFragment instance = new GameConfigurationFragment();
-//
-//    Bundle args = new Bundle();
-//    args.putSerializable(EXTRA_OPPONENT, opponent);
-//    args.putInt(EXTRA_BOARD_SIZE, boardSize);
-//    instance.setArguments(args);
-//
-//    return instance;
-//  }
+  GoPlayer blackPlayer;
+  GoPlayer whitePlayer;
 
   public static GameConfigurationFragment newInstance(PlayGameData.GameConfiguration gameConfiguration) {
     GameConfigurationFragment instance = new GameConfigurationFragment();
 
     Bundle args = new Bundle();
-    args.putSerializable(EXTRA_OPPONENT, gameConfiguration.getWhite());
-    args.putInt(EXTRA_BOARD_SIZE, gameConfiguration.getBoardSize());
+    args.putSerializable(EXTRA_GAME_CONFIG, gameConfiguration);
     instance.setArguments(args);
 
     return instance;
@@ -79,87 +60,51 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+                           Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
     ButterKnife.bind(this, v);
 
-    opponentColorSpinner.setAdapter(new PlayerColorAdapter());
-    opponentColorSpinner.setEnabled(false);
-
-    homePlayerColorSpinner.setAdapter(new PlayerColorAdapter());
-
-    final Bundle extras = getArguments();
-    if (extras != null) {
-      boardSize = extras.getInt(EXTRA_BOARD_SIZE);
-      opponentPlayer = (GoPlayer) extras.getSerializable(EXTRA_OPPONENT);
-    } else {
-      // This should never happen: if extras are null, it means previous activity has not
-      // provided the necessary data we need to create a Game => we finish to go back to
-      // previous screen.
-      throw new RuntimeException("A GameConfigurationFragment should always be provided boardSize and opponent Player as EXTRA arguments!");
-    }
-
-    homePlayer = gameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, getString(R.string.home_player_default_name));
-
-    opponentNameField.setText(opponentPlayer.getName());
-    homePlayerNameField.setText(homePlayer.getName());
+    init(getInitialGameConfiguration());
 
     return v;
   }
 
-  @Override public void onDestroyView() {
+  private PlayGameData.GameConfiguration getInitialGameConfiguration() {
+    final Bundle extras = getArguments();
+    if (extras == null) {
+      // This should never happen
+      throw new RuntimeException("A GameConfigurationFragment should always be provided " +
+          "a PlayGameData.GameConfiguration as EXTRA argument!");
+    }
+    return (PlayGameData.GameConfiguration) extras.getSerializable(EXTRA_GAME_CONFIG);
+  }
+
+  private void init(PlayGameData.GameConfiguration configuration) {
+    blackPlayer = configuration.getBlack();
+    whitePlayer = configuration.getWhite();
+
+    blackPlayerNameField.setText(blackPlayer.getName());
+    whitePlayerNameField.setText(whitePlayer.getName());
+    komiText.setText(String.valueOf(configuration.getKomi()));
+    setHandicap(configuration.getHandicap());
+  }
+
+  @Override
+  public void onDestroyView() {
     super.onDestroyView();
     ButterKnife.unbind(this);
   }
 
-  @Override
-  public void onViewCreated(View view, Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    configureCurrentPlayerFromGooglePlusAccount();
-  }
-
-  @Override
-  public void updateFromConnectionStatus() {
-    configureCurrentPlayerFromGooglePlusAccount();
-  }
-
-  @OnItemSelected(R.id.home_player_color_spinner)
-  void onHomePlayerColorSelected(int position) {
-    opponentColorSpinner.setSelection(1 - position);
-  }
 
   @OnClick(R.id.start_game_button)
   void startGame() {
-    final Editable opponentNameText = opponentNameField.getText();
-    if (opponentNameText != null) {
-      opponentPlayer = updateName(opponentPlayer, opponentNameText.toString());
-    }
-
-    final Editable homePayerNameText = homePlayerNameField.getText();
-    if (homePayerNameText != null) {
-      homePlayer = updateName(homePlayer, homePayerNameText.toString());
-    }
-
-    final Color homePlayerColor = (Color) homePlayerColorSpinner.getSelectedItem();
-    GoPlayer blackPlayer = homePlayerColor == Color.BLACK ? homePlayer : opponentPlayer;
-    GoPlayer whitePlayer = homePlayerColor == Color.WHITE ? homePlayer : opponentPlayer;
-
-    GameData gameData = gameDatas.createGameData(boardSize, getHandicap(), getKomi(),
-        PlayGameData.GameType.LOCAL, blackPlayer, whitePlayer);
+    PlayGameData.GameData gameData = gameDatas.createGameData(getGameConfiguration());
     GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
-
     getGoBlobActivity().startLocalGame(goGameController);
   }
 
-  private void configureCurrentPlayerFromGooglePlusAccount() {
-    if (isSignedIn()) {
-      final Player currentPlayer = getGoBlobActivity().getLocalPlayer();
-      final String homePlayerName = currentPlayer.getDisplayName();
-      homePlayer = gameDatas.createLocalGamePlayer(LOCAL_PARTICIPANT_ID, homePlayerName);
-      getGoBlobActivity().getAvatarManager().setAvatarUri(homePlayerName,
-          currentPlayer.getIconImageUri());
-      homePlayerNameField.setText(homePlayer.getName());
-    }
+  private PlayGameData.GameConfiguration getGameConfiguration() {
+    return gameDatas.createGameConfiguration(getSize(), getHandicap(), getKomi(), getGameType(), getBlackPlayer(), getWhitePlayer());
   }
 
   private GoPlayer updateName(GoPlayer player, String name) {
@@ -175,14 +120,31 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     }
   }
 
+  private void setHandicap(int handicap) {
+    int index = (handicap == 0 ? 0 : handicap - 1);
+    handicapSpinner.setSelection(index);
+  }
+
   private float getKomi() {
     return Float.valueOf(komiText.getText().toString());
   }
 
-  private class PlayerColorAdapter extends ArrayAdapter<Color> {
-
-    public PlayerColorAdapter() {
-      super(getGoBlobActivity(), android.R.layout.simple_spinner_item, Color.values());
-    }
+  private int getSize() {
+    return getInitialGameConfiguration().getBoardSize();
   }
+
+  private PlayGameData.GameType getGameType() {
+    return getInitialGameConfiguration().getGameType();
+  }
+
+  private GoPlayer getWhitePlayer() {
+    final String whitePlayerName = whitePlayerNameField.getText().toString();
+    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getGoogleId());
+  }
+
+  private GoPlayer getBlackPlayer() {
+    final String blackPayerName = blackPlayerNameField.getText().toString();
+    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getGoogleId());
+  }
+
 }
