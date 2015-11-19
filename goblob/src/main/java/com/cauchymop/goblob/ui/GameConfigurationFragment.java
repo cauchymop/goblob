@@ -13,6 +13,7 @@ import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
+import com.google.android.gms.games.Player;
 
 import javax.inject.Inject;
 
@@ -95,12 +96,22 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     ButterKnife.unbind(this);
   }
 
-
   @OnClick(R.id.start_game_button)
   void startGame() {
     PlayGameData.GameData gameData = gameDatas.createGameData(getGameConfiguration());
     GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
     getGoBlobActivity().startLocalGame(goGameController);
+  }
+
+  @OnClick(R.id.swap_players_button)
+  void swapPlayers() {
+    GoPlayer tempPlayer = whitePlayer;
+    whitePlayer = blackPlayer;
+    blackPlayer = tempPlayer;
+
+    String tempPlayerName = blackPlayerNameField.getText().toString();
+    blackPlayerNameField.setText(whitePlayerNameField.getText().toString());
+    whitePlayerNameField.setText(tempPlayerName);
   }
 
   private PlayGameData.GameConfiguration getGameConfiguration() {

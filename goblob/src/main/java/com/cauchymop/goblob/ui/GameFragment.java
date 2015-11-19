@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.injection.Injector;
+import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.MonteCarlo;
@@ -45,6 +46,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
 
   @Inject LocalGameRepository localGameRepository;
   @Inject GameDatas gameDatas;
+  @Inject AvatarManager avatarManager;
 
   @Bind(R.id.boardViewContainer) FrameLayout boardViewContainer;
   @Bind(R.id.action_button) Button actionButton;
@@ -252,7 +254,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
     titleView.setText(currentPlayer.getName());
     titleImage.setImageResource(goGameController.getCurrentColor() == Color.WHITE ? R.drawable.white_stone : R.drawable.black_stone);
-    getGoBlobActivity().getAvatarManager().loadImage(avatarImage, currentPlayer.getName());
+    avatarManager.loadImage(avatarImage, currentPlayer.getName());
   }
 
   /**
