@@ -11,7 +11,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:minHeight="?attr/actionBarSize"
-      android:background="@color/toolbar_bg">
+      android:background="@color/primary_middle">
 
     <Spinner
         android:id="@+id/toolbar_match_spinner"

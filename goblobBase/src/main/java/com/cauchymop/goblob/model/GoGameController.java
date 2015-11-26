@@ -24,7 +24,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
  */
 public class GoGameController implements Serializable {
 
-  @Inject GameDatas gameDatas;
+  @Inject transient GameDatas gameDatas;
 
   private ArrayDeque<Move> moves = Queues.newArrayDeque();
   private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();

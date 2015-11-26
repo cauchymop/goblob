@@ -1,21 +1,22 @@
 <resources>
 
     <style name="AppBaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
-      <!-- Set AppCompat’s color theming attrs -->
-      <item name="colorPrimary">@color/primary</item>
-      <item name="colorPrimaryDark">@color/primary_dark</item>
-      <item name="colorAccent">@color/primary_dark</item>
-      <item name="colorControlHighlight">@color/primary_dark</item>
-      <item name="android:windowBackground">@drawable/board_bg</item>
-
-      <item name="windowActionBar">false</item>
-      <item name="android:windowNoTitle">true</item>
+        <!-- Set AppCompat’s color theming attrs -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/primary_dark</item>
+        <item name="colorControlHighlight">@color/primary_dark</item>
+        <item name="android:windowBackground">@drawable/board_bg</item>
+        <item name="colorButtonNormal">@color/primary_middle</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+
     <style name="Title" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>

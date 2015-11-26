@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -52,7 +52,6 @@ import javax.inject.Inject;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
-import dagger.Lazy;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -63,7 +62,7 @@ import static com.google.android.gms.games.Games.Players;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 import static com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchResult;
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends AppCompatActivity
     implements OnTurnBasedMatchUpdateReceivedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, GoApplicationModule.GoogleApiClientProvider {
 
   private static final int RC_REQUEST_ACHIEVEMENTS = 1;
@@ -88,7 +87,7 @@ public class MainActivity extends ActionBarActivity
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
 
-  @Inject Lazy<GameDatas> gameDatas;
+  @Inject GameDatas gameDatas;
   @Inject LocalGameRepository localGameRepository;
   @Inject AvatarManager avatarManager;
 
@@ -116,6 +115,16 @@ public class MainActivity extends ActionBarActivity
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment());
     }
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    ButterKnife.unbind(this);
+    turnBasedMatch = null;
+    googleApiClient.unregisterConnectionCallbacks(this);
+    googleApiClient.unregisterConnectionFailedListener(this);
+    googleApiClient.disconnect();
   }
 
   @Override
@@ -293,7 +302,8 @@ public class MainActivity extends ActionBarActivity
    * Update asynchronously the spinner with all the current games, and run the given callback.
    */
   private void updateMatchSpinner(@Nullable final String matchId) {
-    Log.d(TAG, "updateMatchSpinner: matchId = " + matchId);
+    final long requestId = System.currentTimeMillis();
+    Log.d(TAG, String.format("updateMatchSpinner: matchId = %s, requestId = %d", matchId, requestId));
     final String previousMatchId = getCurrentMatchId();
 
     if (!isSignedIn()) {
@@ -309,6 +319,7 @@ public class MainActivity extends ActionBarActivity
         new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
           @Override
           public void onResult(TurnBasedMultiplayer.LoadMatchesResult loadMatchesResult) {
+            Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId));
             LoadMatchesResponse matches = loadMatchesResult.getMatches();
             List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
             newMatchMenuItems.addAll(getMatchMenuItems(matches.getMyTurnMatches()));
@@ -408,7 +419,7 @@ public class MainActivity extends ActionBarActivity
   public void configureGame(boolean isLocal, int boardSize) {
     this.boardSize = boardSize;
     if (isLocal) {
-      displayGameConfigurationScreen(gameDatas.get().createLocalGameConfiguration(boardSize));
+      displayGameConfigurationScreen(gameDatas.createLocalGameConfiguration(boardSize));
     } else {
       setWaitingScreenVisible(true);
       startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1, false), RC_SELECT_PLAYER);
@@ -570,7 +581,7 @@ public class MainActivity extends ActionBarActivity
         String opponentId = getOpponentId(turnBasedMatch);
         GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId);
         GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
-        return gameDatas.get().createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
+        return gameDatas.createGameData(turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
             GameDatas.DEFAULT_KOMI, GameType.REMOTE, blackPlayer, whitePlayer);
       } else {
         GameData gameData = GameData.parseFrom(turnBasedMatch.getData());
@@ -619,13 +630,17 @@ public class MainActivity extends ActionBarActivity
   }
 
   public String getLocalGoogleId() {
+    // TODO: inject
+    if (!googleApiClient.isConnected()) {
+      return null;
+    }
     return Players.getCurrentPlayerId(googleApiClient);
   }
 
   private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
     GoPlayer goPlayer;
     Player player = match.getParticipant(participantId).getPlayer();
-    goPlayer = gameDatas.get().createGamePlayer(participantId, player.getDisplayName(), player.getPlayerId());
+    goPlayer = gameDatas.createGamePlayer(participantId, player.getDisplayName(), player.getPlayerId());
     avatarManager.setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     return goPlayer;
   }

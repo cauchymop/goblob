@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableList;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import dagger.Lazy;
+
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
@@ -26,7 +28,7 @@ public class GameDatas {
 
   @Inject
   @Named("PlayerOneDefaultName")
-  String playerOneDefaultName;
+  Lazy<String> playerOneDefaultName;
 
   @Inject
   @Named("PlayerTwoDefaultName")
@@ -87,7 +89,7 @@ public class GameDatas {
   }
 
   public GameConfiguration createLocalGameConfiguration(int boardSize) {
-    GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName);
+    GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
     GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
     GameConfiguration localGameConfiguration = GameConfiguration.newBuilder()
         .setHandicap(DEFAULT_HANDICAP)
