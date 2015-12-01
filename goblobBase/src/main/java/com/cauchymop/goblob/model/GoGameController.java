@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model;
 
+import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -9,17 +10,24 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.List;
 
-import static com.cauchymop.goblob.proto.PlayGameData.*;
+import javax.inject.Inject;
+
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
+import static com.cauchymop.goblob.proto.PlayGameData.GameType;
+import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
+import static com.cauchymop.goblob.proto.PlayGameData.Position;
+import static com.cauchymop.goblob.proto.PlayGameData.Score;
 
 /**
  * Class to handle interactions between the players and the {@link GoGame}.
  */
 public class GoGameController implements Serializable {
+
+  @Inject transient GameDatas gameDatas;
 
   private ArrayDeque<Move> moves = Queues.newArrayDeque();
   private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();
@@ -29,9 +37,12 @@ public class GoGameController implements Serializable {
   private final GoPlayer blackPlayer;
   private final GoPlayer whitePlayer;
   private final String localGoogleIdentity;
+  private final String matchId;
 
   public GoGameController(GameData gameData, String localGoogleIdentity) {
+    Injector.inject(this);
     this.localGoogleIdentity = localGoogleIdentity;
+    matchId = gameData.getMatchId();
     gameConfiguration = gameData.getGameConfiguration();
     blackPlayer = gameConfiguration.getBlack();
     whitePlayer = gameConfiguration.getWhite();
@@ -148,7 +159,7 @@ public class GoGameController implements Serializable {
   }
 
   public GameData getGameData() {
-    return GameDatas.createGameData(gameConfiguration, moves, matchEndStatus);
+    return gameDatas.createGameData(matchId, gameConfiguration, moves, matchEndStatus);
   }
 
   public GameConfiguration getGameConfiguration() {
@@ -243,6 +254,18 @@ public class GoGameController implements Serializable {
 
   public boolean isLocalPlayer(GoPlayer player) {
     return isLocalGame() || player.getGoogleId().equals(localGoogleIdentity);
+  }
+
+  public String getLocalPlayerId() {
+    return isLocalPlayer(blackPlayer) ? blackPlayer.getId() : whitePlayer.getId();
+  }
+
+  public String getRemotePlayerId() {
+    return isLocalPlayer(blackPlayer) ? whitePlayer.getId() : blackPlayer.getId();
+  }
+
+  public String getMatchId() {
+    return matchId;
   }
 
   public enum Mode {

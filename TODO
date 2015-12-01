@@ -1,3 +1,7 @@
+In progress:
+- move connection code from MainActivity to a dedicated class.
+- in onActivityResult, call displayGameConfiguration with a configured Remote GameConfiguration
+
 Next things to do:
 - handicap in remote games
 - rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
@@ -11,3 +15,9 @@ Medium priority:
 Longer term:
 - Move to a NavigationDrawer or keep spinner in toolbar
 - continue a game in remote mode
+
+Crazy projects:
+- cardboard
+- TV (chromecast, TV)
+- Wear
+- IA

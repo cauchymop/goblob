@@ -17,8 +17,8 @@
   <string name="name_label">Name</string>
   <string name="color_label">Color</string>
   <string name="opponent_label">Opponent</string>
-  <string name="home_player_default_name">Player 1</string>
-  <string name="opponent_default_name">Player 2</string>
+  <string name="player_one_default_name">Player 1</string>
+  <string name="player_two_default_name">Player 2</string>
   <string name="end_of_game_message">"Game finished, %1$s won by %2$.1f points."</string>
   <string name="end_of_game_resigned_message">"Game finished, %1$s won by resignation."</string>
   <string name="opponent_passed_message">"%1$s has passed!"</string>
@@ -50,6 +50,10 @@
   <string name="resign">Resign</string>
   <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
   <string name="handicap_even">Even</string>
+  <string name="update_app_message">The version of the application you are using is out of date and does not support the format of this game.\n\nPlease update the application to play this game.</string>
+  <string name="update_app_button_label">Update Application</string>
+  <string name="swap_character" translatable="false">⇅</string>
+
   <string-array name="handicap_values">
     <item>@string/handicap_even</item>
     <item>2</item>
@@ -61,7 +65,4 @@
     <item>8</item>
     <item>9</item>
   </string-array>
-
-  <string name="update_app_message">The version of the application you are using is out of date and does not support the format of this game.\n\nPlease update the application to play this game.</string>
-  <string name="update_app_button_label">Update Application</string>
 </resources>

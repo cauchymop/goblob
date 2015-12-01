@@ -18,12 +18,8 @@ public class LocalGameRepository {
   private static final String TAG = LocalGameRepository.class.getName();
   private static final String GAME_DATA = "gameData";
 
-  @Inject
-  SharedPreferences prefs;
+  @Inject SharedPreferences prefs;
   private GoGameController currentLocalGame;
-
-  public LocalGameRepository() {
-  }
 
   public void saveLocalGame(GoGameController gameController) {
     Log.i(TAG, "saveLocalGame");

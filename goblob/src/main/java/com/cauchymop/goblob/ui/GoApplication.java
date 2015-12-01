@@ -1,49 +1,24 @@
 package com.cauchymop.goblob.ui;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.os.Bundle;
 
-import javax.inject.Singleton;
+import com.cauchymop.goblob.injection.Injector;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 
-import dagger.Module;
 import dagger.ObjectGraph;
-import dagger.Provides;
 
 /**
  * Top level application for Game of Go.
  */
 public class GoApplication extends Application {
-  private ObjectGraph objectGraph;
 
   @Override
   public void onCreate() {
     super.onCreate();
-    objectGraph = ObjectGraph.create(new GoApplicationModule());
+    ObjectGraph objectGraph = ObjectGraph.create(new GoApplicationModule(this));
+    Injector.setObjectGraph(objectGraph);
   }
 
-  public void inject(Object instance) {
-    objectGraph.inject(instance);
-  }
-
-  @Module(
-    injects = {
-        LocalGameRepository.class,
-        MainActivity.class,
-        GameFragment.class
-    }
-  )
-  class GoApplicationModule {
-
-    @Provides @Singleton
-    Context getApplicationContext() {
-      return GoApplication.this;
-    }
-
-    @Provides @Singleton
-    SharedPreferences getSharedPreferences(Context context) {
-      return PreferenceManager.getDefaultSharedPreferences(context);
-    }
-  }
 }
