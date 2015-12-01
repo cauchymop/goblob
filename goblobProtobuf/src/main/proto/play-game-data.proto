@@ -1,12 +1,13 @@
 
 option java_package = "com.cauchymop.goblob.proto";
 
-// Next ID: 5
+// Next ID: 6
 message GameData {
   repeated Move move = 1;
   required GameConfiguration game_configuration = 2;
   optional MatchEndStatus match_end_status = 3;
   optional int32 version = 4 [default = 0];
+  optional string match_id = 5;
 }
 
 // Next ID: 3
@@ -21,7 +22,7 @@ message Move {
   optional Position position = 2;  // For MOVE.
 }
 
-// Next ID: 10
+// Next ID: 11
 message GameConfiguration {
 
   enum ScoreType {
@@ -38,6 +39,7 @@ message GameConfiguration {
   optional GoPlayer black = 7;
   optional GoPlayer white = 8;
   optional GameType game_type = 9;
+  optional bool accepted = 10;
 }
 
 // Next ID: 6

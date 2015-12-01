@@ -13,7 +13,6 @@ import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
-import com.google.android.gms.games.Player;
 
 import javax.inject.Inject;
 
@@ -98,7 +97,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   @OnClick(R.id.start_game_button)
   void startGame() {
-    PlayGameData.GameData gameData = gameDatas.createGameData(getGameConfiguration());
+    PlayGameData.GameData gameData = gameDatas.createGameData(GameDatas.LOCAL_MATCH_ID, getGameConfiguration());
     GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
     getGoBlobActivity().startLocalGame(goGameController);
   }
@@ -115,7 +114,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   }
 
   private PlayGameData.GameConfiguration getGameConfiguration() {
-    return gameDatas.createGameConfiguration(getSize(), getHandicap(), getKomi(), getGameType(), getBlackPlayer(), getWhitePlayer());
+    return gameDatas.createGameConfiguration(getSize(), getHandicap(), getKomi(), getGameType(), getBlackPlayer(), getWhitePlayer(), true);
   }
 
   private GoPlayer updateName(GoPlayer player, String name) {

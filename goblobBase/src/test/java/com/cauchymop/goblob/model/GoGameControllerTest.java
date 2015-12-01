@@ -3,6 +3,7 @@ package com.cauchymop.goblob.model;
 import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
+import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
 
@@ -29,13 +30,8 @@ public class GoGameControllerTest {
 
   @Test
   public void testNew_gameData() {
-    GameData gameData = GameData.newBuilder()
-        .setGameConfiguration(GAME_DATAS.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER))
-        .addMove(GAME_DATAS.createMove(2, 3))
-        .addMove(GAME_DATAS.createMove(4, 5))
-        .setVersion(GAME_DATAS.VERSION)
-        .build();
-
+    PlayGameData.GameConfiguration gameConfiguration = GAME_DATAS.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, true);
+    GameData gameData = GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, gameConfiguration, ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5)), null);
     GoGameController controller = new GoGameController(gameData, null);
 
     assertThat(controller.getGameData()).isEqualTo(gameData);
@@ -46,10 +42,8 @@ public class GoGameControllerTest {
 
   @Test
   public void testGetGameData() {
-    PlayGameData.GameConfiguration gameConfiguration = GAME_DATAS.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER);
-    GoGameController controller = new GoGameController(GameData.newBuilder()
-        .setGameConfiguration(gameConfiguration)
-        .build(), null);
+    PlayGameData.GameConfiguration gameConfiguration = GAME_DATAS.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, true);
+    GoGameController controller = new GoGameController(GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, gameConfiguration), null);
     controller.playMove(GAME_DATAS.createMove(0, 0));
     controller.playMove(GAME_DATAS.createMove(1, 1));
     controller.playMove(GAME_DATAS.createPassMove());
@@ -59,11 +53,12 @@ public class GoGameControllerTest {
         .addMove(GAME_DATAS.createMove(1, 1))
         .addMove(GAME_DATAS.createPassMove())
         .setVersion(GAME_DATAS.VERSION)
+        .setMatchId(GameDatas.LOCAL_MATCH_ID)
         .build());
   }
 
   private GoGameController createGoGameController() {
-    return new GoGameController(GAME_DATAS.createGameData(9, TEST_HANDICAP, 0, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER), null);
+    return new GoGameController(GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, 9, TEST_HANDICAP, 0, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER), null);
   }
 
   @Test

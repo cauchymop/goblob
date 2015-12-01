@@ -36,9 +36,4 @@ public class CreateNewGameMenuItem extends MatchMenuItem {
   public void start(GameStarter gameStarter) {
     gameStarter.startNewGame();
   }
-
-  @Override
-  public String getMatchId() {
-    return NEW_GAME_MATCH_ID;
-  }
 }

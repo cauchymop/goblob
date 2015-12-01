@@ -5,6 +5,7 @@ import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.GameType;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,6 +26,7 @@ public class GameDatas {
   public static final int VERSION = 1;
   public static final String PLAYER_ONE_ID = "player1";
   public static final String PLAYER_TWO_ID = "player2";
+  public static final String LOCAL_MATCH_ID = "local";
 
   @Inject
   @Named("PlayerOneDefaultName")
@@ -47,17 +49,21 @@ public class GameDatas {
         .build();
   }
 
-  public GameData createGameData(int size, int handicap, float komi, GameType gameType,
-      GoPlayer blackPlayer,
-      GoPlayer whitePlayer) {
-    return createGameData(createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer),
+  public GameData createGameData(String matchId, int size, int handicap, float komi,
+      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
+    return createGameData(matchId, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer, true),
         ImmutableList.<Move>of(), null);
   }
 
-  public GameData createGameData(GameConfiguration gameConfiguration, Iterable<Move> moves,
+  public GameData createGameData(String matchId, GameConfiguration gameConfiguration) {
+    return createGameData(matchId, gameConfiguration, Lists.<Move>newArrayList(), null);
+  }
+
+  public GameData createGameData(String matchId, GameConfiguration gameConfiguration, Iterable<Move> moves,
       MatchEndStatus matchEndStatus) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
+        .setMatchId(matchId)
         .setGameConfiguration(gameConfiguration)
         .addAllMove(moves);
     if (matchEndStatus != null) {
@@ -66,15 +72,9 @@ public class GameDatas {
     return builder.build();
   }
 
-  public GameData createGameData(GameConfiguration gameConfiguration) {
-    return GameData.newBuilder()
-        .setVersion(VERSION)
-        .setGameConfiguration(gameConfiguration)
-        .build();
-  }
 
   public GameConfiguration createGameConfiguration(int size, int handicap, float komi,
-      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
+      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer, boolean accepted) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)
         .setHandicap(handicap)
@@ -85,21 +85,14 @@ public class GameDatas {
         .setWhite(whitePlayer)
         .setGameType(gameType)
         .setScoreType(GameConfiguration.ScoreType.JAPANESE)
+        .setAccepted(accepted)
         .build();
   }
 
   public GameConfiguration createLocalGameConfiguration(int boardSize) {
     GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
     GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
-    GameConfiguration localGameConfiguration = GameConfiguration.newBuilder()
-        .setHandicap(DEFAULT_HANDICAP)
-        .setKomi(DEFAULT_KOMI)
-        .setScoreType(GameConfiguration.ScoreType.CHINESE)
-        .setBoardSize(boardSize)
-        .setBlack(black)
-        .setWhite(white)
-        .build();
-    return localGameConfiguration;
+    return createGameConfiguration(boardSize, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white, true);
   }
 
   public GoPlayer createGamePlayer(String id, String name) {
