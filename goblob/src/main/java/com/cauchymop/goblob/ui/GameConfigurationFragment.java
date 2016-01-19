@@ -54,7 +54,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ((GoApplication)getActivity().getApplication()).getComponent().inject(this);
+    getComponent().inject(this);
   }
 
   @Override
