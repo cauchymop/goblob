@@ -16,7 +16,7 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.injection.Injector;
+import com.cauchymop.goblob.injection.GoApplicationModule;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Injector.inject(this);
+    ((GoApplication)getApplication()).getComponent().inject(this);
 
     googleApiClient = new GoogleApiClient.Builder(this)
         .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
@@ -553,7 +553,7 @@ public class MainActivity extends AppCompatActivity
       }
     }
 
-    GoGameController goGameController = new GoGameController(gameData, getLocalGoogleId());
+    GoGameController goGameController = new GoGameController(gameDatas, gameData, getLocalGoogleId());
 
     if (gameData.getMoveCount() == 0) {
       takeTurn(goGameController, goGameController.getLocalPlayerId());

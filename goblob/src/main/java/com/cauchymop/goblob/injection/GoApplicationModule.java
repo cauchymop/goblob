@@ -1,14 +1,14 @@
-package com.cauchymop.goblob.ui;
+package com.cauchymop.goblob.injection;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.ui.GoogleApiClientProviderProvider;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
 
@@ -24,17 +24,8 @@ import static com.google.android.gms.games.Games.Players;
 /**
  * Module to configure dependency injection.
  */
-@Module(
-    injects = {
-        GameConfigurationFragment.class,
-        GameDatas.class,
-        GameFragment.class,
-        GoGameController.class,
-        LocalGameRepository.class,
-        MainActivity.class,
-    }
-)
-class GoApplicationModule {
+@Module
+public class GoApplicationModule {
 
   private final GoogleApiClientProviderProvider googleApiClientProviderProvider;
   private Application application;
@@ -46,25 +37,26 @@ class GoApplicationModule {
   }
 
   @Provides
-  GoogleApiClientProvider provideGoogleApiClientProvider() {
+  public GoogleApiClientProvider provideGoogleApiClientProvider() {
     return googleApiClientProviderProvider.get();
   }
 
-  @Provides
-  GoogleApiClient provideGoogleApiClient(GoogleApiClientProvider googleApiClientProvider) {
+  @Provides @Nullable
+  public GoogleApiClient provideGoogleApiClient(GoogleApiClientProvider googleApiClientProvider) {
     return googleApiClientProvider.get();
   }
 
   @Provides
   @Singleton
-  AvatarManager provideAvatarManager(Context context) {
+  public AvatarManager provideAvatarManager(Context context) {
     return new AvatarManager(context);
   }
 
   @Provides
   @Named("PlayerOneDefaultName")
-  String providePlayerOneDefaultName(GoogleApiClient googleApiClient, AvatarManager avatarManager) {
-    if (googleApiClient.isConnected()) {
+  public String providePlayerOneDefaultName(@Nullable GoogleApiClient googleApiClient,
+      AvatarManager avatarManager) {
+    if (googleApiClient != null && googleApiClient.isConnected()) {
       Player currentPlayer = Players.getCurrentPlayer(googleApiClient);
       avatarManager.setAvatarUri(currentPlayer.getDisplayName(), currentPlayer.getIconImageUri());
       return currentPlayer.getDisplayName();
@@ -75,23 +67,22 @@ class GoApplicationModule {
 
   @Provides
   @Named("PlayerTwoDefaultName")
-  String providePlayerTwoDefaultName() {
+  public String providePlayerTwoDefaultName() {
     return application.getString(R.string.player_two_default_name);
   }
 
   @Provides
   @Singleton
-  Context getApplicationContext() {
+  public Context getApplicationContext() {
     return application;
   }
 
   @Provides
   @Singleton
-  SharedPreferences getSharedPreferences(Context context) {
+  public SharedPreferences getSharedPreferences(Context context) {
     return PreferenceManager.getDefaultSharedPreferences(context);
   }
 
   public interface GoogleApiClientProvider extends Provider<GoogleApiClient> {
   }
-
 }

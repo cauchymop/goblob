@@ -17,7 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.injection.Injector;
+import com.cauchymop.goblob.injection.GoApplicationComponent;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
@@ -66,7 +66,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Injector.inject(this);
+    getComponent().inject(this);
 
     setHasOptionsMenu(true);
     Log.d(TAG, "onCreate: " + getArguments());

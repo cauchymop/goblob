@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.google.protobuf.TextFormat;
@@ -18,8 +19,15 @@ public class LocalGameRepository {
   private static final String TAG = LocalGameRepository.class.getName();
   private static final String GAME_DATA = "gameData";
 
-  @Inject SharedPreferences prefs;
+  SharedPreferences prefs;
+  GameDatas gameDatas;
   private GoGameController currentLocalGame;
+
+  @Inject
+  public LocalGameRepository(SharedPreferences prefs, GameDatas gameDatas) {
+    this.prefs = prefs;
+    this.gameDatas = gameDatas;
+  }
 
   public void saveLocalGame(GoGameController gameController) {
     Log.i(TAG, "saveLocalGame");
@@ -36,7 +44,7 @@ public class LocalGameRepository {
       if (gameData == null) {
         return null;
       }
-      currentLocalGame = new GoGameController(gameData, null);
+      currentLocalGame = new GoGameController(gameDatas, gameData, null);
     }
     return currentLocalGame;
   }

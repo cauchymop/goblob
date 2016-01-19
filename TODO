@@ -1,7 +1,6 @@
 In progress:
 - move connection code from MainActivity to a dedicated class.
 - in onActivityResult, call displayGameConfiguration with a configured Remote GameConfiguration
-- update to Google protobuf plugin https://github.com/google/protobuf-gradle-plugin
 
 Next things to do:
 - handicap in remote games

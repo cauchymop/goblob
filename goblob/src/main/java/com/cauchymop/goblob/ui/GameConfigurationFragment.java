@@ -8,7 +8,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.injection.Injector;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
@@ -55,7 +54,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Injector.inject(this);
+    getComponent().inject(this);
   }
 
   @Override
@@ -98,7 +97,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @OnClick(R.id.start_game_button)
   void startGame() {
     PlayGameData.GameData gameData = gameDatas.createGameData(GameDatas.LOCAL_MATCH_ID, getGameConfiguration());
-    GoGameController goGameController = new GoGameController(gameData, getGoBlobActivity().getLocalGoogleId());
+    GoGameController goGameController = new GoGameController(gameDatas, gameData, getGoBlobActivity().getLocalGoogleId());
     getGoBlobActivity().startLocalGame(goGameController);
   }
 

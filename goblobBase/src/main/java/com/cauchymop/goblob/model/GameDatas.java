@@ -28,13 +28,14 @@ public class GameDatas {
   public static final String PLAYER_TWO_ID = "player2";
   public static final String LOCAL_MATCH_ID = "local";
 
-  @Inject
-  @Named("PlayerOneDefaultName")
   Lazy<String> playerOneDefaultName;
+  String playerTwoDefaultName;
 
   @Inject
-  @Named("PlayerTwoDefaultName")
-  String playerTwoDefaultName;
+  public GameDatas(@Named("PlayerOneDefaultName")Lazy<String> playerOneDefaultName, @Named("PlayerTwoDefaultName") String playerTwoDefaultName) {
+    this.playerOneDefaultName = playerOneDefaultName;
+    this.playerTwoDefaultName = playerTwoDefaultName;
+  }
 
   public Move createPassMove() {
     return Move.newBuilder().setType(Move.MoveType.PASS).build();

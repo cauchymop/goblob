@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 
+import com.cauchymop.goblob.injection.GoApplicationModule;
+
 /**
  * Created by abela on 11/19/15.
  */
