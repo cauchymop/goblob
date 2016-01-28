@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0-alpha5'
+        classpath 'com.android.tools.build:gradle:2.0.0-alpha8'
     }
 }
 
@@ -20,6 +20,6 @@ allprojects {
 
         appcompat_library_version = '23.1.1'
         support_library_version = '23.1.1'
-        gms_library_version = '8.3.+'
+        gms_library_version = '8.4.+'
     }
 }

@@ -16,10 +16,11 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.injection.GoApplicationModule;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.model.GoogleApiClientListener;
+import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -35,7 +36,6 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
-import com.google.android.gms.plus.Plus;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -64,7 +64,7 @@ import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 import static com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchResult;
 
 public class MainActivity extends AppCompatActivity
-    implements OnTurnBasedMatchUpdateReceivedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, GoApplicationModule.GoogleApiClientProvider {
+    implements OnTurnBasedMatchUpdateReceivedListener, GoogleApiClientListener {
 
   private static final int RC_REQUEST_ACHIEVEMENTS = 1;
   private static final int RC_SELECT_PLAYER = 2;
@@ -83,29 +83,27 @@ public class MainActivity extends AppCompatActivity
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
   private boolean resolvingError;
-  private GoogleApiClient googleApiClient;
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
   private String selectedMatchId;
 
+  @Inject GoogleApiClient googleApiClient;
   @Inject GameDatas gameDatas;
   @Inject LocalGameRepository localGameRepository;
   @Inject AvatarManager avatarManager;
+  @Inject GoogleApiClientManager googleApiClientManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    ((GoApplication)getApplication()).getComponent().inject(this);
-
-    googleApiClient = new GoogleApiClient.Builder(this)
-        .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
-        .addApi(Games.API).addScope(Games.SCOPE_GAMES)
-        .addConnectionCallbacks(this)
-        .addOnConnectionFailedListener(this)
-        .build();
+    Log.d(TAG, "onCreate");
 
     setContentView(R.layout.activity_main);
     ButterKnife.bind(this);
+    Log.d(TAG, "After bind, matchSpinner = " + matchSpinner);
+    Log.d(TAG, "MainActivity = " + this);
+
+    ((GoApplication)getApplication()).getComponent().inject(this);
 
     if (savedInstanceState != null) {
       selectedMatchId = savedInstanceState.getString(CURRENT_MATCH_ID);
@@ -116,29 +114,32 @@ public class MainActivity extends AppCompatActivity
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment());
     }
-  }
 
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-    ButterKnife.unbind(this);
-    googleApiClient.unregisterConnectionCallbacks(this);
-    googleApiClient.unregisterConnectionFailedListener(this);
-    googleApiClient.disconnect();
+    googleApiClientManager.registerGoogleApiClientListener(this);
   }
 
   @Override
   protected void onStart() {
     super.onStart();
+    Log.d(TAG, "onStart");
     googleApiClient.connect();
   }
 
   @Override
   protected void onStop() {
     super.onStop();
+    Log.d(TAG, "onStop");
     if (isSignedIn()) {
       googleApiClient.disconnect();
     }
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    Log.d(TAG, "onDestroy");
+    googleApiClientManager.unregisterGoogleApiClientListener((GoogleApiClientListener)this);
+    ButterKnife.unbind(this);
   }
 
   private void setUpToolbar() {
@@ -284,7 +285,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void updateFromConnectionStatus() {
-    Log.d(TAG, "updateFromConnectionStatus");
+    Log.d(TAG, "updateFromConnectionStatus isSignedIn = " + isSignedIn());
     invalidateOptionsMenu();
 
     // When initial connection fails, there is no fragment yet.
@@ -360,6 +361,8 @@ public class MainActivity extends AppCompatActivity
 
   @Nullable
   private MatchMenuItem getCurrentMatchMenuItem() {
+    Log.d(TAG, "before getSelectedItem(), matchSpinner = " + matchSpinner);
+    Log.d(TAG, "MainActivity = " + this);
     return (MatchMenuItem) matchSpinner.getSelectedItem();
   }
 
@@ -624,7 +627,6 @@ public class MainActivity extends AppCompatActivity
   }
 
   public String getLocalGoogleId() {
-    // TODO: inject
     if (!googleApiClient.isConnected()) {
       return null;
     }
@@ -667,6 +669,13 @@ public class MainActivity extends AppCompatActivity
     return Players.getCurrentPlayer(googleApiClient);
   }
 
+  public void setWaitingScreenVisible(boolean visible) {
+    waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
+  }
+
+  public boolean isSignedIn() {
+    return googleApiClient.isConnected();
+  }
 
   private void handleMatchMenuItemSelection(MatchMenuItem item) {
     Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
@@ -694,19 +703,6 @@ public class MainActivity extends AppCompatActivity
       }
     };
     item.start(gameStarter);
-  }
-
-  public void setWaitingScreenVisible(boolean visible) {
-    waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
-  }
-
-  public boolean isSignedIn() {
-    return googleApiClient.isConnected();
-  }
-
-  @Override
-  public GoogleApiClient get() {
-    return googleApiClient;
   }
 
   public class MatchDescription {
