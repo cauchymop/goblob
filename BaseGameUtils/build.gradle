@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0-alpha5'
+        classpath 'com.android.tools.build:gradle:2.0.0-alpha8'
     }
 }
 
@@ -16,7 +16,7 @@ dependencies {
         ext.appcompat_library_version = '23.1.1'
     }
     if (!hasProperty('gms_library_version')) {
-        ext.gms_library_version = '8.3.+'
+        ext.gms_library_version = '8.4.+'
     }
 
     compile "com.android.support:appcompat-v7:${appcompat_library_version}"
