@@ -460,15 +460,6 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-//  public void startLocalGame(GoGameController goGameController) {
-//    if (!goGameController.isLocalGame()) {
-//      throw new RuntimeException("startLocalGame() with non local game");
-//    }
-//    localGameRepository.saveLocalGame(goGameController);
-//    updateMatchSpinner(GameDatas.LOCAL_MATCH_ID);
-//    loadGame(goGameController);
-//  }
-
   /**
    * Selects the given match (or the first one) and return its index.
    */
