@@ -57,7 +57,7 @@ public class GoGameControllerTest {
   }
 
   private GoGameController createGoGameController() {
-    return new GoGameController(GAME_DATAS, GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, 9, TEST_HANDICAP, 0, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER), null);
+    return new GoGameController(GAME_DATAS, GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, 9, TEST_HANDICAP, 0, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, false), null);
   }
 
   @Test

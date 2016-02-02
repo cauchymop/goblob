@@ -51,8 +51,8 @@ public class GameDatas {
   }
 
   public GameData createGameData(String matchId, int size, int handicap, float komi,
-      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
-    return createGameData(matchId, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer, true),
+      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer, boolean accepted) {
+    return createGameData(matchId, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer, accepted),
         ImmutableList.<Move>of(), null);
   }
 
@@ -90,12 +90,6 @@ public class GameDatas {
         .build();
   }
 
-  public GameConfiguration createLocalGameConfiguration(int boardSize) {
-    GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
-    GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
-    return createGameConfiguration(boardSize, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white, true);
-  }
-
   public GoPlayer createGamePlayer(String id, String name) {
     return GoPlayer.newBuilder()
         .setId(id)
@@ -109,5 +103,11 @@ public class GameDatas {
         .setGoogleId(googleId)
         .setName(name)
         .build();
+  }
+
+  public GameData createLocalGame(int boardSize) {
+    GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
+    GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
+    return createGameData(LOCAL_MATCH_ID, createGameConfiguration(boardSize, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white, true));
   }
 }

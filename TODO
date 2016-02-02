@@ -1,9 +1,8 @@
 In progress:
-- Game start: in onActivityResult, call displayGameConfiguration with a configured Remote GameConfiguration
+- Add game negociation
+- rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them (giveturn, taketurn, ...).
 
 Next things to do:
-- handicap in remote games
-- rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them.
 - inject GoogleApiClient to clean up the takeTurn* code.
 
 Medium priority:
