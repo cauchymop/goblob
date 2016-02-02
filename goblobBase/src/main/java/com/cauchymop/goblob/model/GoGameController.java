@@ -172,6 +172,9 @@ public class GoGameController implements Serializable {
   }
 
   public Mode getMode() {
+    if (!gameConfiguration.getAccepted()) {
+      return Mode.START_GAME_NEGOTIATION;
+    }
     if (matchEndStatus != null) {
       return Mode.END_GAME_NEGOTIATION;
     }

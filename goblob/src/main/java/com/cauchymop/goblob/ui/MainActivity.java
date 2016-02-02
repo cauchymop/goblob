@@ -420,7 +420,7 @@ public class MainActivity extends AppCompatActivity
   public void configureGame(boolean isLocal, int boardSize) {
     this.boardSize = boardSize;
     if (isLocal) {
-      displayGameConfigurationScreen(gameDatas.createLocalGameConfiguration(boardSize));
+      displayGameConfigurationScreen(gameDatas.createLocalGame(boardSize));
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
@@ -428,8 +428,8 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  public void displayGameConfigurationScreen(GameConfiguration localGameConfiguration) {
-    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(localGameConfiguration);
+  public void displayGameConfigurationScreen(GameData gameData) {
+    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(gameData);
     displayFragment(gameConfigurationFragment);
   }
 
@@ -449,18 +449,25 @@ public class MainActivity extends AppCompatActivity
 
   public void loadGame(GoGameController goGameController) {
     selectedMatchId = goGameController.getMatchId();
-    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-    displayFragment(GameFragment.newInstance(goGameController));
+
+    localGameRepository.saveGame(goGameController);
+
+    if (goGameController.getGameConfiguration().getAccepted()) {
+      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+      displayFragment(GameFragment.newInstance(goGameController));
+    } else {
+      displayGameConfigurationScreen(goGameController.getGameData());
+    }
   }
 
-  public void startLocalGame(GoGameController goGameController) {
-    if (!goGameController.isLocalGame()) {
-      throw new RuntimeException("startLocalGame() with non local game");
-    }
-    localGameRepository.saveLocalGame(goGameController);
-    updateMatchSpinner(GameDatas.LOCAL_MATCH_ID);
-    loadGame(goGameController);
-  }
+//  public void startLocalGame(GoGameController goGameController) {
+//    if (!goGameController.isLocalGame()) {
+//      throw new RuntimeException("startLocalGame() with non local game");
+//    }
+//    localGameRepository.saveLocalGame(goGameController);
+//    updateMatchSpinner(GameDatas.LOCAL_MATCH_ID);
+//    loadGame(goGameController);
+//  }
 
   /**
    * Selects the given match (or the first one) and return its index.
@@ -577,7 +584,7 @@ public class MainActivity extends AppCompatActivity
         GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId);
         GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
         return gameDatas.createGameData(turnBasedMatch.getMatchId(), turnBasedMatch.getVariant(), GameDatas.DEFAULT_HANDICAP,
-            GameDatas.DEFAULT_KOMI, GameType.REMOTE, blackPlayer, whitePlayer);
+            GameDatas.DEFAULT_KOMI, GameType.REMOTE, blackPlayer, whitePlayer, false);
       } else {
         GameData gameData = GameData.parseFrom(turnBasedMatch.getData());
 
@@ -703,6 +710,37 @@ public class MainActivity extends AppCompatActivity
       }
     };
     item.start(gameStarter);
+  }
+
+  public void confirmConfiguration(GoGameController goGameController) {
+    if (!goGameController.isLocalGame()) {
+      publishRemoteGameState(goGameController);
+    }
+    loadGame(goGameController);
+  }
+
+  public void publishRemoteGameState(GoGameController goGameController) {
+    switch (goGameController.getMode()) {
+      case START_GAME_NEGOTIATION:
+        giveTurn(goGameController);
+        break;
+      case IN_GAME:
+        if (goGameController.isLocalTurn()) {
+          keepTurn(goGameController);
+        } else {
+          giveTurn(goGameController);
+        }
+        break;
+      case END_GAME_NEGOTIATION:
+        if (goGameController.isGameFinished()) {
+          finishTurn(goGameController);
+        } else if (goGameController.isLocalTurn()) {
+          keepTurn(goGameController);
+        } else {
+          giveTurn(goGameController);
+        }
+        break;
+    }
   }
 
   public class MatchDescription {

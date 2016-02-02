@@ -29,7 +29,13 @@ public class LocalGameRepository {
     this.gameDatas = gameDatas;
   }
 
-  public void saveLocalGame(GoGameController gameController) {
+  public void saveGame(GoGameController goGameController) {
+    if (goGameController.isLocalGame()) {
+      saveLocalGame(goGameController);
+    }
+  }
+
+  private void saveLocalGame(GoGameController gameController) {
     Log.i(TAG, "saveLocalGame");
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString(GAME_DATA, TextFormat.printToString(gameController.getGameData()));

@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.injection.GoApplicationComponent;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
@@ -181,29 +180,9 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void publishGameState() {
-    if (goGameController.isLocalGame()) {
-      localGameRepository.saveLocalGame(goGameController);
-    } else {
-      publishRemoteGameState();
-    }
-  }
-
-  private void publishRemoteGameState() {
-    switch (goGameController.getMode()) {
-      case START_GAME_NEGOTIATION:
-        break;
-      case IN_GAME:
-        getGoBlobActivity().giveTurn(goGameController);
-        break;
-      case END_GAME_NEGOTIATION:
-        if (goGameController.isGameFinished()) {
-          getGoBlobActivity().finishTurn(goGameController);
-        } else if (goGameController.isLocalTurn()) {
-          getGoBlobActivity().keepTurn(goGameController);
-        } else {
-          getGoBlobActivity().giveTurn(goGameController);
-        }
-        break;
+    localGameRepository.saveGame(goGameController);
+    if (!goGameController.isLocalGame()) {
+      getGoBlobActivity().publishRemoteGameState(goGameController);
     }
   }
 
