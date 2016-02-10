@@ -39,7 +39,7 @@ message GameConfiguration {
   optional GoPlayer black = 7;
   optional GoPlayer white = 8;
   optional GameType game_type = 9;
-  optional bool accepted = 10;
+  optional bool accepted = 10 [default = true];
 }
 
 // Next ID: 6
