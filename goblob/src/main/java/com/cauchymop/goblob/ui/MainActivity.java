@@ -18,7 +18,6 @@ import android.widget.Spinner;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.google.android.gms.common.ConnectionResult;
@@ -49,10 +48,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
+import dagger.Lazy;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -89,9 +90,10 @@ public class MainActivity extends AppCompatActivity
 
   @Inject GoogleApiClient googleApiClient;
   @Inject GameDatas gameDatas;
-  @Inject LocalGameRepository localGameRepository;
+  @Inject GameRepository gameRepository;
   @Inject AvatarManager avatarManager;
   @Inject GoogleApiClientManager googleApiClientManager;
+  @Inject @Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -335,9 +337,9 @@ public class MainActivity extends AppCompatActivity
       String previousMatchId) {
     matchMenuItems.clear();
     matchMenuItems.addAll(newMatchMenuItems);
-    GoGameController localGame = localGameRepository.getLocalGame();
-    if (localGame != null) {
-      matchMenuItems.add(new LocalMatchMenuItem(localGame));
+    GameData localGameData = gameRepository.getLocalGame();
+    if (localGameData != null) {
+      matchMenuItems.add(new LocalMatchMenuItem(localGameData));
     }
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
@@ -420,7 +422,8 @@ public class MainActivity extends AppCompatActivity
   public void configureGame(boolean isLocal, int boardSize) {
     this.boardSize = boardSize;
     if (isLocal) {
-      displayGameConfigurationScreen(gameDatas.createLocalGame(boardSize));
+      GameData localGame = gameDatas.createLocalGame(boardSize);
+      displayGameConfigurationScreen(localGame);
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
@@ -444,19 +447,21 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void loadGame(TurnBasedMatch turnBasedMatch) {
-    loadGame(createGoGameController(turnBasedMatch));
+    boolean myTurn = turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN;
+    if (myTurn && turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
+      TurnBasedMultiplayer.finishMatch(googleApiClient, turnBasedMatch.getMatchId());
+    }
+    loadGame(getGameData(turnBasedMatch));
   }
 
-  public void loadGame(GoGameController goGameController) {
-    selectedMatchId = goGameController.getMatchId();
+  public void loadGame(GameData gameData) {
+    selectedMatchId = gameData.getMatchId();
 
-    localGameRepository.saveGame(goGameController);
-
-    if (goGameController.getGameConfiguration().getAccepted()) {
+    if (gameData.getGameConfiguration().getAccepted()) {
       setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-      displayFragment(GameFragment.newInstance(goGameController));
+      displayFragment(GameFragment.newInstance(gameData));
     } else {
-      displayGameConfigurationScreen(goGameController.getGameData());
+      displayGameConfigurationScreen(gameData);
     }
   }
 
@@ -475,29 +480,6 @@ public class MainActivity extends AppCompatActivity
     Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
     matchSpinner.setSelection(0);
     return 0;
-  }
-
-  public void giveTurn(GoGameController goGameController) {
-    Log.d(TAG, "giveTurn: " + goGameController);
-    takeTurn(goGameController, goGameController.getRemotePlayerId());
-    updateMatchSpinner();
-  }
-
-  public void keepTurn(GoGameController goGameController) {
-    Log.d(TAG, "keepTurn: " + goGameController);
-    takeTurn(goGameController, goGameController.getLocalPlayerId());
-  }
-
-  public void finishTurn(GoGameController goGameController) {
-    Log.d(TAG, "finishTurn: " + goGameController);
-    takeTurn(goGameController, goGameController.getLocalPlayerId());
-    TurnBasedMultiplayer.finishMatch(googleApiClient, goGameController.getMatchId());
-    updateMatchSpinner();
-  }
-
-  private void takeTurn(GoGameController goGameController, String myId) {
-    byte[] gameDataBytes = goGameController.getGameData().toByteArray();
-    TurnBasedMultiplayer.takeTurn(googleApiClient, goGameController.getMatchId(), gameDataBytes, myId);
   }
 
   private void handleSelectPlayersResult(Intent intent) {
@@ -537,29 +519,6 @@ public class MainActivity extends AppCompatActivity
             updateMatchSpinner(turnBasedMatch.getMatchId());
           }
         });
-  }
-
-  private GoGameController createGoGameController(TurnBasedMatch turnBasedMatch) {
-    boolean myTurn = turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN;
-    if (myTurn && turnBasedMatch.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
-      TurnBasedMultiplayer.finishMatch(googleApiClient, turnBasedMatch.getMatchId());
-    }
-
-    GameData gameData = getGameData(turnBasedMatch);
-
-    if (gameData.getMoveCount() == 0) {
-      for (String participantId : turnBasedMatch.getParticipantIds()) {
-        Log.i(TAG, String.format(" participant %s: player %s", participantId,
-            getPlayerId(turnBasedMatch, participantId)));
-      }
-    }
-
-    GoGameController goGameController = new GoGameController(gameDatas, gameData, getLocalGoogleId());
-
-    if (gameData.getMoveCount() == 0) {
-      takeTurn(goGameController, goGameController.getLocalPlayerId());
-    }
-    return goGameController;
   }
 
   private String getPlayerId(TurnBasedMatch turnBasedMatch, String participantId) {
@@ -621,14 +580,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private String getMyId(TurnBasedMatch turnBasedMatch) {
-    return turnBasedMatch.getParticipantId(getLocalGoogleId());
-  }
-
-  public String getLocalGoogleId() {
-    if (!googleApiClient.isConnected()) {
-      return null;
-    }
-    return Players.getCurrentPlayerId(googleApiClient);
+    return turnBasedMatch.getParticipantId(localGoogleIdentity.get());
   }
 
   private GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
@@ -691,8 +643,8 @@ public class MainActivity extends AppCompatActivity
       }
 
       @Override
-      public void startLocalGame(GoGameController gameController) {
-        loadGame(gameController);
+      public void startLocalGame(GameData gameData) {
+        loadGame(gameData);
       }
 
       @Override
@@ -703,35 +655,10 @@ public class MainActivity extends AppCompatActivity
     item.start(gameStarter);
   }
 
-  public void confirmConfiguration(GoGameController goGameController) {
-    if (!goGameController.isLocalGame()) {
-      publishRemoteGameState(goGameController);
-    }
-    loadGame(goGameController);
-  }
-
-  public void publishRemoteGameState(GoGameController goGameController) {
-    switch (goGameController.getMode()) {
-      case START_GAME_NEGOTIATION:
-        giveTurn(goGameController);
-        break;
-      case IN_GAME:
-        if (goGameController.isLocalTurn()) {
-          keepTurn(goGameController);
-        } else {
-          giveTurn(goGameController);
-        }
-        break;
-      case END_GAME_NEGOTIATION:
-        if (goGameController.isGameFinished()) {
-          finishTurn(goGameController);
-        } else if (goGameController.isLocalTurn()) {
-          keepTurn(goGameController);
-        } else {
-          giveTurn(goGameController);
-        }
-        break;
-    }
+  public void endTurn(GameData gameData) {
+    gameRepository.saveGame(gameData);
+    updateMatchSpinner();
+    loadGame(gameData);
   }
 
   public class MatchDescription {

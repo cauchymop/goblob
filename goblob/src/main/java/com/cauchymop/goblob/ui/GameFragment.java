@@ -21,6 +21,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.MonteCarlo;
+import com.cauchymop.goblob.proto.PlayGameData;
 
 import javax.inject.Inject;
 
@@ -43,7 +44,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private GoGameController goGameController;
   private GoBoardView goBoardView;
 
-  @Inject LocalGameRepository localGameRepository;
+  @Inject
+  GameRepository gameRepository;
   @Inject GameDatas gameDatas;
   @Inject AvatarManager avatarManager;
 
@@ -54,10 +56,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Bind(R.id.avatarImage) ImageView avatarImage;
   @Bind(R.id.message_textview) TextView messageView;
 
-  public static GameFragment newInstance(GoGameController gameController) {
+  public static GameFragment newInstance(PlayGameData.GameData gameData) {
     GameFragment fragment = new GameFragment();
     Bundle args = new Bundle();
-    args.putSerializable(EXTRA_GO_GAME, gameController);
+    args.putSerializable(EXTRA_GO_GAME, gameData);
     fragment.setArguments(args);
     return fragment;
   }
@@ -70,7 +72,8 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     setHasOptionsMenu(true);
     Log.d(TAG, "onCreate: " + getArguments());
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
-      this.goGameController = (GoGameController) getArguments().getSerializable(EXTRA_GO_GAME);
+      PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
+      this.goGameController = new GoGameController(gameDatas, gameData);
     }
 
   }
@@ -105,7 +108,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     if (goGameController.canRedo()) {
       menu.add(Menu.NONE, R.id.menu_redo, Menu.NONE, R.string.redo);
     }
-    if (goGameController.isLocalTurn()) {
+    if (gameDatas.isLocalTurn(goGameController.getGameData())) {
       menu.add(Menu.NONE, R.id.menu_resign, Menu.NONE, R.string.resign);
     }
   }
@@ -137,7 +140,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     configureActionButton();
     boardViewContainer.addView(goBoardView);
     initFromGameState();
-    enableInteractions(goGameController.isLocalTurn());
+    enableInteractions(gameDatas.isLocalTurn(goGameController.getGameData()));
   }
 
   private void enableInteractions(boolean enabled) {
@@ -146,7 +149,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void configureActionButton() {
-    switch(goGameController.getMode()) {
+    switch(gameDatas.getMode(goGameController.getGameData())) {
       case START_GAME_NEGOTIATION:
         break;
       case IN_GAME:
@@ -175,15 +178,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void endTurn() {
-    publishGameState();
-    getGoBlobActivity().loadGame(goGameController);
-  }
-
-  private void publishGameState() {
-    localGameRepository.saveGame(goGameController);
-    if (!goGameController.isLocalGame()) {
-      getGoBlobActivity().publishRemoteGameState(goGameController);
-    }
+    getGoBlobActivity().endTurn(goGameController.getGameData());
   }
 
 
@@ -202,7 +197,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private boolean playMoveOrToggleDeadStone(Move move) {
-    switch(goGameController.getMode()) {
+    switch(gameDatas.getMode(goGameController.getGameData())) {
       case IN_GAME:
         return goGameController.playMove(move);
       case END_GAME_NEGOTIATION:
@@ -241,14 +236,14 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
    */
   private void initMessageArea() {
     final String message;
-    if (goGameController.isGameFinished()) {
+    if (gameDatas.isGameFinished(goGameController.getGameData())) {
       Score score = goGameController.getScore();
       if (score.getResigned()) {
         message = getString(R.string.end_of_game_resigned_message, score.getWinner());
       } else {
         message = getString(R.string.end_of_game_message, score.getWinner(), score.getWonBy());
       }
-    } else if (goGameController.getMode() == GoGameController.Mode.END_GAME_NEGOTIATION) {
+    } else if (gameDatas.getMode(goGameController.getGameData()) == GameDatas.Mode.END_GAME_NEGOTIATION) {
       message = getString(R.string.marking_message);
     } else if (goGameController.getGame().isLastMovePass()) {
       message = getString(R.string.opponent_passed_message, goGameController.getOpponent().getName());
@@ -260,7 +255,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void updateAchievements() {
-    if (!isSignedIn() || !goGameController.isGameFinished()) {
+    if (!isSignedIn() || !gameDatas.isGameFinished(goGameController.getGameData())) {
       return;
     }
     switch (goGameController.getGame().getBoardSize()) {
@@ -278,7 +273,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
     } else {
       getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-      if (goGameController.isLocalPlayer(goGameController.getWinner())) {
+      if (goGameController.isLocalPlayer(gameDatas.getWinner(goGameController.getGameData()))) {
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
       }
     }

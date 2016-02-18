@@ -45,6 +45,16 @@ public class GoApplicationModule {
 
   @Provides
   @Singleton
+  @Named("LocalGoogleIdentity")
+  public String getLocalGoogleId(GoogleApiClient googleApiClient) {
+    if (!googleApiClient.isConnected()) {
+      return null;
+    }
+    return Players.getCurrentPlayerId(googleApiClient);
+  }
+
+  @Provides
+  @Singleton
   public AvatarManager provideAvatarManager(Context context) {
     return new AvatarManager(context);
   }

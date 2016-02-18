@@ -5,18 +5,17 @@ import android.graphics.drawable.Drawable;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 
 /**
  * {@link MatchMenuItem} representing a Local Game.
  */
 public class LocalMatchMenuItem extends MatchMenuItem {
-  private final GoGameController gameController;
+  private final PlayGameData.GameData gameData;
 
-  public LocalMatchMenuItem(GoGameController gameController) {
+  public LocalMatchMenuItem(PlayGameData.GameData gameData) {
     super(GameDatas.LOCAL_MATCH_ID);
-    this.gameController = gameController;
+    this.gameData = gameData;
   }
 
   @Override
@@ -26,7 +25,7 @@ public class LocalMatchMenuItem extends MatchMenuItem {
 
   @Override
   public String getSecondLine(Context context) {
-    PlayGameData.GameConfiguration conf = gameController.getGameConfiguration();
+    PlayGameData.GameConfiguration conf = gameData.getGameConfiguration();
     return context.getString(R.string.match_label_local_second_line_format, conf.getBoardSize());
   }
 
@@ -37,6 +36,6 @@ public class LocalMatchMenuItem extends MatchMenuItem {
 
   @Override
   public void start(GameStarter gameStarter) {
-    gameStarter.startLocalGame(gameController);
+    gameStarter.startLocalGame(gameData);
   }
 }

@@ -10,7 +10,6 @@ import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
@@ -100,8 +99,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @OnClick(R.id.configuration_done_button)
   void done() {
     GameData gameData = gameDatas.createGameData(getInitialMatchId(), getGameConfiguration());
-    GoGameController goGameController = new GoGameController(gameDatas, gameData, getGoBlobActivity().getLocalGoogleId());
-    getGoBlobActivity().confirmConfiguration(goGameController);
+    getGoBlobActivity().endTurn(gameData);
   }
 
   @OnClick(R.id.swap_players_button)

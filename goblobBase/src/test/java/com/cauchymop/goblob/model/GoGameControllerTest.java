@@ -23,7 +23,7 @@ public class GoGameControllerTest {
     public String get() {
       return "Pipo";
     }
-  }, "Bimbo");
+  }, "Bimbo", null);
   private static final GoPlayer TEST_BLACK_PLAYER = GAME_DATAS.createGamePlayer("blackid", "black");
   private static final GoPlayer TEST_WHITE_PLAYER = GAME_DATAS.createGamePlayer("whiteid", "white");
 
@@ -31,7 +31,7 @@ public class GoGameControllerTest {
   public void testNew_gameData() {
     PlayGameData.GameConfiguration gameConfiguration = GAME_DATAS.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, true);
     GameData gameData = GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, gameConfiguration, ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5)), null);
-    GoGameController controller = new GoGameController(GAME_DATAS, gameData, null);
+    GoGameController controller = new GoGameController(GAME_DATAS, gameData);
 
     assertThat(controller.getGameData()).isEqualTo(gameData);
     GoGame goGame = controller.getGame();
@@ -42,7 +42,7 @@ public class GoGameControllerTest {
   @Test
   public void testGetGameData() {
     PlayGameData.GameConfiguration gameConfiguration = GAME_DATAS.createGameConfiguration(9, TEST_HANDICAP, TEST_KOMI, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, true);
-    GoGameController controller = new GoGameController(GAME_DATAS, GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, gameConfiguration), null);
+    GoGameController controller = new GoGameController(GAME_DATAS, GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, gameConfiguration));
     controller.playMove(GAME_DATAS.createMove(0, 0));
     controller.playMove(GAME_DATAS.createMove(1, 1));
     controller.playMove(GAME_DATAS.createPassMove());
@@ -57,7 +57,7 @@ public class GoGameControllerTest {
   }
 
   private GoGameController createGoGameController() {
-    return new GoGameController(GAME_DATAS, GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, 9, TEST_HANDICAP, 0, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, false), null);
+    return new GoGameController(GAME_DATAS, GAME_DATAS.createGameData(GameDatas.LOCAL_MATCH_ID, 9, TEST_HANDICAP, 0, PlayGameData.GameType.LOCAL, TEST_BLACK_PLAYER, TEST_WHITE_PLAYER, false));
   }
 
   @Test

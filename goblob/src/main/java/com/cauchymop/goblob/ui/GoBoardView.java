@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
@@ -144,7 +145,7 @@ public class GoBoardView extends ZoomableView {
   }
 
   private void drawEndGameStatus(Canvas canvas, int startLineX, int startLineY) {
-    if (gameController.getMode() != GoGameController.Mode.END_GAME_NEGOTIATION) {
+    if (gameController.getMode() != GameDatas.Mode.END_GAME_NEGOTIATION) {
       return;
     }
     drawTerritories(canvas, startLineX, startLineY);

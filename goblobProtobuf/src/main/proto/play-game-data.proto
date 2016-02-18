@@ -1,13 +1,14 @@
 
 option java_package = "com.cauchymop.goblob.proto";
 
-// Next ID: 6
+// Next ID: 7
 message GameData {
   repeated Move move = 1;
   required GameConfiguration game_configuration = 2;
   optional MatchEndStatus match_end_status = 3;
   optional int32 version = 4 [default = 0];
   optional string match_id = 5;
+  optional Color turn = 6;
 }
 
 // Next ID: 3
@@ -46,8 +47,6 @@ message GameConfiguration {
 message MatchEndStatus {
   // last_modifier and turn only used in eng game negotiation (game_finished = false).
   optional Color last_modifier = 1;
-  optional Color turn = 2;
-
   repeated Position dead_stone = 3;
   optional bool game_finished = 4;
   optional Score score = 5;
