@@ -1,6 +1,5 @@
 package com.cauchymop.goblob.ui;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,7 +9,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.common.collect.Lists;
@@ -19,7 +17,6 @@ import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Set;
 
-@SuppressLint("DrawAllocation")
 public class GoBoardView extends ZoomableView {
 
   private static final Paint lastMovePaint = createLinePaint(0xFFFF0000, 5);
@@ -145,10 +142,9 @@ public class GoBoardView extends ZoomableView {
   }
 
   private void drawEndGameStatus(Canvas canvas, int startLineX, int startLineY) {
-    if (gameController.getMode() != GameDatas.Mode.END_GAME_NEGOTIATION) {
-      return;
+    if (gameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
+      drawTerritories(canvas, startLineX, startLineY);
     }
-    drawTerritories(canvas, startLineX, startLineY);
   }
 
   private void drawTerritories(Canvas canvas, int startLineX, int startLineY) {
@@ -239,6 +235,6 @@ public class GoBoardView extends ZoomableView {
   }
 
   public interface Listener {
-    public void played(int x, int y);
+    void played(int x, int y);
   }
 }

@@ -47,7 +47,7 @@ public class RemoteMatchMenuItem extends MatchMenuItem {
     if (needsApplicationUpdate()) {
       gameStarter.showUpdateScreen();
     } else {
-      gameStarter.startRemoteGame(getMatchId());
+      gameStarter.selectGame(getMatchId());
     }
   }
 

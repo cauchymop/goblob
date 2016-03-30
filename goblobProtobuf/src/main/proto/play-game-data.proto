@@ -1,14 +1,27 @@
 
+syntax = "proto2";
+
 option java_package = "com.cauchymop.goblob.proto";
 
-// Next ID: 7
+// Next ID: 8
 message GameData {
   repeated Move move = 1;
+  repeated Move redo = 7;
   required GameConfiguration game_configuration = 2;
   optional MatchEndStatus match_end_status = 3;
   optional int32 version = 4 [default = 0];
   optional string match_id = 5;
   optional Color turn = 6;
+
+  enum Phase {
+    UNKNOWN = 0;
+    INITIAL = 1;
+    CONFIGURATION = 2;
+    IN_GAME = 3;
+    DEAD_STONE_MARKING = 4;
+    FINISHED = 5;
+  }
+  optional Phase phase = 8 [default = UNKNOWN];
 }
 
 // Next ID: 3
@@ -23,7 +36,7 @@ message Move {
   optional Position position = 2;  // For MOVE.
 }
 
-// Next ID: 11
+// Next ID: 10
 message GameConfiguration {
 
   enum ScoreType {
@@ -34,21 +47,23 @@ message GameConfiguration {
   required int32 board_size = 1;
   required int32 handicap = 2;
   required float komi = 3;
-  optional string black_id = 4;
-  optional string white_id = 5;
+  optional string black_id = 4 [deprecated=true];
+  optional string white_id = 5 [deprecated=true];
   required ScoreType score_type = 6;
   optional GoPlayer black = 7;
   optional GoPlayer white = 8;
   optional GameType game_type = 9;
-  optional bool accepted = 10 [default = true];
 }
 
 // Next ID: 6
 message MatchEndStatus {
-  // last_modifier and turn only used in eng game negotiation (game_finished = false).
+  // If the player taps "Done" when the last_modifier is still the opponent, it's the end of stone
+  // marking phase.
   optional Color last_modifier = 1;
+  optional Color turn = 2 [deprecated=true];
+
   repeated Position dead_stone = 3;
-  optional bool game_finished = 4;
+  optional bool game_finished = 4 [deprecated=true];
   optional Score score = 5;
 }
 

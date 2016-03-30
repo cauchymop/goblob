@@ -11,7 +11,10 @@ import android.widget.Spinner;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.Color;
+import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
+import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 
 import javax.inject.Inject;
@@ -80,7 +83,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   }
 
   private void init(GameData gameData) {
-    PlayGameData.GameConfiguration configuration = gameData.getGameConfiguration();
+    GameConfiguration configuration = gameData.getGameConfiguration();
     blackPlayer = configuration.getBlack();
     whitePlayer = configuration.getWhite();
 
@@ -98,8 +101,35 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   @OnClick(R.id.configuration_done_button)
   void done() {
-    GameData gameData = gameDatas.createGameData(getInitialMatchId(), getGameConfiguration());
+    GoPlayer blackPlayer = getBlackPlayer();
+    GoPlayer whitePlayer = getWhitePlayer();
+    GameConfiguration newGameConfiguration =
+        gameDatas.createGameConfiguration(getInitialSize(), getHandicap(), getKomi(),
+            getInitialGameType(), blackPlayer, whitePlayer);
+
+    Phase phase = getPhase(getInitialGameData(), newGameConfiguration);
+    Color turn;
+    if (phase == Phase.CONFIGURATION) {
+      turn = gameDatas.getOpponentColor(blackPlayer, whitePlayer);
+    } else {
+      turn = newGameConfiguration.getHandicap() > 0 ? Color.WHITE : Color.BLACK;
+    }
+    GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, turn, newGameConfiguration);
     getGoBlobActivity().endTurn(gameData);
+  }
+
+  private Phase getPhase(GameData initialGame, GameConfiguration newGameConfiguration) {
+    if (getInitialGameType() == PlayGameData.GameType.LOCAL
+        || isConfigurationAgreed(initialGame, newGameConfiguration)) {
+      return Phase.IN_GAME;
+    }
+    return Phase.CONFIGURATION;
+  }
+
+  private boolean isConfigurationAgreed(GameData initialGame,
+      GameConfiguration newGameConfiguration) {
+    return initialGame.getPhase() == Phase.CONFIGURATION
+        && initialGame.getGameConfiguration().equals(newGameConfiguration);
   }
 
   @OnClick(R.id.swap_players_button)
@@ -111,10 +141,6 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     String tempPlayerName = blackPlayerNameField.getText().toString();
     blackPlayerNameField.setText(whitePlayerNameField.getText().toString());
     whitePlayerNameField.setText(tempPlayerName);
-  }
-
-  private PlayGameData.GameConfiguration getGameConfiguration() {
-    return gameDatas.createGameConfiguration(getInitialSize(), getHandicap(), getKomi(), getInitialGameType(), getBlackPlayer(), getWhitePlayer(), true);
   }
 
   private int getHandicap() {

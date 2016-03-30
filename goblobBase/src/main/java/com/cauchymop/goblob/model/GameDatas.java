@@ -1,9 +1,12 @@
 package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
+import com.cauchymop.goblob.proto.PlayGameData.GameDataOrBuilder;
 import com.cauchymop.goblob.proto.PlayGameData.GameType;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
+import com.cauchymop.goblob.proto.PlayGameData.Position;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -23,7 +26,7 @@ public class GameDatas {
 
   public static final float DEFAULT_KOMI = 7.5f;
   public static final int DEFAULT_HANDICAP = 0;
-  public static final int VERSION = 1;
+  public static final int VERSION = 2;
   public static final String PLAYER_ONE_ID = "player1";
   public static final String PLAYER_TWO_ID = "player2";
   public static final String LOCAL_MATCH_ID = "local";
@@ -31,12 +34,6 @@ public class GameDatas {
   private final Lazy<String> playerOneDefaultName;
   private final String playerTwoDefaultName;
   private final Lazy<String> localGoogleIdentity;
-
-  public enum Mode {
-    START_GAME_NEGOTIATION,
-    IN_GAME,
-    END_GAME_NEGOTIATION
-  }
 
   @Inject
   public GameDatas(@Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
@@ -47,43 +44,37 @@ public class GameDatas {
     this.localGoogleIdentity = localGoogleIdentity;
   }
 
-  public String getRemotePlayerId(GameData gameData) {
-    GoPlayer blackPlayer = getBlackPlayer(gameData);
-    GoPlayer whitePlayer = getWhitePlayer(gameData);
-    return isLocalPlayer(gameData, blackPlayer) ? blackPlayer.getId() : whitePlayer.getId();
-  }
-
-  public String getLocalPlayerId(GameData gameData) {
-    GoPlayer blackPlayer = getBlackPlayer(gameData);
-    GoPlayer whitePlayer = getWhitePlayer(gameData);
-    return isLocalPlayer(gameData, blackPlayer) ? whitePlayer.getId() : blackPlayer.getId();
-  }
-
-  public PlayGameData.Color getCurrentColor(GameData gameData) {
+  public PlayGameData.Color getCurrentColor(GameDataOrBuilder gameData) {
     return gameData.getTurn();
   }
 
-  public boolean isLocalPlayer(GameData gameData, GoPlayer player) {
+  public boolean isLocalPlayer(GameDataOrBuilder gameData, GoPlayer player) {
     return isLocalGame(gameData) || player.getGoogleId().equals(localGoogleIdentity.get());
   }
 
-  public boolean isLocalTurn(GameData gameData) {
-    return isLocalPlayer(gameData, getCurrentPlayer(gameData)) && !isGameFinished(gameData);
+  public boolean isLocalTurn(GameDataOrBuilder gameData) {
+    return isLocalPlayer(gameData, getCurrentPlayer(gameData)) && !(gameData.getPhase() == Phase.FINISHED);
   }
 
-  public GoPlayer getCurrentPlayer(GameData gameData) {
+  public PlayGameData.Color getOpponentColor(GoPlayer black, GoPlayer white) {
+    String localGoogleId = localGoogleIdentity.get();
+    if (black.getGoogleId().equals(localGoogleId)) {
+      return PlayGameData.Color.WHITE;
+    } else if (white.getGoogleId().equals(localGoogleId)) {
+      return PlayGameData.Color.BLACK;
+    }
+    throw new RuntimeException("Opponent is neither black or white, maybe this is a Connect4 Game...");
+  }
+
+  public GoPlayer getCurrentPlayer(GameDataOrBuilder gameData) {
     return getGoPlayer(gameData, getCurrentColor(gameData));
   }
 
-  public GoPlayer getGoPlayer(GameData gameData, PlayGameData.Color color) {
+  public GoPlayer getGoPlayer(GameDataOrBuilder gameData, PlayGameData.Color color) {
     return color == PlayGameData.Color.BLACK ? getBlackPlayer(gameData) : getWhitePlayer(gameData);
   }
 
-  public boolean isGameFinished(GameData gameData) {
-    return gameData.getMatchEndStatus().getGameFinished();
-  }
-
-  public GoPlayer getWinner(GameData gameData) {
+  public GoPlayer getWinner(GameDataOrBuilder gameData) {
     return getGoPlayer(gameData, gameData.getMatchEndStatus().getScore().getWinner());
   }
 
@@ -94,30 +85,46 @@ public class GameDatas {
   public Move createMove(int x, int y) {
     return Move.newBuilder()
         .setType(Move.MoveType.MOVE)
-        .setPosition(PlayGameData.Position.newBuilder()
-            .setX(x)
-            .setY(y))
+        .setPosition(createPosition(x, y))
         .build();
   }
 
-  public GameData createGameData(String matchId, int size, int handicap, float komi,
-      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer, boolean accepted) {
-    return createGameData(matchId, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer, accepted),
+  public Position createPosition(int x, int y) {
+    return Position.newBuilder()
+        .setX(x)
+        .setY(y)
+        .build();
+  }
+
+  public GameData createGameData(String matchId, Phase phase, int size, int handicap, float komi,
+      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
+    return createGameData(matchId, phase, null, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer),
         ImmutableList.<Move>of(), null);
   }
 
-  public GameData createGameData(String matchId, GameConfiguration gameConfiguration) {
-    return createGameData(matchId, gameConfiguration, Lists.<Move>newArrayList(), null);
+  public GameData createGameData(String matchId, Phase phase, GameConfiguration gameConfiguration) {
+    return createGameData(matchId, phase, null, gameConfiguration);
   }
 
-  public GameData createGameData(String matchId, GameConfiguration gameConfiguration,
+  public GameData createGameData(String matchId, Phase phase, PlayGameData.Color turn,
+      GameConfiguration gameConfiguration) {
+    return createGameData(matchId, phase, turn, gameConfiguration, Lists.<Move>newArrayList(), null);
+  }
+
+  public GameData createGameData(String matchId, Phase phase, PlayGameData.Color turn, GameConfiguration gameConfiguration,
       Iterable<Move> moves,
       MatchEndStatus matchEndStatus) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
         .setMatchId(matchId)
+        .setPhase(phase)
         .setGameConfiguration(gameConfiguration)
         .addAllMove(moves);
+
+    if (turn != null) {
+      builder.setTurn(turn);
+    }
+
     if (matchEndStatus != null) {
       builder.setMatchEndStatus(matchEndStatus);
     }
@@ -126,7 +133,7 @@ public class GameDatas {
 
 
   public GameConfiguration createGameConfiguration(int size, int handicap, float komi,
-      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer, boolean accepted) {
+      GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)
         .setHandicap(handicap)
@@ -137,7 +144,6 @@ public class GameDatas {
         .setWhite(whitePlayer)
         .setGameType(gameType)
         .setScoreType(GameConfiguration.ScoreType.JAPANESE)
-        .setAccepted(accepted)
         .build();
   }
 
@@ -159,28 +165,19 @@ public class GameDatas {
   public GameData createLocalGame(int boardSize) {
     GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
     GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
-    return createGameData(LOCAL_MATCH_ID, createGameConfiguration(boardSize, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white, true));
+    return createGameData(LOCAL_MATCH_ID, Phase.INITIAL, createGameConfiguration(boardSize, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white));
   }
 
-  public boolean isLocalGame(GameData gameData) {
+  public boolean isLocalGame(GameDataOrBuilder gameData) {
     return gameData.getGameConfiguration().getGameType() == GameType.LOCAL;
   }
 
-  public Mode getMode(GameData gameData) {
-    if (!gameData.getGameConfiguration().getAccepted()) {
-      return Mode.START_GAME_NEGOTIATION;
-    }
-    if (gameData.hasMatchEndStatus()) {
-      return Mode.END_GAME_NEGOTIATION;
-    }
-    return Mode.IN_GAME;
-  }
-
-  private GoPlayer getWhitePlayer(GameData gameData) {
+  private GoPlayer getWhitePlayer(GameDataOrBuilder gameData) {
     return gameData.getGameConfiguration().getWhite();
   }
 
-  private GoPlayer getBlackPlayer(GameData gameData) {
+  private GoPlayer getBlackPlayer(GameDataOrBuilder gameData) {
     return gameData.getGameConfiguration().getBlack();
   }
+
 }

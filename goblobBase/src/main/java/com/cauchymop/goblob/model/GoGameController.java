@@ -1,12 +1,11 @@
 package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
 import java.util.List;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
@@ -25,16 +24,15 @@ public class GoGameController implements Serializable {
 
   transient GameDatas gameDatas;
 
-  private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();
   private final GoGame goGame;
-  private GameData gameData;
+  private GameData.Builder gameData;
 
   public GoGameController(GameDatas gameDatas, GameData gameData) {
     this.gameDatas = gameDatas;
-    this.gameData = Preconditions.checkNotNull(gameData);
+    this.gameData = Preconditions.checkNotNull(gameData).toBuilder();
     GameConfiguration gameConfiguration = getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
-    for (Move move : getMoves()) {
+    for (Move move : this.gameData.getMoveList()) {
       goGame.play(getPos(move));
     }
   }
@@ -45,7 +43,7 @@ public class GoGameController implements Serializable {
 
   public boolean undo() {
     if (canUndo()) {
-      redoMoves.addFirst(removeLastMove());
+      gameData.addRedo(0, removeLastMove());
       goGame.undo();
       return true;
     }
@@ -54,17 +52,17 @@ public class GoGameController implements Serializable {
 
   public boolean redo() {
     if (canRedo()) {
-      playMove(redoMoves.peekFirst());
+      playMove(gameData.getRedo(0));
       return true;
     }
     return false;
   }
 
-  public boolean playMove(Move move) {
-    if (getMode() == GameDatas.Mode.IN_GAME && goGame.play(getPos(move))) {
+  private boolean playMove(Move move) {
+    if (gameData.getPhase() == Phase.IN_GAME && goGame.play(getPos(move))) {
       updateRedoForMove(move);
-      addMove(move);
-      setTurn(getOpponentColor());
+      gameData.addMove(move);
+      gameData.setTurn(getOpponentColor());
       checkForMatchEnd();
       return true;
     }
@@ -94,7 +92,7 @@ public class GoGameController implements Serializable {
   }
 
   public GameData getGameData() {
-    return gameData;
+    return gameData.build();
   }
 
   public GameConfiguration getGameConfiguration() {
@@ -102,40 +100,29 @@ public class GoGameController implements Serializable {
   }
 
   private Move removeLastMove() {
-    ArrayDeque<Move> moves = Queues.newArrayDeque(getMoves());
-    Move lastMove = moves.removeLast();
-    gameData = gameData.toBuilder()
-        .clearMove()
-        .addAllMove(moves)
-        .build();
+    int lastIndex = gameData.getMoveCount() - 1;
+    Move lastMove = gameData.getMove(lastIndex);
+    gameData.removeMove(lastIndex);
     return lastMove;
   }
 
-  private void addMove(Move move) {
-    gameData = gameData.toBuilder()
-        .addMove(move)
-        .build();
-  }
-
-  private boolean isLocalTurn() {
+  public boolean isLocalTurn() {
     return gameDatas.isLocalTurn(gameData);
   }
 
-  public boolean toggleDeadStone(Move move) {
-    Position position = move.getPosition();
+  private boolean toggleDeadStone(Position position) {
     if (goGame.getColor(position.getX(), position.getY()) == null) {
       return false;
     }
-    int index = getMatchEndStatus().getDeadStoneList().indexOf(move.getPosition());
-    MatchEndStatus.Builder matchEndStatusBuilder = getMatchEndStatus().toBuilder();
+    int index = getMatchEndStatus().getDeadStoneList().indexOf(position);
+    MatchEndStatus.Builder matchEndStatus = gameData.getMatchEndStatusBuilder();
     if (index == -1) {
-      matchEndStatusBuilder.addDeadStone(move.getPosition());
+      matchEndStatus.addDeadStone(position);
     } else {
-      matchEndStatusBuilder.removeDeadStone(index);
+      matchEndStatus.removeDeadStone(index);
     }
-    setMatchEndStatus(matchEndStatusBuilder
-        .setLastModifier(gameData.getTurn())
-        .setScore(calculateScore()));
+    matchEndStatus.setLastModifier(gameData.getTurn());
+    matchEndStatus.setScore(calculateScore());
     return true;
   }
 
@@ -144,37 +131,25 @@ public class GoGameController implements Serializable {
   }
 
   public void markingTurnDone() {
-    MatchEndStatus.Builder matchEndStatusBuilder = getMatchEndStatus().toBuilder();
-    if (isLocalGame() || !isEndGameStatusLastModifiedByCurrentPlayer()) {
-      matchEndStatusBuilder.setGameFinished(true);
+    if (isLocalGame() || !getMatchEndStatus().getLastModifier().equals(getCurrentColor())) {
+      gameData.setPhase(Phase.FINISHED);
     }
-    setMatchEndStatus(matchEndStatusBuilder);
-
-    setTurn(getOpponentColor());
-  }
-
-  private void setTurn(Color color) {
-    gameData = gameData.toBuilder().setTurn(color).build();
+    gameData.setTurn(getOpponentColor());
   }
 
   public boolean canUndo() {
-    return isLocalTurn() && getMode() == GameDatas.Mode.IN_GAME && !getMoves().isEmpty();
-  }
-
-  private List<Move> getMoves() {
-    return gameData.getMoveList();
+    return isLocalGame() && gameData.getPhase() == Phase.IN_GAME && !gameData.getMoveList().isEmpty();
   }
 
   public boolean canRedo() {
-    return isLocalGame() && getMode() == GameDatas.Mode.IN_GAME && !redoMoves.isEmpty();
+    return isLocalGame() && gameData.getPhase() == Phase.IN_GAME && !gameData.getRedoList().isEmpty();
   }
 
   public void resign() {
-    setMatchEndStatus(MatchEndStatus.newBuilder()
-        .setGameFinished(true)
-        .setScore(Score.newBuilder()
-            .setWinner(getOpponentColor())
-            .setResigned(true)));
+    gameData.setPhase(Phase.FINISHED);
+    Score.Builder score = gameData.getMatchEndStatusBuilder().getScoreBuilder();
+    score.setWinner(getOpponentColor());
+    score.setResigned(true);
   }
 
   public boolean isLocalPlayer(GoPlayer player) {
@@ -183,10 +158,6 @@ public class GoGameController implements Serializable {
 
   public boolean isLocalGame() {
     return gameDatas.isLocalGame(gameData);
-  }
-
-  public GameDatas.Mode getMode() {
-    return gameDatas.getMode(gameData);
   }
 
   private Color getOpponentColor() {
@@ -200,22 +171,23 @@ public class GoGameController implements Serializable {
   }
 
   private void updateRedoForMove(Move move) {
-    if (redoMoves.isEmpty()) {
+    if (gameData.getRedoCount() == 0) {
       return;
     }
-    if (move.equals(redoMoves.peekFirst())) {
-      redoMoves.removeFirst();
+    if (move.equals(gameData.getRedo(0))) {
+      gameData.removeRedo(0);
     } else {
-      redoMoves.clear();
+      gameData.clearRedo();
     }
   }
 
   private void checkForMatchEnd() {
     if (goGame.isGameEnd()) {
+      gameData.setPhase(Phase.DEAD_STONE_MARKING);
       Color lastModifier = GoBoard.getOpponent(goGame.getCurrentColor());
-      setMatchEndStatus(MatchEndStatus.newBuilder()
+      gameData.getMatchEndStatusBuilder()
           .setLastModifier(lastModifier)
-          .setScore(calculateScore()));
+          .setScore(calculateScore());
     }
   }
 
@@ -231,15 +203,6 @@ public class GoGameController implements Serializable {
     }
   }
 
-  private void setMatchEndStatus(MatchEndStatus.Builder matchEndStatus) {
-    gameData = gameData.toBuilder().setMatchEndStatus(matchEndStatus).build();
-  }
-
-  private boolean isEndGameStatusLastModifiedByCurrentPlayer() {
-    return getMode() == GameDatas.Mode.END_GAME_NEGOTIATION
-        && getMatchEndStatus().getLastModifier().equals(getCurrentColor());
-  }
-
   private MatchEndStatus getMatchEndStatus() {
     return gameData.getMatchEndStatus();
   }
@@ -250,5 +213,24 @@ public class GoGameController implements Serializable {
 
   private GoPlayer getBlackPlayer() {
     return getGameConfiguration().getBlack();
+  }
+
+  public boolean isGameFinished() {
+    return gameData.getPhase() == Phase.FINISHED;
+  }
+
+  public Phase getPhase() {
+    return gameData.getPhase();
+  }
+
+  public boolean playMoveOrToggleDeadStone(Move move) {
+    switch(getPhase()) {
+      case IN_GAME:
+        return playMove(move);
+      case DEAD_STONE_MARKING:
+        return toggleDeadStone(move.getPosition());
+      default:
+        throw new RuntimeException("Invalid mode");
+    }
   }
 }

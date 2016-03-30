@@ -36,6 +36,6 @@ public class LocalMatchMenuItem extends MatchMenuItem {
 
   @Override
   public void start(GameStarter gameStarter) {
-    gameStarter.startLocalGame(gameData);
+    gameStarter.selectGame(gameData.getMatchId());
   }
 }

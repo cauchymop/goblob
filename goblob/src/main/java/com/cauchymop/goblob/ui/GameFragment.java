@@ -38,7 +38,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.Score;
  */
 public class GameFragment extends GoBlobBaseFragment implements GoBoardView.Listener {
 
-  private static final String TAG = GoBlobBaseFragment.class.getName();
+  private static final String TAG = GameFragment.class.getName();
   private static final String EXTRA_GO_GAME = "GO_GAME";
 
   private GoGameController goGameController;
@@ -108,7 +108,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     if (goGameController.canRedo()) {
       menu.add(Menu.NONE, R.id.menu_redo, Menu.NONE, R.string.redo);
     }
-    if (gameDatas.isLocalTurn(goGameController.getGameData())) {
+    if (goGameController.isLocalTurn()) {
       menu.add(Menu.NONE, R.id.menu_resign, Menu.NONE, R.string.resign);
     }
   }
@@ -140,7 +140,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     configureActionButton();
     boardViewContainer.addView(goBoardView);
     initFromGameState();
-    enableInteractions(gameDatas.isLocalTurn(goGameController.getGameData()));
+    enableInteractions(goGameController.isLocalTurn());
   }
 
   private void enableInteractions(boolean enabled) {
@@ -149,9 +149,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void configureActionButton() {
-    switch(gameDatas.getMode(goGameController.getGameData())) {
-      case START_GAME_NEGOTIATION:
-        break;
+    switch(goGameController.getPhase()) {
       case IN_GAME:
         configureActionButton(R.string.button_pass_label, new View.OnClickListener() {
           @Override
@@ -160,7 +158,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
           }
         });
         break;
-      case END_GAME_NEGOTIATION:
+      case DEAD_STONE_MARKING:
         configureActionButton(R.string.button_done_label, new View.OnClickListener() {
           @Override
           public void onClick(View v) {
@@ -188,22 +186,11 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void play(Move move) {
-    boolean played = playMoveOrToggleDeadStone(move);
+    boolean played = goGameController.playMoveOrToggleDeadStone(move);
     if(played) {
       endTurn();
     } else {
       buzz();
-    }
-  }
-
-  private boolean playMoveOrToggleDeadStone(Move move) {
-    switch(gameDatas.getMode(goGameController.getGameData())) {
-      case IN_GAME:
-        return goGameController.playMove(move);
-      case END_GAME_NEGOTIATION:
-        return goGameController.toggleDeadStone(move);
-      default:
-        throw new RuntimeException("Invalid mode");
     }
   }
 
@@ -236,14 +223,14 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
    */
   private void initMessageArea() {
     final String message;
-    if (gameDatas.isGameFinished(goGameController.getGameData())) {
+    if (goGameController.isGameFinished()) {
       Score score = goGameController.getScore();
       if (score.getResigned()) {
         message = getString(R.string.end_of_game_resigned_message, score.getWinner());
       } else {
         message = getString(R.string.end_of_game_message, score.getWinner(), score.getWonBy());
       }
-    } else if (gameDatas.getMode(goGameController.getGameData()) == GameDatas.Mode.END_GAME_NEGOTIATION) {
+    } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
       message = getString(R.string.marking_message);
     } else if (goGameController.getGame().isLastMovePass()) {
       message = getString(R.string.opponent_passed_message, goGameController.getOpponent().getName());
@@ -255,7 +242,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void updateAchievements() {
-    if (!isSignedIn() || !gameDatas.isGameFinished(goGameController.getGameData())) {
+    if (!isSignedIn() || !goGameController.isGameFinished()) {
       return;
     }
     switch (goGameController.getGame().getBoardSize()) {
@@ -295,6 +282,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     int boardSize = goGameController.getGameConfiguration().getBoardSize();
     int x = bestMove % boardSize;
     int y = bestMove / boardSize;
-    goGameController.playMove(gameDatas.createMove(x, y));
+    goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
   }
 }

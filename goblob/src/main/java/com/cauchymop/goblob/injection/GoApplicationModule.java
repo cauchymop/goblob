@@ -10,6 +10,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 
 import javax.inject.Named;
 import javax.inject.Singleton;

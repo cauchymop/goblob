@@ -49,4 +49,14 @@ public class TextBoardTest {
     Assert.assertNull(board.getColor(1, 1));
     Assert.assertNull(board.getColor(0, 1));
   }
+
+  @Test
+  public void testFillBoard_comment_eof() {
+    GoBoard board = new GoBoard(2);
+    TextBoard.fillBoard(board, "..\n..\n#");
+    Assert.assertNull(board.getColor(0, 0));
+    Assert.assertNull(board.getColor(1, 0));
+    Assert.assertNull(board.getColor(1, 1));
+    Assert.assertNull(board.getColor(0, 1));
+  }
 }

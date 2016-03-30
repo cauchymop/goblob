@@ -1,6 +1,7 @@
 In progress:
-- Add redo moves to proto/gameData and remove them from GoGameController to fix local game redos
-- Add game negociation
+- Add a state to game data (initial conf, conf negociation, play, end negociation, finished)
+- Add compat for state and turn
+- To make game negociation work: manage the isAccepted
 - In GameRepository,  handle a cache of remote games
 
 Next things to do:
