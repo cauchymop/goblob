@@ -55,6 +55,7 @@ public class GoGameControllerTest {
         .setVersion(GAME_DATAS.VERSION)
         .setMatchId(GameDatas.LOCAL_MATCH_ID)
         .setTurn(PlayGameData.Color.WHITE)
+        .setPhase(Phase.IN_GAME)
         .build());
   }
 
@@ -68,12 +69,6 @@ public class GoGameControllerTest {
   public void testToString() {
     GoGameController controller = createGoGameController(false);
     assertThat(controller.toString()).isNotNull();
-  }
-
-  @Test
-  public void testPlayMove_tooEarly() {
-    GoGameController controller = createGoGameController(false);
-    assertThat(controller.playMoveOrToggleDeadStone(GAME_DATAS.createMove(0, 0))).isFalse();
   }
 
   @Test

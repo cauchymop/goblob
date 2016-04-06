@@ -33,10 +33,6 @@ import butterknife.OnClick;
 public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private static final String EXTRA_GAME_DATA = "game_configuration";
-  private static final String SAVED_BLACK_NAME = "SAVED_BLACK_NAME";
-  private static final String SAVED_WHITE_NAME = "SAVED_WHITE_NAME";
-  private static final String SAVED_HANDICAP = "SAVED_HANDICAP";
-  private static final String SAVED_KOMI = "SAVED_KOMI";
 
   @Bind(R.id.configuration_container)
   LinearLayout configurationContainer;
@@ -81,7 +77,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
     ButterKnife.bind(this, v);
 
-    init(getInitialGameData(), savedInstanceState);
+    init(getInitialGameData());
 
     return v;
   }
@@ -96,7 +92,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     return (GameData) extras.getSerializable(EXTRA_GAME_DATA);
   }
 
-  private void init(GameData gameData, Bundle savedInstanceState) {
+  private void init(GameData gameData) {
     boolean isLocalTurn = gameDatas.isLocalTurn(gameData);
 
     setEnabled(configurationContainer, isLocalTurn);

@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:padding="12dip"
-        android:text="@string/configuration_done__label">
+        android:text="@string/configuration_done_label">
 
         <requestFocus/>
 
