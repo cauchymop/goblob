@@ -32,8 +32,8 @@ android {
     buildToolsVersion android_version
 
     defaultConfig {
-        versionCode 10
-        versionName "1.0.2"
+        versionCode 11
+        versionName "1.0.3"
         minSdkVersion android_min_sdk_version
         targetSdkVersion android_compile_version
     }
