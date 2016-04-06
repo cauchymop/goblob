@@ -242,8 +242,10 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   public void selectGame(@NonNull String matchId) {
     currentMatchId = matchId;
 
-    if (matchId.equals(GameDatas.LOCAL_MATCH_ID) ||  matchId.equals(GameDatas.NEW_GAME_MATCH_ID)) {
+    if (matchId.equals(GameDatas.LOCAL_MATCH_ID)) {
       fireGameSelected(getLocalGame());
+    } else if (matchId.equals(GameDatas.NEW_GAME_MATCH_ID)) {
+      fireGameSelected(null);
     } else {
       TurnBasedMultiplayer.loadMatch(googleApiClient, matchId)
           .setResultCallback(new ResultCallback<com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchResult>() {
