@@ -53,6 +53,9 @@
   <string name="update_app_message">The version of the application you are using is out of date and does not support the format of this game.\n\nPlease update the application to play this game.</string>
   <string name="update_app_button_label">Update Application</string>
   <string name="swap_character" translatable="false">⇅</string>
+  <string name="configuration_message_initial">Configure Game</string>
+  <string name="configuration_message_waiting_for_opponent">Waiting for other player to validate or change settings</string>
+  <string name="configuration_message_accept_or_change">Please, validate or change the game settings</string>
 
   <string-array name="handicap_values">
     <item>@string/handicap_even</item>

@@ -392,7 +392,9 @@ public class MainActivity extends AppCompatActivity
     this.boardSize = boardSize;
     if (isLocal) {
       GameData localGame = gameDatas.createLocalGame(boardSize);
-      displayGameConfigurationScreen(localGame);
+      gameRepository.saveGame(localGame);
+      gameRepository.selectGame(localGame.getMatchId());
+      updateMatchSpinner();
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
@@ -503,7 +505,7 @@ public class MainActivity extends AppCompatActivity
     GameStarter gameStarter = new GameStarter() {
       @Override
       public void startNewGame() {
-        gameRepository.selectGame(null);
+        gameRepository.selectGame(GameDatas.NEW_GAME_MATCH_ID);
         displayFragment(new PlayerChoiceFragment());
       }
 

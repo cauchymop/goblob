@@ -239,13 +239,10 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     fireGameListChanged();
   }
 
-  public void selectGame(String matchId) {
+  public void selectGame(@NonNull String matchId) {
     currentMatchId = matchId;
-    if (matchId == null) {
-      return;
-    }
 
-    if (Objects.equal(matchId, GameDatas.LOCAL_MATCH_ID)) {
+    if (matchId.equals(GameDatas.LOCAL_MATCH_ID) ||  matchId.equals(GameDatas.NEW_GAME_MATCH_ID)) {
       fireGameSelected(getLocalGame());
     } else {
       TurnBasedMultiplayer.loadMatch(googleApiClient, matchId)

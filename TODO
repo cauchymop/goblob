@@ -1,8 +1,5 @@
 In progress:
-- Add a state to game data (initial conf, conf negociation, play, end negociation, finished)
-- Add compat for state and turn
-- To make game negociation work: manage the isAccepted
-- In GameRepository,  handle a cache of remote games
+- In GameRepository, handle a cache of remote games
 
 Next things to do:
 - inject GoogleApiClient to clean up the takeTurn* code.

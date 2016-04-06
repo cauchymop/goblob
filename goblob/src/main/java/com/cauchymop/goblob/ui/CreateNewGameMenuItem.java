@@ -3,17 +3,17 @@ package com.cauchymop.goblob.ui;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import com.cauchymop.goblob.model.GameDatas;
+
 /**
  * {@link MatchMenuItem} which creates a new game.
  */
 public class CreateNewGameMenuItem extends MatchMenuItem {
 
-  public static final String NEW_GAME_MATCH_ID = "new game";
-
   private final String label;
 
   public CreateNewGameMenuItem(String label) {
-    super(NEW_GAME_MATCH_ID);
+    super(GameDatas.NEW_GAME_MATCH_ID);
     this.label = label;
   }
 

@@ -2,11 +2,15 @@ package com.cauchymop.goblob.ui;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
@@ -29,7 +33,17 @@ import butterknife.OnClick;
 public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private static final String EXTRA_GAME_DATA = "game_configuration";
+  private static final String SAVED_BLACK_NAME = "SAVED_BLACK_NAME";
+  private static final String SAVED_WHITE_NAME = "SAVED_WHITE_NAME";
+  private static final String SAVED_HANDICAP = "SAVED_HANDICAP";
+  private static final String SAVED_KOMI = "SAVED_KOMI";
 
+  @Bind(R.id.configuration_container)
+  LinearLayout configurationContainer;
+  @Bind(R.id.configuration_message)
+  TextView configurationMessage;
+  @Bind(R.id.configuration_done_button)
+  Button configurationDoneButton;
   @Bind(R.id.black_player_name)
   EditText blackPlayerNameField;
   @Bind(R.id.white_player_name)
@@ -63,11 +77,11 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                           Bundle savedInstanceState) {
+      Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
     ButterKnife.bind(this, v);
 
-    init(getInitialGameData());
+    init(getInitialGameData(), savedInstanceState);
 
     return v;
   }
@@ -82,7 +96,21 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     return (GameData) extras.getSerializable(EXTRA_GAME_DATA);
   }
 
-  private void init(GameData gameData) {
+  private void init(GameData gameData, Bundle savedInstanceState) {
+    boolean isLocalTurn = gameDatas.isLocalTurn(gameData);
+
+    setEnabled(configurationContainer, isLocalTurn);
+    configurationDoneButton.setVisibility(isLocalTurn ? View.VISIBLE : View.GONE);
+    final @StringRes int message;
+    if (gameData.getPhase() == Phase.INITIAL) {
+      message = R.string.configuration_message_initial;
+    } else if (isLocalTurn) {
+      message = R.string.configuration_message_accept_or_change;
+    } else {
+      message = R.string.configuration_message_waiting_for_opponent;
+    }
+    configurationMessage.setText(message);
+
     GameConfiguration configuration = gameData.getGameConfiguration();
     blackPlayer = configuration.getBlack();
     whitePlayer = configuration.getWhite();
@@ -91,6 +119,16 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     whitePlayerNameField.setText(whitePlayer.getName());
     komiText.setText(String.valueOf(configuration.getKomi()));
     setHandicap(configuration.getHandicap());
+  }
+
+  private void setEnabled(ViewGroup vg, boolean enable) {
+    for (int i = 0; i < vg.getChildCount(); i++) {
+      View child = vg.getChildAt(i);
+      child.setEnabled(enable);
+      if (child instanceof ViewGroup) {
+        setEnabled((ViewGroup) child, enable);
+      }
+    }
   }
 
   @Override

@@ -30,6 +30,7 @@ public class GameDatas {
   public static final String PLAYER_ONE_ID = "player1";
   public static final String PLAYER_TWO_ID = "player2";
   public static final String LOCAL_MATCH_ID = "local";
+  public static final String NEW_GAME_MATCH_ID = "new game";
 
   private final Lazy<String> playerOneDefaultName;
   private final String playerTwoDefaultName;
