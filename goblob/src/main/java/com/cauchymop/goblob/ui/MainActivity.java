@@ -416,6 +416,10 @@ public class MainActivity extends AppCompatActivity
   @Override
   public void gameSelected(GameData gameData) {
     Log.d(TAG, "gameSelected gameData = " + gameData);
+    if (gameData == null) {
+      displayFragment(new PlayerChoiceFragment());
+      return;
+    }
     switch (gameData.getPhase()) {
       case INITIAL:
       case CONFIGURATION:
