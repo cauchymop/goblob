@@ -141,4 +141,20 @@ public class GoGameTest {
     goGame.play(3);
     assertThat(goGame.play(3)).isFalse();
   }
+
+  @Test
+  public void testHandicap9() {
+    GoGame goGame = new GoGame(9, 9);
+    assertThat(TextBoard.toString(goGame.getBoard())).isEqualTo(
+        ".........\n" +
+        ".........\n" +
+        "..●.●.●..\n" +
+        ".........\n" +
+        "..●.●.●..\n" +
+        ".........\n" +
+        "..●.●.●..\n" +
+        ".........\n" +
+        ".........\n"
+    );
+  }
 }

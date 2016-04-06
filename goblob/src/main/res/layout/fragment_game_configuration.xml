@@ -14,26 +14,137 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:padding="12dip"
-        android:text="@string/start_game_label">
+        android:text="@string/configuration_done_label">
 
         <requestFocus/>
 
     </Button>
 
+    <TextView
+        android:id="@+id/configuration_message"
+        style="@style/Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        tools:text="@string/configuration_message_waiting_for_opponent"/>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/configuration_done_button"
         android:gravity="center"
-        android:orientation="vertical">
+        android:fillViewport="true"
+        android:layout_above="@id/configuration_done_button"
+        android:layout_below="@+id/configuration_message">
 
-        <RelativeLayout
+        <LinearLayout
+            android:id="@+id/configuration_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/black_player_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Title"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/black_label"/>
+
+                    <EditText
+                        android:id="@+id/black_player_name"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/name_label"
+                        android:inputType="text"
+                        android:singleLine="true"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/white_player_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/black_player_row"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Title"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/white_label"/>
+
+                    <EditText
+                        android:id="@+id/white_player_name"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/name_label"
+                        android:inputType="text"
+                        android:singleLine="true"/>
+
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/center_point"
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_centerInParent="true"/>
+
+                <Button
+                    android:id="@+id/swap_players_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/center_point"
+                    android:layout_toStartOf="@id/center_point"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:paddingBottom="6dp"
+                    android:paddingLeft="6dp"
+                    android:paddingRight="6dp"
+                    android:paddingTop="2dp"
+                    android:text="@string/swap_character"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+            </RelativeLayout>
 
             <LinearLayout
-                android:id="@+id/black_player_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="50dp">
+
+                <TextView
+                    style="@style/Title"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/handicap_label"/>
+
+                <Spinner
+                    android:id="@+id/handicap_spinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:entries="@array/handicap_values"
+                    android:spinnerMode="dropdown">
+
+                </Spinner>
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
@@ -43,110 +154,16 @@
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/black_label"/>
+                    android:text="@string/komi_label"/>
 
                 <EditText
-                    android:id="@+id/black_player_name"
+                    android:id="@+id/komi_value"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="@string/name_label"
-                    android:inputType="text"
-                    android:singleLine="true"/>
-
+                    android:inputType="numberDecimal"
+                    tools:text="7.5"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/white_player_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/black_player_row"
-                android:orientation="horizontal">
-
-                <TextView
-                    style="@style/Title"
-                    android:layout_width="0dip"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/white_label"/>
-
-                <EditText
-                    android:id="@+id/white_player_name"
-                    android:layout_width="0dip"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="@string/name_label"
-                    android:inputType="text"
-                    android:singleLine="true"/>
-
-            </LinearLayout>
-
-            <View
-                android:id="@+id/center_point"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:layout_centerInParent="true"/>
-
-            <Button
-                android:id="@+id/swap_players_button"
-                android:layout_toLeftOf="@id/center_point"
-                android:layout_toStartOf="@id/center_point"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:textStyle="bold"
-                android:textSize="24sp"
-                android:minHeight="0dp" android:minWidth="0dp"
-                android:paddingLeft="6dp"
-                android:paddingRight="6dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="6dp"
-                android:text="@string/swap_character"/>
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="50dp">
-
-            <TextView
-                style="@style/Title"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/handicap_label"/>
-
-            <Spinner
-                android:id="@+id/handicap_spinner"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:entries="@array/handicap_values"
-                android:spinnerMode="dropdown">
-
-            </Spinner>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/Title"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/komi_label"/>
-
-            <EditText
-                android:id="@+id/komi_value"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="numberDecimal"
-                tools:text="7.5"/>
-        </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 </RelativeLayout>

@@ -10,6 +10,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -41,6 +42,16 @@ public class GoApplicationModule {
   @Singleton
   public GoogleApiClient provideGoogleApiClient(GoogleApiClientManager googleApiClientManager) {
     return googleApiClientManager.get();
+  }
+
+  @Provides
+  @Singleton
+  @Named("LocalGoogleIdentity")
+  public String getLocalGoogleId(GoogleApiClient googleApiClient) {
+    if (!googleApiClient.isConnected()) {
+      return null;
+    }
+    return Players.getCurrentPlayerId(googleApiClient);
   }
 
   @Provides

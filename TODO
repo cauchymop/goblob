@@ -1,6 +1,5 @@
 In progress:
-- Add game negociation
-- rename LocalGameRepository into GameRepository, which will handle a cache of remote games, and contain all the code related to them (giveturn, taketurn, ...).
+- In GameRepository, handle a cache of remote games
 
 Next things to do:
 - inject GoogleApiClient to clean up the takeTurn* code.

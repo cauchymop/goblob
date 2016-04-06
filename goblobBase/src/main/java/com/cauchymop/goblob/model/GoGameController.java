@@ -1,18 +1,16 @@
 package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
+import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
 import java.util.List;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
-import static com.cauchymop.goblob.proto.PlayGameData.GameType;
 import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import static com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
@@ -26,38 +24,26 @@ public class GoGameController implements Serializable {
 
   transient GameDatas gameDatas;
 
-  private ArrayDeque<Move> moves = Queues.newArrayDeque();
-  private ArrayDeque<Move> redoMoves = Queues.newArrayDeque();
   private final GoGame goGame;
-  private GameConfiguration gameConfiguration;
-  private MatchEndStatus matchEndStatus;
-  private final GoPlayer blackPlayer;
-  private final GoPlayer whitePlayer;
-  private final String localGoogleIdentity;
-  private final String matchId;
+  private GameData.Builder gameData;
 
-  public GoGameController(GameDatas gameDatas, GameData gameData, String localGoogleIdentity) {
+  public GoGameController(GameDatas gameDatas, GameData gameData) {
     this.gameDatas = gameDatas;
-    this.localGoogleIdentity = localGoogleIdentity;
-    matchId = gameData.getMatchId();
-    gameConfiguration = gameData.getGameConfiguration();
-    blackPlayer = gameConfiguration.getBlack();
-    whitePlayer = gameConfiguration.getWhite();
+    this.gameData = Preconditions.checkNotNull(gameData).toBuilder();
+    GameConfiguration gameConfiguration = getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
-    matchEndStatus = gameData.hasMatchEndStatus() ? gameData.getMatchEndStatus() : null;
-    moves = Queues.newArrayDeque(gameData.getMoveList());
-    for (Move move : moves) {
+    for (Move move : this.gameData.getMoveList()) {
       goGame.play(getPos(move));
     }
   }
 
   public Score getScore() {
-    return matchEndStatus.getScore();
+    return getMatchEndStatus().getScore();
   }
 
   public boolean undo() {
     if (canUndo()) {
-      redoMoves.addFirst(moves.removeLast());
+      gameData.addRedo(0, removeLastMove());
       goGame.undo();
       return true;
     }
@@ -66,47 +52,142 @@ public class GoGameController implements Serializable {
 
   public boolean redo() {
     if (canRedo()) {
-      playMove(redoMoves.peekFirst());
+      playMove(gameData.getRedo(0));
       return true;
     }
     return false;
   }
 
-  private Score calculateScore() {
-    ScoreGenerator scoreGenerator = new ScoreGenerator(goGame.getBoard(),
-        Sets.newHashSet(getDeadStones()), gameConfiguration.getKomi());
-    return scoreGenerator.getScore();
-  }
-
-  public boolean playMove(Move move) {
-    if (getMode() == Mode.IN_GAME && goGame.play(getPos(move))) {
+  private boolean playMove(Move move) {
+    if (gameData.getPhase() == Phase.IN_GAME && goGame.play(getPos(move))) {
       updateRedoForMove(move);
-      moves.add(move);
+      gameData.addMove(move);
+      gameData.setTurn(getOpponentColor());
       checkForMatchEnd();
       return true;
     }
     return false;
   }
 
+  public GoPlayer getCurrentPlayer() {
+    return gameDatas.getCurrentPlayer(gameData);
+  }
+
+  public GoPlayer getOpponent() {
+    return gameDatas.getGoPlayer(gameData, getOpponentColor());
+  }
+
+  public Color getCurrentColor() {
+    return gameDatas.getCurrentColor(gameData);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, end=%s)",
+        goGame, getBlackPlayer(), getWhitePlayer(), getMatchEndStatus());
+  }
+
+  public GoGame getGame() {
+    return goGame;
+  }
+
+  public GameData getGameData() {
+    return gameData.build();
+  }
+
+  public GameConfiguration getGameConfiguration() {
+    return gameData.getGameConfiguration();
+  }
+
+  private Move removeLastMove() {
+    int lastIndex = gameData.getMoveCount() - 1;
+    Move lastMove = gameData.getMove(lastIndex);
+    gameData.removeMove(lastIndex);
+    return lastMove;
+  }
+
+  public boolean isLocalTurn() {
+    return gameDatas.isLocalTurn(gameData);
+  }
+
+  private boolean toggleDeadStone(Position position) {
+    if (goGame.getColor(position.getX(), position.getY()) == null) {
+      return false;
+    }
+    int index = getMatchEndStatus().getDeadStoneList().indexOf(position);
+    MatchEndStatus.Builder matchEndStatus = gameData.getMatchEndStatusBuilder();
+    if (index == -1) {
+      matchEndStatus.addDeadStone(position);
+    } else {
+      matchEndStatus.removeDeadStone(index);
+    }
+    matchEndStatus.setLastModifier(gameData.getTurn());
+    matchEndStatus.setScore(calculateScore());
+    return true;
+  }
+
+  public List<PlayGameData.Position> getDeadStones() {
+    return getMatchEndStatus().getDeadStoneList();
+  }
+
+  public void markingTurnDone() {
+    if (isLocalGame() || !getMatchEndStatus().getLastModifier().equals(getCurrentColor())) {
+      gameData.setPhase(Phase.FINISHED);
+    }
+    gameData.setTurn(getOpponentColor());
+  }
+
+  public boolean canUndo() {
+    return isLocalGame() && gameData.getPhase() == Phase.IN_GAME && !gameData.getMoveList().isEmpty();
+  }
+
+  public boolean canRedo() {
+    return isLocalGame() && gameData.getPhase() == Phase.IN_GAME && !gameData.getRedoList().isEmpty();
+  }
+
+  public void resign() {
+    gameData.setPhase(Phase.FINISHED);
+    Score.Builder score = gameData.getMatchEndStatusBuilder().getScoreBuilder();
+    score.setWinner(getOpponentColor());
+    score.setResigned(true);
+  }
+
+  public boolean isLocalPlayer(GoPlayer player) {
+    return gameDatas.isLocalPlayer(gameData, player);
+  }
+
+  public boolean isLocalGame() {
+    return gameDatas.isLocalGame(gameData);
+  }
+
+  private Color getOpponentColor() {
+    return GoBoard.getOpponent(getCurrentColor());
+  }
+
+  private Score calculateScore() {
+    ScoreGenerator scoreGenerator = new ScoreGenerator(goGame.getBoard(),
+        Sets.newHashSet(getDeadStones()), getGameConfiguration().getKomi());
+    return scoreGenerator.getScore();
+  }
+
   private void updateRedoForMove(Move move) {
-    if (redoMoves.isEmpty()) {
+    if (gameData.getRedoCount() == 0) {
       return;
     }
-    if (move.equals(redoMoves.peekFirst())) {
-      redoMoves.removeFirst();
+    if (move.equals(gameData.getRedo(0))) {
+      gameData.removeRedo(0);
     } else {
-      redoMoves.clear();
+      gameData.clearRedo();
     }
   }
 
   private void checkForMatchEnd() {
     if (goGame.isGameEnd()) {
+      gameData.setPhase(Phase.DEAD_STONE_MARKING);
       Color lastModifier = GoBoard.getOpponent(goGame.getCurrentColor());
-      matchEndStatus = MatchEndStatus.newBuilder()
+      gameData.getMatchEndStatusBuilder()
           .setLastModifier(lastModifier)
-          .setTurn(lastModifier)
-          .setScore(calculateScore())
-          .build();
+          .setScore(calculateScore());
     }
   }
 
@@ -122,155 +203,34 @@ public class GoGameController implements Serializable {
     }
   }
 
-  public GoPlayer getCurrentPlayer() {
-    return getGoPlayer(getCurrentColor());
+  private MatchEndStatus getMatchEndStatus() {
+    return gameData.getMatchEndStatus();
   }
 
-  public GoPlayer getOpponent() {
-    return getGoPlayer(getOpponentColor());
+  private GoPlayer getWhitePlayer() {
+    return getGameConfiguration().getWhite();
   }
 
-  private Color getOpponentColor() {
-    return GoBoard.getOpponent(getCurrentColor());
-  }
-
-  public Color getCurrentColor() {
-    if (getMode() == Mode.IN_GAME) {
-      return goGame.getCurrentColor();
-    }
-    return matchEndStatus.getTurn();
-  }
-
-  public GoPlayer getGoPlayer(Color color) {
-    return color == Color.BLACK ? blackPlayer : whitePlayer;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("GoGameController(GoGame=%s, black=%s, white=%s, end=%s)",
-        goGame, blackPlayer, whitePlayer, matchEndStatus);
-  }
-
-  public GoGame getGame() {
-    return goGame;
-  }
-
-  public GameData getGameData() {
-    return gameDatas.createGameData(matchId, gameConfiguration, moves, matchEndStatus);
-  }
-
-  public GameConfiguration getGameConfiguration() {
-    return gameConfiguration;
-  }
-
-  public boolean isLocalTurn() {
-    return isLocalPlayer(getCurrentPlayer()) && !isGameFinished();
+  private GoPlayer getBlackPlayer() {
+    return getGameConfiguration().getBlack();
   }
 
   public boolean isGameFinished() {
-    return matchEndStatus != null && matchEndStatus.getGameFinished();
+    return gameData.getPhase() == Phase.FINISHED;
   }
 
-  public Mode getMode() {
-    if (!gameConfiguration.getAccepted()) {
-      return Mode.START_GAME_NEGOTIATION;
+  public Phase getPhase() {
+    return gameData.getPhase();
+  }
+
+  public boolean playMoveOrToggleDeadStone(Move move) {
+    switch(getPhase()) {
+      case IN_GAME:
+        return playMove(move);
+      case DEAD_STONE_MARKING:
+        return toggleDeadStone(move.getPosition());
+      default:
+        throw new RuntimeException("Invalid mode");
     }
-    if (matchEndStatus != null) {
-      return Mode.END_GAME_NEGOTIATION;
-    }
-    return Mode.IN_GAME;
-  }
-
-  public boolean toggleDeadStone(Move move) {
-    Position position = move.getPosition();
-    if (goGame.getColor(position.getX(), position.getY()) == null) {
-      return false;
-    }
-    int index = matchEndStatus.getDeadStoneList().indexOf(move.getPosition());
-    if (index == -1) {
-      matchEndStatus = matchEndStatus.toBuilder()
-          .addDeadStone(move.getPosition())
-          .setLastModifier(matchEndStatus.getTurn())
-          .build();
-    } else {
-      matchEndStatus = matchEndStatus.toBuilder()
-          .removeDeadStone(index)
-          .setLastModifier(matchEndStatus.getTurn())
-          .build();
-    }
-    matchEndStatus = matchEndStatus.toBuilder()
-        .setScore(calculateScore())
-        .build();
-    return true;
-  }
-
-  public List<PlayGameData.Position> getDeadStones() {
-    if (matchEndStatus == null) {
-      return Lists.newArrayList();
-    }
-    return matchEndStatus.getDeadStoneList();
-  }
-
-  private boolean isEndGameStatusLastModifiedByCurrentPlayer() {
-    return getMode() == Mode.END_GAME_NEGOTIATION
-        && matchEndStatus.getLastModifier().equals(getCurrentColor());
-  }
-
-  public void markingTurnDone() {
-    if (isLocalGame() || !isEndGameStatusLastModifiedByCurrentPlayer()) {
-      matchEndStatus = matchEndStatus.toBuilder()
-          .setGameFinished(true)
-          .build();
-    }
-    matchEndStatus = matchEndStatus.toBuilder()
-        .setTurn(getOpponentColor())
-        .build();
-  }
-
-  public boolean isLocalGame() {
-    return getGameConfiguration().getGameType() == GameType.LOCAL;
-  }
-
-  public boolean canUndo() {
-    return isLocalTurn() && getMode() == Mode.IN_GAME && !moves.isEmpty();
-  }
-
-  public boolean canRedo() {
-    return isLocalGame() && getMode() == Mode.IN_GAME && !redoMoves.isEmpty();
-  }
-
-  public void resign() {
-    matchEndStatus = MatchEndStatus.newBuilder()
-        .setGameFinished(true)
-        .setScore(Score.newBuilder()
-            .setWinner(getOpponentColor())
-            .setResigned(true))
-        .build();
-  }
-
-  public GoPlayer getWinner() {
-    return getGoPlayer(matchEndStatus.getScore().getWinner());
-  }
-
-  public boolean isLocalPlayer(GoPlayer player) {
-    return isLocalGame() || player.getGoogleId().equals(localGoogleIdentity);
-  }
-
-  public String getLocalPlayerId() {
-    return isLocalPlayer(blackPlayer) ? blackPlayer.getId() : whitePlayer.getId();
-  }
-
-  public String getRemotePlayerId() {
-    return isLocalPlayer(blackPlayer) ? whitePlayer.getId() : blackPlayer.getId();
-  }
-
-  public String getMatchId() {
-    return matchId;
-  }
-
-  public enum Mode {
-    START_GAME_NEGOTIATION,
-    IN_GAME,
-    END_GAME_NEGOTIATION
   }
 }

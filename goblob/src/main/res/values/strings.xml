@@ -6,7 +6,7 @@
   <string name="white_label">White</string>
   <string name="board_size_label">Select board size</string>
   <string name="handicap_label">Handicap</string>
-  <string name="start_game_label">Start Game</string>
+  <string name="configuration_done_label">Done</string>
   <string name="choose_game_type_label">Select game type</string>
   <string name="configure_game_label">Configure Game</string>
   <string name="game_type_local_label">Local game</string>
@@ -53,6 +53,9 @@
   <string name="update_app_message">The version of the application you are using is out of date and does not support the format of this game.\n\nPlease update the application to play this game.</string>
   <string name="update_app_button_label">Update Application</string>
   <string name="swap_character" translatable="false">⇅</string>
+  <string name="configuration_message_initial">Configure Game</string>
+  <string name="configuration_message_waiting_for_opponent">Waiting for other player to validate or change settings</string>
+  <string name="configuration_message_accept_or_change">Please, validate or change the game settings</string>
 
   <string-array name="handicap_values">
     <item>@string/handicap_even</item>
