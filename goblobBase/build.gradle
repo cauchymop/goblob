@@ -19,3 +19,9 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.9.0'
     testCompile 'org.easytesting:fest-assert:1.2'
 }
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
