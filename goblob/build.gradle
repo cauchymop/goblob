@@ -75,5 +75,5 @@ android {
 }
 
 private String getReleasePassword() {
-    System.getenv("GOBLOB_KEY_PASSWORD")
+    System.getProperty("GOBLOB_KEY_PASSWORD")
 }
