@@ -1,5 +1,7 @@
 language: android
 jdk: oraclejdk7
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 env:
   matrix:
     - ANDROID_TARGET=android-23  ANDROID_ABI=armeabi-v7a
@@ -21,4 +23,6 @@ android:
 before_script:
   # Nothing for us
 
-script: ./gradlew test
+script: ./gradlew test goblobBase:jacocoTestReport
+
+
