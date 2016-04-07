@@ -1,7 +1,9 @@
 language: android
 jdk: oraclejdk7
+before_install:
+  - pip install codecov
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - codecov
 env:
   matrix:
     - ANDROID_TARGET=android-23  ANDROID_ABI=armeabi-v7a
