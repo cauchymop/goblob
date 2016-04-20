@@ -66,8 +66,6 @@ public class MainActivity extends AppCompatActivity
   private static final String TAG = MainActivity.class.getName();
   private static final String CURRENT_MATCH_ID = "CURRENT_MATCH_ID";
 
-  private int boardSize = 9;
-
   @Bind(R.id.toolbar_match_spinner) Spinner matchSpinner;
   @Bind(R.id.app_toolbar) Toolbar toolbar;
   @Bind(R.id.waiting_view) View waitingScreen;
@@ -388,10 +386,9 @@ public class MainActivity extends AppCompatActivity
     startActivityForResult(TurnBasedMultiplayer.getInboxIntent(googleApiClient), RC_CHECK_MATCHES);
   }
 
-  public void configureGame(boolean isLocal, int boardSize) {
-    this.boardSize = boardSize;
+  public void configureGame(boolean isLocal) {
     if (isLocal) {
-      GameData localGame = gameDatas.createLocalGame(boardSize);
+      GameData localGame = gameDatas.createLocalGame();
       gameRepository.saveGame(localGame);
       gameRepository.selectGame(localGame.getMatchId());
       updateMatchSpinner();
@@ -472,7 +469,7 @@ public class MainActivity extends AppCompatActivity
     // create game
     TurnBasedMatchConfig turnBasedMatchConfig = TurnBasedMatchConfig.builder()
         .addInvitedPlayers(invitees)
-        .setVariant(boardSize)
+        .setVariant(TurnBasedMatch.MATCH_VARIANT_DEFAULT)
         .setAutoMatchCriteria(autoMatchCriteria).build();
 
     // kick the match off

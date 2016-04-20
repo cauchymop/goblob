@@ -4,7 +4,7 @@
   <string name="button_pass_label">Pass</string>
   <string name="black_label">Black</string>
   <string name="white_label">White</string>
-  <string name="board_size_label">Select board size</string>
+  <string name="board_size_label">Board size</string>
   <string name="handicap_label">Handicap</string>
   <string name="configuration_done_label">Done</string>
   <string name="choose_game_type_label">Select game type</string>

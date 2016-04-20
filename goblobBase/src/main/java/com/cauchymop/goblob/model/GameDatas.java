@@ -26,6 +26,7 @@ public class GameDatas {
 
   public static final float DEFAULT_KOMI = 7.5f;
   public static final int DEFAULT_HANDICAP = 0;
+  public static final int DEFAULT_BOARD_SIZE = 9;
   public static final int VERSION = 2;
   public static final String PLAYER_ONE_ID = "player1";
   public static final String PLAYER_TWO_ID = "player2";
@@ -163,10 +164,10 @@ public class GameDatas {
         .build();
   }
 
-  public GameData createLocalGame(int boardSize) {
+  public GameData createLocalGame() {
     GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
     GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
-    return createGameData(LOCAL_MATCH_ID, Phase.INITIAL, createGameConfiguration(boardSize, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white));
+    return createGameData(LOCAL_MATCH_ID, Phase.INITIAL, createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white));
   }
 
   public boolean isLocalGame(GameDataOrBuilder gameData) {

@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -48,6 +50,14 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   Spinner handicapSpinner;
   @Bind(R.id.komi_value)
   EditText komiText;
+  @Bind(R.id.board_size_radio_group)
+  RadioGroup boardSizeRadioGroup;
+  @Bind(R.id.board_size_9)
+  RadioButton boardSize9;
+  @Bind(R.id.board_size_13)
+  RadioButton boardSize13;
+  @Bind(R.id.board_size_19)
+  RadioButton boardSize19;
 
   @Inject
   GameDatas gameDatas;
@@ -115,6 +125,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     whitePlayerNameField.setText(whitePlayer.getName());
     komiText.setText(String.valueOf(configuration.getKomi()));
     setHandicap(configuration.getHandicap());
+    setBoardSize(configuration.getBoardSize());
   }
 
   private void setEnabled(ViewGroup vg, boolean enable) {
@@ -138,7 +149,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     GoPlayer blackPlayer = getBlackPlayer();
     GoPlayer whitePlayer = getWhitePlayer();
     GameConfiguration newGameConfiguration =
-        gameDatas.createGameConfiguration(getInitialSize(), getHandicap(), getKomi(),
+        gameDatas.createGameConfiguration(getBoardSize(), getHandicap(), getKomi(),
             getInitialGameType(), blackPlayer, whitePlayer);
 
     Phase phase = getPhase(getInitialGameData(), newGameConfiguration);
@@ -150,6 +161,25 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     }
     GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, turn, newGameConfiguration);
     getGoBlobActivity().endTurn(gameData);
+  }
+
+  private int getBoardSize() {
+    switch(boardSizeRadioGroup.getCheckedRadioButtonId()) {
+      case R.id.board_size_9:
+        return 9;
+      case R.id.board_size_13:
+        return 13;
+      case R.id.board_size_19:
+        return 19;
+      default:
+        throw new RuntimeException("No size selected! id = " + boardSizeRadioGroup.getCheckedRadioButtonId());
+    }
+  }
+
+  private void setBoardSize(int size) {
+    boardSize9.setChecked(size == 9);
+    boardSize13.setChecked(size == 13);
+    boardSize19.setChecked(size == 19);
   }
 
   private Phase getPhase(GameData initialGame, GameConfiguration newGameConfiguration) {
@@ -198,10 +228,6 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @NonNull
   private String getInitialMatchId() {
     return getInitialGameData().getMatchId();
-  }
-
-  private int getInitialSize() {
-    return getInitialGameData().getGameConfiguration().getBoardSize();
   }
 
   private PlayGameData.GameType getInitialGameType() {
