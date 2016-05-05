@@ -22,7 +22,7 @@ public class GameDatasTest {
 
   @Test
   public void testCreateLocalGame() {
-    PlayGameData.GameData localGame = gameDatas.createLocalGame(9);
+    PlayGameData.GameData localGame = gameDatas.createLocalGame();
     assertThat(localGame.getGameConfiguration().getBoardSize()).isEqualTo(9);
     assertThat(localGame.getGameConfiguration().getGameType()).isEqualTo(GameType.LOCAL);
   }
