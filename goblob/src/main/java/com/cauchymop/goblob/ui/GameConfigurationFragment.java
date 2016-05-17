@@ -17,7 +17,6 @@ import android.widget.TextView;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.Color;
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
@@ -153,13 +152,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
             getInitialGameType(), blackPlayer, whitePlayer);
 
     Phase phase = getPhase(getInitialGameData(), newGameConfiguration);
-    Color turn;
-    if (phase == Phase.CONFIGURATION) {
-      turn = gameDatas.getOpponentColor(blackPlayer, whitePlayer);
-    } else {
-      turn = newGameConfiguration.getHandicap() > 0 ? Color.WHITE : Color.BLACK;
-    }
-    GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, turn, newGameConfiguration);
+
+    GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, newGameConfiguration);
     getGoBlobActivity().endTurn(gameData);
   }
 

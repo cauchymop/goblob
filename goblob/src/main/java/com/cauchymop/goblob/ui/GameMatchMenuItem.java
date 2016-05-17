@@ -2,9 +2,12 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
+import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 
 import java.text.DateFormat;
@@ -13,33 +16,33 @@ import java.util.Date;
 /**
  * {@link MatchMenuItem} for a Google Play games turn based match.
  */
-public class RemoteMatchMenuItem extends MatchMenuItem {
-  private final MainActivity.MatchDescription matchDescription;
+public class GameMatchMenuItem extends MatchMenuItem {
+  private final GameDatas gameDatas;
+  private final GameData gameData;
 
-  public RemoteMatchMenuItem(MainActivity.MatchDescription matchDescription) {
-    super(matchDescription.getMatchId());
-    this.matchDescription = matchDescription;
+  public GameMatchMenuItem(GameDatas gameDatas, GameData gameData) {
+    super(gameData.getMatchId());
+    this.gameDatas = gameDatas;
+    this.gameData = gameData;
   }
 
   @Override
   public String getFirstLine(Context context) {
     return context.getString(R.string.match_label_remote_first_line_format,
-        matchDescription.getBlackPlayer().getName(),
-        matchDescription.getWhitePlayer().getName());
+        gameData.getGameConfiguration().getBlack().getName(),
+        gameData.getGameConfiguration().getWhite().getName());
   }
 
   @Override
   public String getSecondLine(Context context) {
-    Date lastUpdate = new Date(matchDescription.getLastUpdateTimestamp());
-    DateFormat dateFormat = DateFormat.getDateInstance();
     return context.getString(R.string.match_label_remote_second_line_format,
-        matchDescription.getGameData().getGameConfiguration().getBoardSize(), dateFormat.format(lastUpdate));
+        gameData.getGameConfiguration().getBoardSize(), gameData.getGameConfiguration().getGameType());
   }
 
   @Override
   public Drawable getIcon(Context context) {
-    int iconResId =  matchDescription.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN?R.drawable.ic_match_your_turn:R.drawable.ic_match_their_turn;
-    return context.getResources().getDrawable(iconResId);
+    int iconResId = gameDatas.isLocalTurn(gameData) ? R.drawable.ic_match_your_turn : R.drawable.ic_match_their_turn;
+    return ContextCompat.getDrawable(context, iconResId);
   }
 
   @Override
@@ -57,6 +60,6 @@ public class RemoteMatchMenuItem extends MatchMenuItem {
   }
 
   private boolean needsApplicationUpdate() {
-    return matchDescription.getGameData().getVersion() > GameDatas.VERSION;
+    return gameData.getVersion() > GameDatas.VERSION;
   }
 }

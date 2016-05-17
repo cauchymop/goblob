@@ -39,7 +39,6 @@
   <string name="new_game_label">New Game</string>
   <string name="match_label_remote_first_line_format">"%1$s vs %2$s"</string>
   <string name="match_label_remote_second_line_format">"%1$d x %1$d - %2$s"</string>
-  <string name="match_label_local_second_line_format">"%1$d x %1$d"</string>
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
   <string name="button_done_label">Done</string>
   <string name="marking_message">Marking dead stones…</string>

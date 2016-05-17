@@ -3,6 +3,11 @@ syntax = "proto2";
 
 option java_package = "com.cauchymop.goblob.proto";
 
+// Next ID: 2
+message GameList {
+  map<string, GameData> games = 1;
+}
+
 // Next ID: 8
 message GameData {
   repeated Move move = 1;

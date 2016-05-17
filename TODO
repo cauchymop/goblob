@@ -1,8 +1,13 @@
 In progress:
-- In GameRepository, handle a cache of remote games
+- Sometimes match creator can negotiate with himself
+- In Dead Stone marking mode, going faster than play games can result in loading an old game => need a sequence number in GameData
+- generate random local identity instead of relying on google
+- In GameRepository: multiple local games
 
-Next things to do:
-- inject GoogleApiClient to clean up the takeTurn* code.
+Next:
+- Popup local/remote
+- GridLayout
+- Thanks to GameRepository: espresso tests
 
 Medium priority:
 - toast/buzz when another game is updated

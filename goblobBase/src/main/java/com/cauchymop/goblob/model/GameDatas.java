@@ -5,10 +5,8 @@ import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
 import com.cauchymop.goblob.proto.PlayGameData.GameDataOrBuilder;
 import com.cauchymop.goblob.proto.PlayGameData.GameType;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
-import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import com.cauchymop.goblob.proto.PlayGameData.Position;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,25 +22,17 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
  */
 public class GameDatas {
 
-  public static final float DEFAULT_KOMI = 7.5f;
-  public static final int DEFAULT_HANDICAP = 0;
-  public static final int DEFAULT_BOARD_SIZE = 9;
-  public static final int VERSION = 2;
-  public static final String PLAYER_ONE_ID = "player1";
-  public static final String PLAYER_TWO_ID = "player2";
-  public static final String LOCAL_MATCH_ID = "local";
   public static final String NEW_GAME_MATCH_ID = "new game";
+  public static final int VERSION = 2;
 
-  private final Lazy<String> playerOneDefaultName;
-  private final String playerTwoDefaultName;
+  private static final float DEFAULT_KOMI = 7.5f;
+  private static final int DEFAULT_HANDICAP = 0;
+  private static final int DEFAULT_BOARD_SIZE = 9;
+
   private final Lazy<String> localGoogleIdentity;
 
   @Inject
-  public GameDatas(@Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
-      @Named("PlayerTwoDefaultName") String playerTwoDefaultName,
-      @Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity) {
-    this.playerOneDefaultName = playerOneDefaultName;
-    this.playerTwoDefaultName = playerTwoDefaultName;
+  public GameDatas(@Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity) {
     this.localGoogleIdentity = localGoogleIdentity;
   }
 
@@ -98,38 +88,24 @@ public class GameDatas {
         .build();
   }
 
-  public GameData createGameData(String matchId, Phase phase, int size, int handicap, float komi,
+  public GameData createGameData(String matchId,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
-    return createGameData(matchId, phase, null, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer),
-        ImmutableList.<Move>of(), null);
+    GameConfiguration gameConfiguration = createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, gameType, blackPlayer, whitePlayer);
+    return createGameData(matchId, Phase.INITIAL, gameConfiguration);
   }
 
-  public GameData createGameData(String matchId, Phase phase, GameConfiguration gameConfiguration) {
-    return createGameData(matchId, phase, null, gameConfiguration);
-  }
-
-  public GameData createGameData(String matchId, Phase phase, PlayGameData.Color turn,
-      GameConfiguration gameConfiguration) {
-    return createGameData(matchId, phase, turn, gameConfiguration, Lists.<Move>newArrayList(), null);
-  }
-
-  public GameData createGameData(String matchId, Phase phase, PlayGameData.Color turn, GameConfiguration gameConfiguration,
-      Iterable<Move> moves,
-      MatchEndStatus matchEndStatus) {
+  public GameData createGameData(String matchId,
+      Phase phase, GameConfiguration gameConfiguration) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
         .setMatchId(matchId)
         .setPhase(phase)
         .setGameConfiguration(gameConfiguration)
-        .addAllMove(moves);
+        .addAllMove(ImmutableList.<Move>of());
 
-    if (turn != null) {
-      builder.setTurn(turn);
-    }
+    boolean hasHandicap = builder.getGameConfiguration().getHandicap() > 0;
+    builder.setTurn(hasHandicap ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK);
 
-    if (matchEndStatus != null) {
-      builder.setMatchEndStatus(matchEndStatus);
-    }
     return builder.build();
   }
 
@@ -164,12 +140,6 @@ public class GameDatas {
         .build();
   }
 
-  public GameData createLocalGame() {
-    GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
-    GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
-    return createGameData(LOCAL_MATCH_ID, Phase.INITIAL, createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white));
-  }
-
   public boolean isLocalGame(GameDataOrBuilder gameData) {
     return gameData.getGameConfiguration().getGameType() == GameType.LOCAL;
   }
@@ -182,4 +152,7 @@ public class GameDatas {
     return gameData.getGameConfiguration().getBlack();
   }
 
+  public boolean isRemoteGame(GameData gameData) {
+    return !isLocalGame(gameData);
+  }
 }
