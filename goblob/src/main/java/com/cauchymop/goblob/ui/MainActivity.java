@@ -2,6 +2,7 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
@@ -19,6 +20,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
@@ -327,7 +329,7 @@ public class MainActivity extends AppCompatActivity
 
   public void configureGame(boolean isLocal) {
     if (isLocal) {
-      GameData localGame = gameRepository.createLocalGame();
+      GameData localGame = gameRepository.createNewLocalGame();
       gameRepository.selectGame(localGame.getMatchId());
     } else {
       setWaitingScreenVisible(true);
@@ -347,16 +349,13 @@ public class MainActivity extends AppCompatActivity
     updateMatchSpinner();
   }
 
-  private void updateMatchSpinner() {
-    final long requestId = System.currentTimeMillis();
-    Log.d(TAG, String.format("updateMatchSpinner: requestId = %d", requestId));
-
-    List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
-    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
-    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
-
-    setMatchMenuItems(newMatchMenuItems);
-    updateFromConnectionStatus();
+  @Override
+  public void gameChanged(GameData gameData) {
+    if (Objects.equal(gameRepository.getCurrentMatchId(), gameData.getMatchId())) {
+      gameSelected(gameData);
+    }
+    Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+    vibrator.vibrate(200);
   }
 
   @Override
@@ -380,6 +379,18 @@ public class MainActivity extends AppCompatActivity
       default:
         throw new RuntimeException("Invalid phase for game: " + gameData);
     }
+  }
+
+  private void updateMatchSpinner() {
+    final long requestId = System.currentTimeMillis();
+    Log.d(TAG, String.format("updateMatchSpinner: requestId = %d", requestId));
+
+    List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
+    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
+    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
+
+    setMatchMenuItems(newMatchMenuItems);
+    updateFromConnectionStatus();
   }
 
   /**

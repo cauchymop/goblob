@@ -22,6 +22,8 @@ import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 
+import java.security.InvalidParameterException;
+
 import javax.inject.Inject;
 
 import butterknife.Bind;
@@ -153,8 +155,19 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
     Phase phase = getPhase(getInitialGameData(), newGameConfiguration);
 
-    GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, newGameConfiguration);
+    GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, newGameConfiguration, computeTurn(newGameConfiguration, phase));
     getGoBlobActivity().endTurn(gameData);
+  }
+
+  private PlayGameData.Color computeTurn(GameConfiguration newGameConfiguration, Phase phase) {
+    if (phase == Phase.CONFIGURATION) {
+      return gameDatas.getOpponentColor(newGameConfiguration);
+    } else if (phase == Phase.IN_GAME) {
+      return gameDatas.computeInGameTurn(newGameConfiguration, 0);
+    } else {
+      throw new IllegalArgumentException("Invalid phase: " + phase);
+    }
+
   }
 
   private int getBoardSize() {

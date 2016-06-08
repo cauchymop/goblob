@@ -44,6 +44,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 import dagger.Lazy;
 
@@ -52,6 +53,7 @@ import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 /**
  * Class to persist games.
  */
+@Singleton
 public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
 
   private static final String TAG = GameRepository.class.getName();
@@ -233,7 +235,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     String opponentId = getOpponentId(turnBasedMatch);
     PlayGameData.GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId);
     PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
-    GameData gameData = gameDatas.createGameData(turnBasedMatch.getMatchId(),
+    GameData gameData = gameDatas.createNewGameData(turnBasedMatch.getMatchId(),
         PlayGameData.GameType.REMOTE, blackPlayer, whitePlayer);
     gameData =  fillGoogleId(turnBasedMatch, gameData.toBuilder()).build();
     saveGame(gameData);
@@ -285,9 +287,8 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
       if (gameData.hasMatchEndStatus()) {
         gameData.setTurn(gameData.getMatchEndStatus().getTurn());
       } else {
-        boolean hasHandicap = gameData.getGameConfiguration().getHandicap() > 0;
-        boolean isBlackTurn = gameData.getMoveCount() % 2 == (hasHandicap ? 1 : 0);
-        gameData.setTurn(isBlackTurn ? PlayGameData.Color.BLACK : PlayGameData.Color.WHITE);
+        PlayGameData.Color currentTurn = gameDatas.computeInGameTurn(gameData.getGameConfiguration(), gameData.getMoveCount());
+        gameData.setTurn(currentTurn);
       }
     }
 
@@ -331,7 +332,9 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   @Override
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
-    saveToCache(getGameData(turnBasedMatch));
+    GameData gameData = getGameData(turnBasedMatch);
+    saveToCache(gameData);
+    fireGameChanged(gameData);
     fireGameListChanged();
   }
 
@@ -425,6 +428,12 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     }
   }
 
+  private void fireGameChanged(GameData gameData) {
+    for (GameRepositoryListener listener : listeners) {
+      listener.gameChanged(gameData);
+    }
+  }
+
   private void fireGameSelected(GameData gameData) {
     for (GameRepositoryListener listener : listeners) {
       listener.gameSelected(gameData);
@@ -443,16 +452,17 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     return Iterables.filter(gameCache.getGames().values(), Predicates.not(isLocalTurnPredicate));
   }
 
-  public GameData createLocalGame() {
+  public GameData createNewLocalGame() {
     PlayGameData.GoPlayer black = gameDatas.createGamePlayer(PLAYER_ONE_ID, playerOneDefaultName.get());
     PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName);
-    GameData localGame = gameDatas.createGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
+    GameData localGame = gameDatas.createNewGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
     saveGame(localGame);
     return localGame;
   }
 
   public interface GameRepositoryListener {
     void gameListChanged();
+    void gameChanged(GameData gameData);
     void gameSelected(GameData gameData);
   }
 }

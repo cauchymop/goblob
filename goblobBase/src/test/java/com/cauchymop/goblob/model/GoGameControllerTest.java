@@ -23,7 +23,7 @@ public class GoGameControllerTest {
   public void setUp() throws Exception {
     PlayGameData.GoPlayer black = GAME_DATAS.createGamePlayer("pipo", "player1");
     PlayGameData.GoPlayer white = GAME_DATAS.createGamePlayer("bimbo", "player2");
-    gameData = GAME_DATAS.createGameData("pizza", PlayGameData.GameType.LOCAL, black, white).toBuilder().setPhase(Phase.IN_GAME).build();
+    gameData = GAME_DATAS.createNewGameData("pizza", PlayGameData.GameType.LOCAL, black, white).toBuilder().setPhase(Phase.IN_GAME).build();
     controller = new GoGameController(GAME_DATAS, gameData);
   }
 

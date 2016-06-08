@@ -10,7 +10,6 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -34,12 +33,6 @@ public class GoApplicationModule {
 
   @Provides
   @Singleton
-  public GoogleApiClientManager provideGoogleApiClientManager(Context context) {
-    return new GoogleApiClientManager(context);
-  }
-
-  @Provides
-  @Singleton
   public GoogleApiClient provideGoogleApiClient(GoogleApiClientManager googleApiClientManager) {
     return googleApiClientManager.get();
   }
@@ -52,12 +45,6 @@ public class GoApplicationModule {
       return null;
     }
     return Players.getCurrentPlayerId(googleApiClient);
-  }
-
-  @Provides
-  @Singleton
-  public AvatarManager provideAvatarManager(Context context) {
-    return new AvatarManager(context);
   }
 
   @Provides

@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 import dagger.Lazy;
 
@@ -20,6 +21,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
 /**
  * Helper class to build {@link PlayGameData} related messages.
  */
+@Singleton
 public class GameDatas {
 
   public static final String NEW_GAME_MATCH_ID = "new game";
@@ -48,14 +50,26 @@ public class GameDatas {
     return isLocalPlayer(gameData, getCurrentPlayer(gameData)) && !(gameData.getPhase() == Phase.FINISHED);
   }
 
-  public PlayGameData.Color getOpponentColor(GoPlayer black, GoPlayer white) {
-    String localGoogleId = localGoogleIdentity.get();
-    if (black.getGoogleId().equals(localGoogleId)) {
-      return PlayGameData.Color.WHITE;
-    } else if (white.getGoogleId().equals(localGoogleId)) {
+  public PlayGameData.Color getOpponentColor(GameConfiguration gameConfiguration) {
+    PlayGameData.Color localColor = getLocalColor(gameConfiguration);
+    return (localColor == PlayGameData.Color.BLACK) ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK;
+  }
+
+  public PlayGameData.Color getLocalColor(GameConfiguration gameConfiguration) {
+    if (gameConfiguration.getGameType() == GameType.LOCAL) {
       return PlayGameData.Color.BLACK;
     }
-    throw new RuntimeException("Opponent is neither black or white, maybe this is a Connect4 Game...");
+    GoPlayer black = gameConfiguration.getBlack();
+    GoPlayer white = gameConfiguration.getWhite();
+
+    String localGoogleId = localGoogleIdentity.get();
+    if (black.getGoogleId().equals(localGoogleId)) {
+      return PlayGameData.Color.BLACK;
+    } else if (white.getGoogleId().equals(localGoogleId)) {
+      return PlayGameData.Color.WHITE;
+    } else {
+      throw new RuntimeException("Local Player is neither black or white, maybe this is a Connect4 Game...!");
+    }
   }
 
   public GoPlayer getCurrentPlayer(GameDataOrBuilder gameData) {
@@ -88,23 +102,21 @@ public class GameDatas {
         .build();
   }
 
-  public GameData createGameData(String matchId,
+  public GameData createNewGameData(String matchId,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     GameConfiguration gameConfiguration = createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, gameType, blackPlayer, whitePlayer);
-    return createGameData(matchId, Phase.INITIAL, gameConfiguration);
+    return createGameData(matchId, Phase.INITIAL, gameConfiguration, getLocalColor(gameConfiguration));
   }
 
   public GameData createGameData(String matchId,
-      Phase phase, GameConfiguration gameConfiguration) {
+      Phase phase, GameConfiguration gameConfiguration, PlayGameData.Color turn) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
         .setMatchId(matchId)
         .setPhase(phase)
         .setGameConfiguration(gameConfiguration)
         .addAllMove(ImmutableList.<Move>of());
-
-    boolean hasHandicap = builder.getGameConfiguration().getHandicap() > 0;
-    builder.setTurn(hasHandicap ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK);
+    builder.setTurn(turn);
 
     return builder.build();
   }
@@ -154,5 +166,11 @@ public class GameDatas {
 
   public boolean isRemoteGame(GameData gameData) {
     return !isLocalGame(gameData);
+  }
+
+  public PlayGameData.Color computeInGameTurn(GameConfiguration gameConfiguration, int moveCount) {
+    boolean hasHandicap = gameConfiguration.getHandicap() > 0;
+    boolean isBlackTurn = moveCount % 2 == (hasHandicap ? 1 : 0);
+    return isBlackTurn ? PlayGameData.Color.BLACK : PlayGameData.Color.WHITE;
   }
 }

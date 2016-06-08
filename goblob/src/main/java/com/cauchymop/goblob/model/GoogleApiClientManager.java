@@ -10,10 +10,12 @@ import com.google.android.gms.plus.Plus;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 
 /**
  * Class to manage the GoogleApiClient life cycle.
  */
+@Singleton
 public class GoogleApiClientManager implements GoogleApiClientListener, Provider<GoogleApiClient> {
 
   private final GoogleApiClient googleApiClient;
