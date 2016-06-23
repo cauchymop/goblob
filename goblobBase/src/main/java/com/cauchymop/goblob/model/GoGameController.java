@@ -26,9 +26,11 @@ public class GoGameController implements Serializable {
 
   private final GoGame goGame;
   private GameData.Builder gameData;
+  private GameData initialGameData;
 
   public GoGameController(GameDatas gameDatas, GameData gameData) {
     this.gameDatas = gameDatas;
+    this.initialGameData = gameData;
     this.gameData = Preconditions.checkNotNull(gameData).toBuilder();
     GameConfiguration gameConfiguration = getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
@@ -91,7 +93,8 @@ public class GoGameController implements Serializable {
     return goGame;
   }
 
-  public GameData getGameData() {
+  public GameData buildGameData() {
+    gameData.setSequenceNumber(gameData.getSequenceNumber() + 1);
     return gameData.build();
   }
 
@@ -231,6 +234,35 @@ public class GoGameController implements Serializable {
         return toggleDeadStone(move.getPosition());
       default:
         throw new RuntimeException("Invalid mode");
+    }
+  }
+
+  public GoPlayer getWinner() {
+    return gameDatas.getGoPlayer(gameData, gameData.getMatchEndStatus().getScore().getWinner());
+  }
+
+  public void updateGameConfiguration(int boardSize, int handicap, float komi,
+      GoPlayer blackPlayer, GoPlayer whitePlayer) {
+    gameData.setGameConfiguration(gameDatas.createGameConfiguration(boardSize, handicap, komi,
+            getGameConfiguration().getGameType(), blackPlayer, whitePlayer));
+    gameData.setPhase(isConfigurationAgreed(initialGameData, getGameConfiguration()) ? Phase.IN_GAME : Phase.CONFIGURATION);
+    gameData.setTurn(computeConfigurationTurn());
+  }
+
+  private boolean isConfigurationAgreed(GameData initialGame,
+      GameConfiguration newGameConfiguration) {
+    return initialGame.getGameConfiguration().getGameType() == PlayGameData.GameType.LOCAL
+        || initialGame.getPhase() == Phase.CONFIGURATION
+        && initialGame.getGameConfiguration().equals(newGameConfiguration);
+  }
+
+  private PlayGameData.Color computeConfigurationTurn() {
+    if (getPhase() == Phase.CONFIGURATION) {
+      return gameDatas.getOpponentColor(getGameConfiguration());
+    } else if (getPhase() == Phase.IN_GAME) {
+      return gameDatas.computeInGameTurn(getGameConfiguration(), 0);
+    } else {
+      throw new IllegalArgumentException("Invalid phase: " + getPhase());
     }
   }
 }

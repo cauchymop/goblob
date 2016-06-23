@@ -20,7 +20,6 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
-import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;

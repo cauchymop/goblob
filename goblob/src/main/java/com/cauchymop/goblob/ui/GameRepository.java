@@ -106,11 +106,20 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   public void saveGame(GameData gameData) {
-    saveToCache(gameData);
-    persistCache();
-    fireGameListChanged();
-    if (gameDatas.isRemoteGame(gameData)) {
-      publishRemoteGameState(gameData);
+    GameData existingGameData = gameCache.getGames().get(gameData.getMatchId());
+    if (gameData.getSequenceNumber() == existingGameData.getSequenceNumber()) {
+      throw new RuntimeException("Can't happen: sequence numbers are equal");
+    }
+    if (gameData.getSequenceNumber() > existingGameData.getSequenceNumber()) {
+      Log.d(TAG, "Updating GameData with a new sequence number");
+      saveToCache(gameData);
+      persistCache();
+      fireGameListChanged();
+      if (gameDatas.isRemoteGame(gameData)) {
+        publishRemoteGameState(gameData);
+      }
+    } else {
+      Log.d(TAG, "Ignoring GameData with an old sequence number");
     }
   }
 

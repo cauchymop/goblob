@@ -25,7 +25,7 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
 public class GameDatas {
 
   public static final String NEW_GAME_MATCH_ID = "new game";
-  public static final int VERSION = 2;
+  public static final int VERSION = 3;  // Adding sequence_number.
 
   private static final float DEFAULT_KOMI = 7.5f;
   private static final int DEFAULT_HANDICAP = 0;
@@ -78,10 +78,6 @@ public class GameDatas {
 
   public GoPlayer getGoPlayer(GameDataOrBuilder gameData, PlayGameData.Color color) {
     return color == PlayGameData.Color.BLACK ? getBlackPlayer(gameData) : getWhitePlayer(gameData);
-  }
-
-  public GoPlayer getWinner(GameDataOrBuilder gameData) {
-    return getGoPlayer(gameData, gameData.getMatchEndStatus().getScore().getWinner());
   }
 
   public Move createPassMove() {

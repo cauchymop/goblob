@@ -1,6 +1,6 @@
 In progress:
-- Finer control of vivration (only on turn change)
-- In Dead Stone marking mode, going faster than play games can result in loading an old game => need a sequence number in GameData
+- done de fin de marquage not received
+- Finer control of vivrafion (only on turn change) (maybe)
 - generate random local identity instead of relying on google
 - In GameRepository: multiple local games
 

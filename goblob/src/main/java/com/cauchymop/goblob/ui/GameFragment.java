@@ -183,7 +183,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   private void endTurn() {
-    getGoBlobActivity().endTurn(goGameController.getGameData());
+    getGoBlobActivity().endTurn(goGameController.buildGameData());
   }
 
 
@@ -267,7 +267,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
     } else {
       getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-      if (goGameController.isLocalPlayer(gameDatas.getWinner(goGameController.getGameData()))) {
+      if (goGameController.isLocalPlayer(goGameController.getWinner())) {
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
       }
     }
