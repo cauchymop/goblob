@@ -12,8 +12,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import dagger.Lazy;
-
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
@@ -31,11 +29,11 @@ public class GameDatas {
   private static final int DEFAULT_HANDICAP = 0;
   private static final int DEFAULT_BOARD_SIZE = 9;
 
-  private final Lazy<String> localGoogleIdentity;
+  private final String localUniqueId;
 
   @Inject
-  public GameDatas(@Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity) {
-    this.localGoogleIdentity = localGoogleIdentity;
+  public GameDatas(@Named("LocalUniqueId") String localUniqueId) {
+    this.localUniqueId = localUniqueId;
   }
 
   public PlayGameData.Color getCurrentColor(GameDataOrBuilder gameData) {
@@ -43,7 +41,7 @@ public class GameDatas {
   }
 
   public boolean isLocalPlayer(GameDataOrBuilder gameData, GoPlayer player) {
-    return isLocalGame(gameData) || player.getGoogleId().equals(localGoogleIdentity.get());
+    return isLocalGame(gameData) || player.getLocalUniqueId().equals(localUniqueId);
   }
 
   public boolean isLocalTurn(GameDataOrBuilder gameData) {
@@ -62,10 +60,9 @@ public class GameDatas {
     GoPlayer black = gameConfiguration.getBlack();
     GoPlayer white = gameConfiguration.getWhite();
 
-    String localGoogleId = localGoogleIdentity.get();
-    if (black.getGoogleId().equals(localGoogleId)) {
+    if (black.getLocalUniqueId().equals(localUniqueId)) {
       return PlayGameData.Color.BLACK;
-    } else if (white.getGoogleId().equals(localGoogleId)) {
+    } else if (white.getLocalUniqueId().equals(localUniqueId)) {
       return PlayGameData.Color.WHITE;
     } else {
       throw new RuntimeException("Local Player is neither black or white, maybe this is a Connect4 Game...!");
@@ -140,10 +137,10 @@ public class GameDatas {
         .build();
   }
 
-  public GoPlayer createGamePlayer(String id, String name, String googleId) {
+  public GoPlayer createGamePlayer(String id, String name, String localUniqueId) {
     return GoPlayer.newBuilder()
         .setId(id)
-        .setGoogleId(googleId)
+        .setLocalUniqueId(localUniqueId)
         .setName(name)
         .build();
   }

@@ -89,7 +89,7 @@ message Position {
 message GoPlayer {
   required string id = 1;
   required string name = 2;
-  optional string google_id = 3;
+  optional string local_unique_id = 3;
 }
 
 enum GameType {

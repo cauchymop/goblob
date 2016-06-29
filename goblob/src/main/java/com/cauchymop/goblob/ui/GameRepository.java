@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -62,6 +64,9 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   private static final String PLAYER_TWO_ID = "player2";
   private static final String GAME_DATA = "gameData";
   private static final String GAMES = "games";
+  private static final int CACHE_CHANGED_MESSAGE = 1;
+  private static final long CACHE_CHANGED_DELAY = 100;
+
 
   private final SharedPreferences prefs;
   private final GameDatas gameDatas;
@@ -74,7 +79,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   private GameList.Builder gameCache;
 
   private AvatarManager avatarManager;
-  private Lazy<String> localGoogleIdentity;
+  private String localUniqueId;
   private List<GameRepositoryListener> listeners = Lists.newArrayList();
 
   private final Predicate<GameData> isLocalTurnPredicate = new Predicate<GameData>() {
@@ -90,41 +95,56 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     }
   };
 
+  private final Handler cacheRefreshHandler = new CacheRefreshHandler(this);
+
+
   @Inject
   public GameRepository(SharedPreferences prefs, GameDatas gameDatas,
-      GoogleApiClient googleApiClient, AvatarManager avatarManager, @Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
-      @Named("PlayerTwoDefaultName") String playerTwoDefaultName, @Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity) {
+      GoogleApiClient googleApiClient, AvatarManager avatarManager,
+      @Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
+      @Named("PlayerTwoDefaultName") String playerTwoDefaultName,
+      @Named("LocalUniqueId") String localUniqueId) {
     this.prefs = prefs;
     this.gameDatas = gameDatas;
     this.googleApiClient = googleApiClient;
     this.avatarManager = avatarManager;
     this.playerOneDefaultName = playerOneDefaultName;
     this.playerTwoDefaultName = playerTwoDefaultName;
-    this.localGoogleIdentity = localGoogleIdentity;
+    this.localUniqueId = localUniqueId;
     gameCache = loadGameList();
     loadLegacyLocalGame();
+    fireGameListChanged();
   }
 
   public void saveGame(GameData gameData) {
     GameData existingGameData = gameCache.getGames().get(gameData.getMatchId());
-    if (gameData.getSequenceNumber() == existingGameData.getSequenceNumber()) {
-      throw new RuntimeException("Can't happen: sequence numbers are equal");
-    }
-    if (gameData.getSequenceNumber() > existingGameData.getSequenceNumber()) {
+    if (existingGameData == null || gameData.getSequenceNumber() > existingGameData.getSequenceNumber()) {
       Log.d(TAG, "Updating GameData with a new sequence number");
       saveToCache(gameData);
-      persistCache();
-      fireGameListChanged();
       if (gameDatas.isRemoteGame(gameData)) {
         publishRemoteGameState(gameData);
       }
+    } else if (gameData.getSequenceNumber() == existingGameData.getSequenceNumber()) {
+      throw new RuntimeException("Can't happen: sequence numbers are equal");
     } else {
       Log.d(TAG, "Ignoring GameData with an old sequence number");
     }
   }
 
-  private void saveToCache(GameData gameData) {
-    gameCache.getMutableGames().put(gameData.getMatchId(), gameData);
+  private void postCacheRefresh() {
+    Log.d(TAG, "CacheRefreshHandler postCacheRefresh()");
+    cacheRefreshHandler.removeMessages(CACHE_CHANGED_MESSAGE);
+    cacheRefreshHandler.sendEmptyMessageDelayed(CACHE_CHANGED_MESSAGE, CACHE_CHANGED_DELAY);
+  }
+
+  private void saveToCache(@NonNull GameData gameData) {
+    Log.d(TAG, "saveToCache " + gameData.getMatchId());
+    GameData existingGame = gameCache.getGames().get(gameData.getMatchId());
+    if (existingGame == null || !existingGame.equals(gameData)) {
+      gameCache.getMutableGames().put(gameData.getMatchId(), gameData);
+      postCacheRefresh();
+      fireGameChanged(gameData);
+    }
   }
 
   private void persistCache() {
@@ -146,11 +166,11 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   private void loadLegacyLocalGame() {
-    Log.i(TAG, "loadLegacyLocalGame");
     String gameDataString = prefs.getString(GAME_DATA, null);
     if (gameDataString == null) {
       return;
     }
+    Log.i(TAG, "loadLegacyLocalGame");
     GameData.Builder gameDataBuilder = GameData.newBuilder();
     try {
       TextFormat.merge(gameDataString, gameDataBuilder);
@@ -171,6 +191,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     } catch (TextFormat.ParseException e) {
       Log.e(TAG, "Error parsing local GameList: " + e.getMessage());
     }
+    Log.i(TAG, "loadGameList: " + gameListBuilder.getGames().size() + " games loaded.");
     return gameListBuilder;
   }
 
@@ -199,8 +220,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
               GameData gameData = getGameData(match);
               saveToCache(gameData);
             }
-            persistCache();
-            fireGameListChanged();
+            postCacheRefresh();
           }
         };
     matchListResult.setResultCallback(matchListResultCallBack);
@@ -246,7 +266,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
     GameData gameData = gameDatas.createNewGameData(turnBasedMatch.getMatchId(),
         PlayGameData.GameType.REMOTE, blackPlayer, whitePlayer);
-    gameData =  fillGoogleId(turnBasedMatch, gameData.toBuilder()).build();
+    gameData = fillLocalUniqueId(turnBasedMatch, gameData.toBuilder()).build();
     saveGame(gameData);
     return gameData;
   }
@@ -280,7 +300,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     if (gameData.getPhase() == Phase.UNKNOWN) {
       final Phase result;
       if (gameData.hasMatchEndStatus()) {
-        if(gameData.getMatchEndStatus().getGameFinished()) {
+        if (gameData.getMatchEndStatus().getGameFinished()) {
           result = Phase.FINISHED;
         } else {
           result = Phase.DEAD_STONE_MARKING;
@@ -301,22 +321,23 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
       }
     }
 
-    return fillGoogleId(turnBasedMatch, gameData).build();
+    return fillLocalUniqueId(turnBasedMatch, gameData).build();
   }
 
-  private GameData.Builder fillGoogleId(TurnBasedMatch turnBasedMatch, GameData.Builder gameData) {
+  private GameData.Builder fillLocalUniqueId(TurnBasedMatch turnBasedMatch, GameData.Builder gameData) {
     boolean isMyTurn = turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN;
     boolean turnIsBlack = gameData.getTurn() == PlayGameData.Color.BLACK;
     boolean iAmBlack = isMyTurn && turnIsBlack || (!isMyTurn && !turnIsBlack);
     PlayGameData.GoPlayer.Builder player = iAmBlack
         ? gameData.getGameConfigurationBuilder().getBlackBuilder()
         : gameData.getGameConfigurationBuilder().getWhiteBuilder();
-    player.setGoogleId(localGoogleIdentity.get());
+    player.setLocalUniqueId(localUniqueId);
 
     return gameData;
   }
 
-  private @NonNull String getOpponentId(TurnBasedMatch turnBasedMatch) {
+  @NonNull
+  private String getOpponentId(TurnBasedMatch turnBasedMatch) {
     String myId = getMyId(turnBasedMatch);
     for (String participantId : turnBasedMatch.getParticipantIds()) {
       if (!participantId.equals(myId)) {
@@ -327,7 +348,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   private String getMyId(TurnBasedMatch turnBasedMatch) {
-    return turnBasedMatch.getParticipantId(localGoogleIdentity.get());
+    return turnBasedMatch.getParticipantId(localUniqueId);
   }
 
   private PlayGameData.GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
@@ -343,19 +364,18 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     Log.d(TAG, "onTurnBasedMatchReceived");
     GameData gameData = getGameData(turnBasedMatch);
     saveToCache(gameData);
-    fireGameChanged(gameData);
-    fireGameListChanged();
   }
 
   @Override
   public void onTurnBasedMatchRemoved(String matchId) {
     Log.d(TAG, "onTurnBasedMatchRemoved: " + matchId);
     removeFromCache(matchId);
-    fireGameListChanged();
   }
 
   private void removeFromCache(String matchId) {
+    Log.d(TAG, "removeFromCache " + matchId);
     gameCache.getMutableGames().remove(matchId);
+    postCacheRefresh();
   }
 
   public void selectGame(@NonNull String matchId) {
@@ -464,6 +484,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   public GameData createNewLocalGame() {
     PlayGameData.GoPlayer black = gameDatas.createGamePlayer(PLAYER_ONE_ID, playerOneDefaultName.get());
     PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName);
+    removeFromCache(LOCAL_MATCH_ID);
     GameData localGame = gameDatas.createNewGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
     saveGame(localGame);
     return localGame;
@@ -471,7 +492,25 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
 
   public interface GameRepositoryListener {
     void gameListChanged();
+
     void gameChanged(GameData gameData);
+
     void gameSelected(GameData gameData);
+  }
+
+  private static class CacheRefreshHandler extends Handler {
+
+    private final GameRepository gameRepository;
+
+    public CacheRefreshHandler(GameRepository gameRepository) {
+      this.gameRepository = gameRepository;
+    }
+
+    @Override
+    public void handleMessage(Message msg) {
+      Log.d(TAG, "CacheRefreshHandler handleMessage");
+      gameRepository.persistCache();
+      gameRepository.fireGameListChanged();
+    }
   }
 }

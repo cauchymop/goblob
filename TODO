@@ -1,6 +1,6 @@
 In progress:
-- done de fin de marquage not received
-- Finer control of vivrafion (only on turn change) (maybe)
+- It vibrates on onStart, which is weird because we only send an event when the game changed.
+- Test moves on a remote game while offline
 - generate random local identity instead of relying on google
 - In GameRepository: multiple local games
 

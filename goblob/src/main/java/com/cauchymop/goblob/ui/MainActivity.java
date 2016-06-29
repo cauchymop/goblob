@@ -20,6 +20,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
@@ -32,12 +33,10 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
-import dagger.Lazy;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
@@ -67,7 +66,6 @@ public class MainActivity extends AppCompatActivity
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
 
-
   @Inject
   GoogleApiClient googleApiClient;
   @Inject
@@ -78,9 +76,6 @@ public class MainActivity extends AppCompatActivity
   AvatarManager avatarManager;
   @Inject
   GoogleApiClientManager googleApiClientManager;
-  @Inject
-  @Named("LocalGoogleIdentity")
-  Lazy<String> localGoogleIdentity;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +106,7 @@ public class MainActivity extends AppCompatActivity
   protected void onStart() {
     super.onStart();
     Log.d(TAG, "onStart");
+    updateMatchSpinner();
     googleApiClient.connect();
   }
 
@@ -353,8 +349,10 @@ public class MainActivity extends AppCompatActivity
     if (Objects.equal(gameRepository.getCurrentMatchId(), gameData.getMatchId())) {
       gameSelected(gameData);
     }
-    Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-    vibrator.vibrate(200);
+    if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
+      Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+      vibrator.vibrate(200);
+    }
   }
 
   @Override

@@ -194,12 +194,11 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private GoPlayer getWhitePlayer() {
     final String whitePlayerName = whitePlayerNameField.getText().toString();
-    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getGoogleId());
+    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getLocalUniqueId());
   }
 
   private GoPlayer getBlackPlayer() {
     final String blackPayerName = blackPlayerNameField.getText().toString();
-    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getGoogleId());
+    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getLocalUniqueId());
   }
-
 }
