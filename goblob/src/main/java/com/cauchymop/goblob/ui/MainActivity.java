@@ -215,6 +215,7 @@ public class MainActivity extends AppCompatActivity
   @Override
   public void onConnected(Bundle bundle) {
     Log.d(TAG, "onConnected");
+    updateFromConnectionStatus();
     TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, gameRepository);
 
     // Retrieve the TurnBasedMatch from the connectionHint in order to select it
@@ -262,8 +263,6 @@ public class MainActivity extends AppCompatActivity
     if (currentFragment != null) {
       currentFragment.updateFromConnectionStatus();
     }
-
-    setWaitingScreenVisible(false);
   }
 
   private void setMatchMenuItems(List<MatchMenuItem> newMatchMenuItems) {
@@ -308,6 +307,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void displayFragment(GoBlobBaseFragment fragment) {
+    setWaitingScreenVisible(false);
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
     // Replace whatever is the current_fragment view with this fragment,
@@ -386,7 +386,6 @@ public class MainActivity extends AppCompatActivity
     newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
 
     setMatchMenuItems(newMatchMenuItems);
-    updateFromConnectionStatus();
   }
 
   /**

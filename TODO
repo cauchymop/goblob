@@ -1,7 +1,6 @@
 In progress:
-- It vibrates on onStart, which is weird because we only send an event when the game changed.
+- When receiving an invite, there are 5 gameSelected.
 - Test moves on a remote game while offline
-- generate random local identity instead of relying on google
 - In GameRepository: multiple local games
 
 Next:

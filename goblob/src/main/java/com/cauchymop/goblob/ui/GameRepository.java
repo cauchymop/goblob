@@ -117,12 +117,20 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     if (gameDatas.isRemoteGame(gameData)) {
       publishRemoteGameState(gameData);
     }
+    postCacheRefresh(false);
   }
 
   private void postCacheRefresh() {
+    postCacheRefresh(true);
+  }
+  private void postCacheRefresh(boolean immediate) {
     Log.d(TAG, "CacheRefreshHandler postCacheRefresh()");
     cacheRefreshHandler.removeMessages(CACHE_CHANGED_MESSAGE);
-    cacheRefreshHandler.sendEmptyMessageDelayed(CACHE_CHANGED_MESSAGE, CACHE_CHANGED_DELAY);
+    if (immediate) {
+      cacheRefreshHandler.handleMessage(cacheRefreshHandler.obtainMessage(CACHE_CHANGED_MESSAGE));
+    } else {
+      cacheRefreshHandler.sendEmptyMessageDelayed(CACHE_CHANGED_MESSAGE, CACHE_CHANGED_DELAY);
+    }
   }
 
   private void saveToCache(@NonNull GameData gameData) {
