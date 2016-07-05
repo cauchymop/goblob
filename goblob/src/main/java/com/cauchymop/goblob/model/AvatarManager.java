@@ -38,13 +38,12 @@ public class AvatarManager {
   }
 
   public void loadImage(ImageView avatarImage, String playerDisplayName) {
-    Log.d(TAG, String.format("loadImage(%s)", playerDisplayName));
+//    Log.d(TAG, String.format("loadImage(%s)", playerDisplayName));
     imageManager.loadImage(avatarImage, getAvatarUri(playerDisplayName));
   }
 
   private Uri getAvatarUri(String playerDisplayName) {
-    Log.d(TAG, String.format("getAvatarUri(%s)", playerDisplayName));
-    Log.d(TAG, String.format("avatarUrisByPlayerDisplayName: %s", avatarUrisByPlayerDisplayName));
+//    Log.d(TAG, String.format("getAvatarUri(%s)", playerDisplayName));
     return avatarUrisByPlayerDisplayName.get(playerDisplayName);
   }
 }

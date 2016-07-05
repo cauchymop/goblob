@@ -202,9 +202,9 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
             LoadMatchesResponse matches = loadMatchesResult.getMatches();
 
             ImmutableList<TurnBasedMatch> allMatches = ImmutableList.<TurnBasedMatch>builder()
-                .addAll(denullify(matches.getCompletedMatches()))
                 .addAll(denullify(matches.getMyTurnMatches()))
                 .addAll(denullify(matches.getTheirTurnMatches()))
+                .addAll(denullify(matches.getCompletedMatches()))
                 .build();
 
             Set<GameData> games = new HashSet<>();
@@ -215,19 +215,19 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
                 games.add(gameData);
               }
             }
-            clearRemoteGamesIfAbsent(games);
+            if (clearRemoteGamesIfAbsent(games)) {
+              postCacheRefresh();
+            }
             for (GameData game : games) {
               saveToCache(game);
             }
-
-            postCacheRefresh();
           }
         };
     matchListResult.setResultCallback(matchListResultCallBack);
   }
 
-  private void clearRemoteGamesIfAbsent(final Set<GameData> games) {
-    Iterables.removeIf(gameCache.getMutableGames().values(), new Predicate<GameData>() {
+  private boolean clearRemoteGamesIfAbsent(final Set<GameData> games) {
+    return Iterables.removeIf(gameCache.getMutableGames().values(), new Predicate<GameData>() {
       @Override
       public boolean apply(GameData gameData) {
         return gameDatas.isRemoteGame(gameData) && !games.contains(gameData);

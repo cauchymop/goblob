@@ -379,8 +379,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void updateMatchSpinner() {
-    final long requestId = System.currentTimeMillis();
-    Log.d(TAG, String.format("updateMatchSpinner: requestId = %d", requestId));
+    Log.d(TAG, "updateMatchSpinner");
 
     List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
     newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
