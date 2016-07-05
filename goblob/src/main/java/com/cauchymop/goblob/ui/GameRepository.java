@@ -41,8 +41,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -88,12 +90,6 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
       return gameDatas.isLocalTurn(gameData);
     }
   };
-  private Predicate<GameData> isRemoteGamePredicate = new Predicate<GameData>() {
-    @Override
-    public boolean apply(GameData gameData) {
-      return gameDatas.isRemoteGame(gameData);
-    }
-  };
 
   private final Handler cacheRefreshHandler = new CacheRefreshHandler(this);
 
@@ -116,18 +112,10 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     fireGameListChanged();
   }
 
-  public void saveGame(GameData gameData) {
-    GameData existingGameData = gameCache.getGames().get(gameData.getMatchId());
-    if (existingGameData == null || gameData.getSequenceNumber() > existingGameData.getSequenceNumber()) {
-      Log.d(TAG, "Updating GameData with a new sequence number");
-      saveToCache(gameData);
-      if (gameDatas.isRemoteGame(gameData)) {
-        publishRemoteGameState(gameData);
-      }
-    } else if (gameData.getSequenceNumber() == existingGameData.getSequenceNumber()) {
-      throw new RuntimeException("Can't happen: sequence numbers are equal");
-    } else {
-      Log.d(TAG, "Ignoring GameData with an old sequence number");
+  public void commitGameChanges(GameData gameData) {
+    saveToCache(gameData);
+    if (gameDatas.isRemoteGame(gameData)) {
+      publishRemoteGameState(gameData);
     }
   }
 
@@ -140,10 +128,13 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   private void saveToCache(@NonNull GameData gameData) {
     Log.d(TAG, "saveToCache " + gameData.getMatchId());
     GameData existingGame = gameCache.getGames().get(gameData.getMatchId());
-    if (existingGame == null || !existingGame.equals(gameData)) {
+    Log.d(TAG, " -> existingGame found = " + (existingGame != null));
+    if (existingGame == null || gameData.getSequenceNumber() > existingGame.getSequenceNumber()) {
       gameCache.getMutableGames().put(gameData.getMatchId(), gameData);
       postCacheRefresh();
       fireGameChanged(gameData);
+    } else {
+      Log.d(TAG, String.format("Ignoring GameData with an old or same sequence number (%s when existing is %s)", gameData.getSequenceNumber(), existingGame.getSequenceNumber() ));
     }
   }
 
@@ -196,7 +187,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   public void refreshRemoteGameListFromServer() {
-    Log.e(TAG, "refreshRemoteGameListFromServer");
+    Log.d(TAG, "refreshRemoteGameListFromServer");
     final long requestId = System.currentTimeMillis();
 
     PendingResult<com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer.LoadMatchesResult> matchListResult =
@@ -209,25 +200,39 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
           public void onResult(@NonNull TurnBasedMultiplayer.LoadMatchesResult loadMatchesResult) {
             Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId));
             LoadMatchesResponse matches = loadMatchesResult.getMatches();
-            clearRemoteGames();
+
             ImmutableList<TurnBasedMatch> allMatches = ImmutableList.<TurnBasedMatch>builder()
                 .addAll(denullify(matches.getCompletedMatches()))
                 .addAll(denullify(matches.getMyTurnMatches()))
                 .addAll(denullify(matches.getTheirTurnMatches()))
                 .build();
+
+            Set<GameData> games = new HashSet<>();
             for (TurnBasedMatch match : allMatches) {
               updateAvatars(match);
               GameData gameData = getGameData(match);
-              saveToCache(gameData);
+              if (gameData != null) {
+                games.add(gameData);
+              }
             }
+            clearRemoteGamesIfAbsent(games);
+            for (GameData game : games) {
+              saveToCache(game);
+            }
+
             postCacheRefresh();
           }
         };
     matchListResult.setResultCallback(matchListResultCallBack);
   }
 
-  private void clearRemoteGames() {
-    Iterables.removeIf(gameCache.getMutableGames().values(), isRemoteGamePredicate);
+  private void clearRemoteGamesIfAbsent(final Set<GameData> games) {
+    Iterables.removeIf(gameCache.getMutableGames().values(), new Predicate<GameData>() {
+      @Override
+      public boolean apply(GameData gameData) {
+        return gameDatas.isRemoteGame(gameData) && !games.contains(gameData);
+      }
+    });
   }
 
   private void updateAvatars(TurnBasedMatch match) {
@@ -242,9 +247,16 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   public GameData getGameData(@NonNull TurnBasedMatch turnBasedMatch) {
+    byte[] data = turnBasedMatch.getData();
+    if (data == null) {
+      // When a crash happens during game creation, the TurnBasedMatch contains a null game
+      // that can't be recovered, and would prevent starting the app.
+      return null;
+    }
+
     handleMatchStatusComplete(turnBasedMatch);
     try {
-      GameData gameData = GameData.parseFrom(turnBasedMatch.getData());
+      GameData gameData = GameData.parseFrom(data);
       gameData = handleBackwardCompatibility(turnBasedMatch, gameData);
       return gameData;
     } catch (InvalidProtocolBufferException exception) {
@@ -262,12 +274,12 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   private GameData createNewGameData(TurnBasedMatch turnBasedMatch) {
     String myId = getMyId(turnBasedMatch);
     String opponentId = getOpponentId(turnBasedMatch);
-    PlayGameData.GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId);
-    PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId);
+    PlayGameData.GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId, localUniqueId);
+    PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId, null);
     GameData gameData = gameDatas.createNewGameData(turnBasedMatch.getMatchId(),
         PlayGameData.GameType.REMOTE, blackPlayer, whitePlayer);
-    gameData = fillLocalUniqueId(turnBasedMatch, gameData.toBuilder()).build();
-    saveGame(gameData);
+
+    commitGameChanges(gameData);
     return gameData;
   }
 
@@ -281,8 +293,8 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
       String myId = getMyId(turnBasedMatch);
       String opponentId = getOpponentId(turnBasedMatch);
       Map<String, PlayGameData.GoPlayer> goPlayers = ImmutableMap.of(
-          myId, createGoPlayer(turnBasedMatch, myId),
-          opponentId, createGoPlayer(turnBasedMatch, opponentId));
+          myId, createGoPlayer(turnBasedMatch, myId, localUniqueId),
+          opponentId, createGoPlayer(turnBasedMatch, opponentId, null));
       PlayGameData.GameConfiguration gameConfiguration = gameData.getGameConfiguration();
 
       PlayGameData.GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
@@ -332,7 +344,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
         ? gameData.getGameConfigurationBuilder().getBlackBuilder()
         : gameData.getGameConfigurationBuilder().getWhiteBuilder();
     player.setLocalUniqueId(localUniqueId);
-
+    Log.d(TAG, String.format("setting %s to player %s", localUniqueId, player.getName()));
     return gameData;
   }
 
@@ -348,13 +360,14 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   private String getMyId(TurnBasedMatch turnBasedMatch) {
-    return turnBasedMatch.getParticipantId(localUniqueId);
+    return turnBasedMatch.getParticipantId(Games.Players.getCurrentPlayerId(googleApiClient));
   }
 
-  private PlayGameData.GoPlayer createGoPlayer(TurnBasedMatch match, String participantId) {
+  private PlayGameData.GoPlayer createGoPlayer(TurnBasedMatch match, String participantId,
+      String localUniqueId) {
     PlayGameData.GoPlayer goPlayer;
     Player player = match.getParticipant(participantId).getPlayer();
-    goPlayer = gameDatas.createGamePlayer(participantId, player.getDisplayName(), player.getPlayerId());
+    goPlayer = gameDatas.createGamePlayer(participantId, player.getDisplayName(), localUniqueId);
     avatarManager.setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     return goPlayer;
   }
@@ -363,7 +376,9 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
     Log.d(TAG, "onTurnBasedMatchReceived");
     GameData gameData = getGameData(turnBasedMatch);
-    saveToCache(gameData);
+    if (gameData != null) {
+      saveToCache(gameData);
+    }
   }
 
   @Override
@@ -486,7 +501,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName);
     removeFromCache(LOCAL_MATCH_ID);
     GameData localGame = gameDatas.createNewGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
-    saveGame(localGame);
+    commitGameChanges(localGame);
     return localGame;
   }
 

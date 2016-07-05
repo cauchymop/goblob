@@ -110,7 +110,6 @@ public class GameDatas {
         .setGameConfiguration(gameConfiguration)
         .addAllMove(ImmutableList.<Move>of());
     builder.setTurn(turn);
-
     return builder.build();
   }
 
@@ -138,11 +137,14 @@ public class GameDatas {
   }
 
   public GoPlayer createGamePlayer(String id, String name, String localUniqueId) {
-    return GoPlayer.newBuilder()
+    GoPlayer.Builder goPlayerBuilder = GoPlayer.newBuilder()
         .setId(id)
-        .setLocalUniqueId(localUniqueId)
-        .setName(name)
-        .build();
+        .setName(name);
+    if (localUniqueId != null) {
+      goPlayerBuilder.setLocalUniqueId(localUniqueId);
+    }
+
+    return goPlayerBuilder.build();
   }
 
   public boolean isLocalGame(GameDataOrBuilder gameData) {

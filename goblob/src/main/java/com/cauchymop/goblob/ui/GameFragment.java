@@ -70,9 +70,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     getComponent().inject(this);
 
     setHasOptionsMenu(true);
-    Log.d(TAG, "onCreate: " + getArguments());
+    Log.d(TAG, "onCreate");
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
       PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
+      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
       this.goGameController = new GoGameController(gameDatas, gameData);
     }
 

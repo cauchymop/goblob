@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public void gameSelected(GameData gameData) {
-    Log.d(TAG, "gameSelected gameData = " + gameData);
+    Log.d(TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
     if (gameData == null) {
       displayFragment(new PlayerChoiceFragment());
       return;
@@ -442,7 +442,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void endTurn(GameData gameData) {
-    gameRepository.saveGame(gameData);
+    gameRepository.commitGameChanges(gameData);
     gameSelected(gameData);
   }
 }
