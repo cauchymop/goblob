@@ -1,9 +1,8 @@
 In progress:
-- Test moves on a remote game while offline
-- In GameRepository: multiple local games
 
 Next:
 - Popup local/remote
+- In GameRepository: multiple local games
 - GridLayout
 - Thanks to GameRepository: espresso tests
 
