@@ -4,35 +4,15 @@ buildscript {
     repositories {
         jcenter()
     }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
-    }
 }
 
 dependencies {
-    // Set defaults so that BaseGameUtils can be used outside of BasicSamples
-    if (!hasProperty('appcompat_library_version')) {
-        ext.appcompat_library_version = '23.3.0'
-    }
-    if (!hasProperty('gms_library_version')) {
-        ext.gms_library_version = '8.4.0'
-    }
-
-    compile "com.android.support:appcompat-v7:${appcompat_library_version}"
-    compile "com.google.android.gms:play-services-games:${gms_library_version}"
+    compile "com.android.support:appcompat-v7:${rootProject.ext.appcompat_library_version}"
+    compile "com.google.android.gms:play-services-games:${rootProject.ext.gms_library_version}"
 }
 
 android {
-    // Set defaults so that BaseGameUtils can be used outside of BasicSamples
-    if (!hasProperty('android_compile_version')) {
-        ext.android_compile_version = 23
-    }
-    if (!hasProperty('android_version')) {
-        ext.android_version = '23.0.2'
-    }
-
-    compileSdkVersion android_compile_version
-    buildToolsVersion android_version
+    compileSdkVersion rootProject.ext.android_compile_version
+    buildToolsVersion rootProject.ext.android_version
 }
 

@@ -6,14 +6,15 @@ import android.os.Bundle;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
-import com.google.android.gms.plus.Plus;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 
 /**
  * Class to manage the GoogleApiClient life cycle.
  */
+@Singleton
 public class GoogleApiClientManager implements GoogleApiClientListener, Provider<GoogleApiClient> {
 
   private final GoogleApiClient googleApiClient;
@@ -23,7 +24,6 @@ public class GoogleApiClientManager implements GoogleApiClientListener, Provider
   @Inject
   public GoogleApiClientManager(Context context) {
     this.googleApiClient = new GoogleApiClient.Builder(context)
-        .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
         .addApi(Games.API).addScope(Games.SCOPE_GAMES)
         .addConnectionCallbacks(this)
         .addOnConnectionFailedListener(this)

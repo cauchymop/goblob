@@ -1,7 +1,6 @@
 package com.cauchymop.goblob.ui;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +15,7 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.proto.PlayGameData;
-import com.cauchymop.goblob.proto.PlayGameData.Color;
+import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
@@ -64,6 +62,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   GoPlayer blackPlayer;
   GoPlayer whitePlayer;
+  private GoGameController goGameController;
+
 
   public static GameConfigurationFragment newInstance(GameData gameData) {
     GameConfigurationFragment instance = new GameConfigurationFragment();
@@ -87,19 +87,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
     ButterKnife.bind(this, v);
 
-    init(getInitialGameData());
+    init((GameData) getArguments().getSerializable(EXTRA_GAME_DATA));
 
     return v;
-  }
-
-  private GameData getInitialGameData() {
-    final Bundle extras = getArguments();
-    if (extras == null) {
-      // This should never happen
-      throw new RuntimeException("A GameConfigurationFragment should always be provided " +
-          "a PlayGameData.GameConfiguration as EXTRA argument!");
-    }
-    return (GameData) extras.getSerializable(EXTRA_GAME_DATA);
   }
 
   private void init(GameData gameData) {
@@ -126,6 +116,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     komiText.setText(String.valueOf(configuration.getKomi()));
     setHandicap(configuration.getHandicap());
     setBoardSize(configuration.getBoardSize());
+    goGameController = new GoGameController(gameDatas, gameData);
   }
 
   private void setEnabled(ViewGroup vg, boolean enable) {
@@ -148,19 +139,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   void done() {
     GoPlayer blackPlayer = getBlackPlayer();
     GoPlayer whitePlayer = getWhitePlayer();
-    GameConfiguration newGameConfiguration =
-        gameDatas.createGameConfiguration(getBoardSize(), getHandicap(), getKomi(),
-            getInitialGameType(), blackPlayer, whitePlayer);
-
-    Phase phase = getPhase(getInitialGameData(), newGameConfiguration);
-    Color turn;
-    if (phase == Phase.CONFIGURATION) {
-      turn = gameDatas.getOpponentColor(blackPlayer, whitePlayer);
-    } else {
-      turn = newGameConfiguration.getHandicap() > 0 ? Color.WHITE : Color.BLACK;
-    }
-    GameData gameData = gameDatas.createGameData(getInitialMatchId(), phase, turn, newGameConfiguration);
-    getGoBlobActivity().endTurn(gameData);
+    goGameController.updateGameConfiguration(getBoardSize(), getHandicap(),
+        getKomi(), blackPlayer, whitePlayer);
+    getGoBlobActivity().endTurn(goGameController.buildGameData());
   }
 
   private int getBoardSize() {
@@ -180,20 +161,6 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     boardSize9.setChecked(size == 9);
     boardSize13.setChecked(size == 13);
     boardSize19.setChecked(size == 19);
-  }
-
-  private Phase getPhase(GameData initialGame, GameConfiguration newGameConfiguration) {
-    if (getInitialGameType() == PlayGameData.GameType.LOCAL
-        || isConfigurationAgreed(initialGame, newGameConfiguration)) {
-      return Phase.IN_GAME;
-    }
-    return Phase.CONFIGURATION;
-  }
-
-  private boolean isConfigurationAgreed(GameData initialGame,
-      GameConfiguration newGameConfiguration) {
-    return initialGame.getPhase() == Phase.CONFIGURATION
-        && initialGame.getGameConfiguration().equals(newGameConfiguration);
   }
 
   @OnClick(R.id.swap_players_button)
@@ -225,23 +192,13 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     return Float.valueOf(komiText.getText().toString());
   }
 
-  @NonNull
-  private String getInitialMatchId() {
-    return getInitialGameData().getMatchId();
-  }
-
-  private PlayGameData.GameType getInitialGameType() {
-    return getInitialGameData().getGameConfiguration().getGameType();
-  }
-
   private GoPlayer getWhitePlayer() {
     final String whitePlayerName = whitePlayerNameField.getText().toString();
-    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getGoogleId());
+    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getLocalUniqueId());
   }
 
   private GoPlayer getBlackPlayer() {
     final String blackPayerName = blackPlayerNameField.getText().toString();
-    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getGoogleId());
+    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getLocalUniqueId());
   }
-
 }

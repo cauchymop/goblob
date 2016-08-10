@@ -1,8 +1,8 @@
 package com.cauchymop.goblob.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
@@ -20,38 +20,25 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
-import com.google.android.gms.games.Player;
 import com.google.android.gms.games.multiplayer.Multiplayer;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
-import com.google.android.gms.games.multiplayer.turnbased.LoadMatchesResponse;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
-import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.example.games.basegameutils.BaseGameUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
-import dagger.Lazy;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
-import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 
@@ -66,9 +53,12 @@ public class MainActivity extends AppCompatActivity
   private static final String TAG = MainActivity.class.getName();
   private static final String CURRENT_MATCH_ID = "CURRENT_MATCH_ID";
 
-  @Bind(R.id.toolbar_match_spinner) Spinner matchSpinner;
-  @Bind(R.id.app_toolbar) Toolbar toolbar;
-  @Bind(R.id.waiting_view) View waitingScreen;
+  @Bind(R.id.toolbar_match_spinner)
+  Spinner matchSpinner;
+  @Bind(R.id.app_toolbar)
+  Toolbar toolbar;
+  @Bind(R.id.waiting_view)
+  View waitingScreen;
 
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
@@ -76,13 +66,16 @@ public class MainActivity extends AppCompatActivity
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
 
-
-  @Inject GoogleApiClient googleApiClient;
-  @Inject GameDatas gameDatas;
-  @Inject GameRepository gameRepository;
-  @Inject AvatarManager avatarManager;
-  @Inject GoogleApiClientManager googleApiClientManager;
-  @Inject @Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity;
+  @Inject
+  GoogleApiClient googleApiClient;
+  @Inject
+  GameDatas gameDatas;
+  @Inject
+  GameRepository gameRepository;
+  @Inject
+  AvatarManager avatarManager;
+  @Inject
+  GoogleApiClientManager googleApiClientManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -92,15 +85,15 @@ public class MainActivity extends AppCompatActivity
     setContentView(R.layout.activity_main);
     ButterKnife.bind(this);
 
-    ((GoApplication)getApplication()).getComponent().inject(this);
+    ((GoApplication) getApplication()).getComponent().inject(this);
 
     gameRepository.addGameRepositoryListener(this);
+
+    setUpToolbar();
 
     if (savedInstanceState != null) {
       gameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
     }
-
-    setUpToolbar();
 
     if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
       displayFragment(new PlayerChoiceFragment());
@@ -113,6 +106,7 @@ public class MainActivity extends AppCompatActivity
   protected void onStart() {
     super.onStart();
     Log.d(TAG, "onStart");
+    updateMatchSpinner();
     googleApiClient.connect();
   }
 
@@ -149,7 +143,7 @@ public class MainActivity extends AppCompatActivity
   void onMatchItemSelected(int position) {
     MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
     Log.d(TAG, "onItemSelected: " + item.getMatchId());
-    handleMatchMenuItemSelection(item);
+    gameRepository.selectGame(item.getMatchId());
   }
 
   @Override
@@ -191,17 +185,10 @@ public class MainActivity extends AppCompatActivity
     Log.d(TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
     switch (requestCode) {
       case RC_SELECT_PLAYER:
-        if (responseCode == Activity.RESULT_OK) {
-          handleSelectPlayersResult(intent);
-        }
+        gameRepository.handleSelectPlayersResult(responseCode, intent);
         break;
       case RC_CHECK_MATCHES:
-        Log.d(TAG, "onActivityResult RC_CHECK_MATCHES");
-        updateMatchSpinner();
-        if (responseCode == Activity.RESULT_OK) {
-          final TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
-          gameRepository.selectGame(match.getMatchId());
-        }
+        gameRepository.handleCheckMatchesResult(responseCode, intent);
         break;
       case RC_REQUEST_ACHIEVEMENTS:
         break;
@@ -211,7 +198,7 @@ public class MainActivity extends AppCompatActivity
         if (responseCode == RESULT_OK) {
           googleApiClient.connect();
         } else {
-          BaseGameUtils.showActivityResultError(this,requestCode,responseCode, R.string.signin_other_error);
+          BaseGameUtils.showActivityResultError(this, requestCode, responseCode, R.string.signin_other_error);
         }
         break;
       default:
@@ -228,20 +215,16 @@ public class MainActivity extends AppCompatActivity
   @Override
   public void onConnected(Bundle bundle) {
     Log.d(TAG, "onConnected");
+    updateFromConnectionStatus();
     TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, gameRepository);
 
-    // Retrieve the TurnBasedMatch from the connectionHint
+    // Retrieve the TurnBasedMatch from the connectionHint in order to select it
     if (bundle != null) {
       TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
       gameRepository.selectGame(turnBasedMatch.getMatchId());
     }
 
-    // selectedMatchId values cases:
-    //  1) Match retrieved from connection hint (user selected a game from Notification), value set in if above
-    //  2) selectedMatchId was set either last time we selected a game or reset on view recreation through onSavedInstanceState
-    //  3) selectedMatchId was null as no game was ever selected
-
-    updateMatchSpinner();
+    gameRepository.refreshRemoteGameListFromServer();
   }
 
   @Override
@@ -280,57 +263,16 @@ public class MainActivity extends AppCompatActivity
     if (currentFragment != null) {
       currentFragment.updateFromConnectionStatus();
     }
-
-    setWaitingScreenVisible(false);
-  }
-
-  /**
-   * Update asynchronously the spinner with all the current games, and run the given callback.
-   */
-  private void updateMatchSpinner() {
-    final long requestId = System.currentTimeMillis();
-    Log.d(TAG, String.format("updateMatchSpinner: requestId = %d", requestId));
-    if (!isSignedIn()) {
-      setMatchMenuItems(ImmutableList.<MatchMenuItem>of());
-      return;
-    }
-
-    PendingResult<TurnBasedMultiplayer.LoadMatchesResult> matchListResult =
-        TurnBasedMultiplayer.loadMatchesByStatus(googleApiClient,
-            Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
-            new int[]{TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN});
-    ResultCallback<TurnBasedMultiplayer.LoadMatchesResult> matchListResultCallBack =
-        new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
-          @Override
-          public void onResult(@NonNull TurnBasedMultiplayer.LoadMatchesResult loadMatchesResult) {
-            Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId));
-            LoadMatchesResponse matches = loadMatchesResult.getMatches();
-            List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
-            newMatchMenuItems.addAll(getMatchMenuItems(matches.getMyTurnMatches()));
-            newMatchMenuItems.addAll(getMatchMenuItems(matches.getTheirTurnMatches()));
-
-            setMatchMenuItems(newMatchMenuItems);
-            updateFromConnectionStatus();
-          }
-        };
-    matchListResult.setResultCallback(matchListResultCallBack);
   }
 
   private void setMatchMenuItems(List<MatchMenuItem> newMatchMenuItems) {
     matchMenuItems.clear();
     matchMenuItems.addAll(newMatchMenuItems);
-    GameData localGameData = gameRepository.getLocalGame();
-    if (localGameData != null) {
-      matchMenuItems.add(new LocalMatchMenuItem(localGameData));
-    }
+
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
 
-    String currentMatchId = gameRepository.getCurrentMatchId();
-    int selectedIndex = selectMenuItem(currentMatchId);
-    if (currentMatchId == null || selectedIndex == 0) {
-      handleMatchMenuItemSelection(getCurrentMatchMenuItem());
-    }
+    selectMenuItem(gameRepository.getCurrentMatchId());
   }
 
   @Nullable
@@ -340,22 +282,12 @@ public class MainActivity extends AppCompatActivity
     return (MatchMenuItem) matchSpinner.getSelectedItem();
   }
 
-  private List<MatchMenuItem> getMatchMenuItems(TurnBasedMatchBuffer matchBuffer) {
+  private List<MatchMenuItem> getMatchMenuItems(Iterable<GameData> gameDataList) {
     List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
-    for (int i = 0; i < matchBuffer.getCount(); i++) {
-      TurnBasedMatch match = matchBuffer.get(i);
-      MatchMenuItem matchMenuItem = new RemoteMatchMenuItem(new MatchDescription(match));
-      matchMenuItems.add(matchMenuItem);
-      updateAvatars(match);
+    for (GameData gameData : gameDataList) {
+      matchMenuItems.add(new GameMatchMenuItem(gameDatas, gameData));
     }
     return matchMenuItems;
-  }
-
-  private void updateAvatars(TurnBasedMatch match) {
-    for (Participant participant : match.getParticipants()) {
-      Player player = participant.getPlayer();
-      avatarManager.setAvatarUri(player.getDisplayName(), player.getIconImageUri());
-    }
   }
 
   protected void signOut() {
@@ -363,7 +295,6 @@ public class MainActivity extends AppCompatActivity
     signInClicked = false;
     Games.signOut(googleApiClient);
     googleApiClient.disconnect();
-    updateMatchSpinner();
     updateFromConnectionStatus();
   }
 
@@ -372,6 +303,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void displayFragment(GoBlobBaseFragment fragment) {
+    setWaitingScreenVisible(false);
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
     // Replace whatever is the current_fragment view with this fragment,
@@ -388,20 +320,13 @@ public class MainActivity extends AppCompatActivity
 
   public void configureGame(boolean isLocal) {
     if (isLocal) {
-      GameData localGame = gameDatas.createLocalGame();
-      gameRepository.saveGame(localGame);
+      GameData localGame = gameRepository.createNewLocalGame();
       gameRepository.selectGame(localGame.getMatchId());
-      updateMatchSpinner();
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
       startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1, false), RC_SELECT_PLAYER);
     }
-  }
-
-  public void displayGameConfigurationScreen(GameData gameData) {
-    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(gameData);
-    displayFragment(gameConfigurationFragment);
   }
 
 
@@ -411,16 +336,33 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override
+  public void gameChanged(GameData gameData) {
+    if (Objects.equal(gameRepository.getCurrentMatchId(), gameData.getMatchId())) {
+      gameSelected(gameData);
+    }
+    if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
+      Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+      vibrator.vibrate(200);
+    }
+  }
+
+  @Override
   public void gameSelected(GameData gameData) {
-    Log.d(TAG, "gameSelected gameData = " + gameData);
+    Log.d(TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
     if (gameData == null) {
       displayFragment(new PlayerChoiceFragment());
       return;
     }
+
+    if (gameDatas.needsApplicationUpdate(gameData)) {
+      displayFragment(UpdateApplicationFragment.newInstance());
+    }
+
+    selectMenuItem(gameData.getMatchId());
     switch (gameData.getPhase()) {
       case INITIAL:
       case CONFIGURATION:
-        displayGameConfigurationScreen(gameData);
+        displayFragment(GameConfigurationFragment.newInstance(gameData));
         return;
       case IN_GAME:
       case DEAD_STONE_MARKING:
@@ -430,6 +372,16 @@ public class MainActivity extends AppCompatActivity
       default:
         throw new RuntimeException("Invalid phase for game: " + gameData);
     }
+  }
+
+  private void updateMatchSpinner() {
+    Log.d(TAG, "updateMatchSpinner");
+
+    List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
+    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
+    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
+
+    setMatchMenuItems(newMatchMenuItems);
   }
 
   /**
@@ -449,46 +401,6 @@ public class MainActivity extends AppCompatActivity
     return 0;
   }
 
-  private void handleSelectPlayersResult(Intent intent) {
-    Log.d(TAG, "Select players UI succeeded.");
-
-    // get the invitee list
-    final ArrayList<String> invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
-    Log.d(TAG, "Invitees: " + invitees);
-
-    // get the automatch criteria
-    Bundle autoMatchCriteria = null;
-    int minAutoMatchPlayers = intent.getIntExtra(Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
-    int maxAutoMatchPlayers = intent.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
-    if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
-      autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
-          minAutoMatchPlayers, maxAutoMatchPlayers, 0);
-      Log.d(TAG, "Automatch criteria: " + autoMatchCriteria);
-    }
-
-    // create game
-    TurnBasedMatchConfig turnBasedMatchConfig = TurnBasedMatchConfig.builder()
-        .addInvitedPlayers(invitees)
-        .setVariant(TurnBasedMatch.MATCH_VARIANT_DEFAULT)
-        .setAutoMatchCriteria(autoMatchCriteria).build();
-
-    // kick the match off
-    TurnBasedMultiplayer.createMatch(googleApiClient, turnBasedMatchConfig)
-        .setResultCallback(new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
-          @Override
-          public void onResult(@NonNull TurnBasedMultiplayer.InitiateMatchResult initiateMatchResult) {
-            Log.d(TAG, "InitiateMatchResult " + initiateMatchResult);
-            if (!initiateMatchResult.getStatus().isSuccess()) {
-              return;
-            }
-            TurnBasedMatch turnBasedMatch = initiateMatchResult.getMatch();
-            Log.d(TAG, "Game created...");
-            gameRepository.selectGame(turnBasedMatch.getMatchId());
-            updateMatchSpinner();
-          }
-        });
-  }
-
   public void unlockAchievement(String achievementId) {
     Achievements.unlock(googleApiClient, achievementId);
   }
@@ -501,69 +413,8 @@ public class MainActivity extends AppCompatActivity
     return googleApiClient.isConnected();
   }
 
-  private void handleMatchMenuItemSelection(MatchMenuItem item) {
-    Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
-    GameStarter gameStarter = new GameStarter() {
-      @Override
-      public void startNewGame() {
-        gameRepository.selectGame(GameDatas.NEW_GAME_MATCH_ID);
-        displayFragment(new PlayerChoiceFragment());
-      }
-
-      @Override
-      public void selectGame(String matchId) {
-        gameRepository.selectGame(matchId);
-      }
-
-      @Override
-      public void showUpdateScreen() {
-        displayFragment(UpdateApplicationFragment.newInstance());
-      }
-    };
-    item.start(gameStarter);
-  }
-
   public void endTurn(GameData gameData) {
-    gameRepository.saveGame(gameData);
-    updateMatchSpinner();
+    gameRepository.commitGameChanges(gameData);
     gameSelected(gameData);
-  }
-
-  public class MatchDescription {
-    private final long lastUpdateTimestamp;
-    private final int turnStatus;
-    private final String matchId;
-    private final GameData gameData;
-
-    public MatchDescription(TurnBasedMatch match) {
-      this.lastUpdateTimestamp = match.getLastUpdatedTimestamp();
-      this.turnStatus = match.getTurnStatus();
-      this.matchId = match.getMatchId();
-      this.gameData = gameRepository.getGameData(match);
-    }
-
-    public long getLastUpdateTimestamp() {
-      return lastUpdateTimestamp;
-    }
-
-    public int getTurnStatus() {
-      return turnStatus;
-    }
-
-    public String getMatchId() {
-      return matchId;
-    }
-
-    public GameData getGameData() {
-      return gameData;
-    }
-
-    public GoPlayer getBlackPlayer() {
-      return gameData.getGameConfiguration().getBlack();
-    }
-
-    public GoPlayer getWhitePlayer() {
-      return gameData.getGameConfiguration().getWhite();
-    }
   }
 }

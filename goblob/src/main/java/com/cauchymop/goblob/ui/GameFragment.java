@@ -70,9 +70,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     getComponent().inject(this);
 
     setHasOptionsMenu(true);
-    Log.d(TAG, "onCreate: " + getArguments());
+    Log.d(TAG, "onCreate");
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
       PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
+      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
       this.goGameController = new GoGameController(gameDatas, gameData);
     }
 
@@ -137,7 +138,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private void initViews() {
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
     goBoardView.addListener(this);
-    configureActionButton();
+    showActionButton();
     boardViewContainer.addView(goBoardView);
     initFromGameState();
     enableInteractions(goGameController.isLocalTurn());
@@ -148,10 +149,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     goBoardView.setClickable(enabled);
   }
 
-  private void configureActionButton() {
+  private void showActionButton() {
     switch(goGameController.getPhase()) {
       case IN_GAME:
-        configureActionButton(R.string.button_pass_label, new View.OnClickListener() {
+        showActionButton(R.string.button_pass_label, new View.OnClickListener() {
           @Override
           public void onClick(View v) {
             play(gameDatas.createPassMove());
@@ -159,7 +160,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
         });
         break;
       case DEAD_STONE_MARKING:
-        configureActionButton(R.string.button_done_label, new View.OnClickListener() {
+        showActionButton(R.string.button_done_label, new View.OnClickListener() {
           @Override
           public void onClick(View v) {
             goGameController.markingTurnDone();
@@ -167,16 +168,23 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
           }
         });
         break;
+      default:
+        hideActionButton();
     }
   }
 
-  private void configureActionButton(int buttonLabel, View.OnClickListener clickListener) {
+  private void showActionButton(int buttonLabel, View.OnClickListener clickListener) {
+    actionButton.setVisibility(View.VISIBLE);
     actionButton.setText(buttonLabel);
     actionButton.setOnClickListener(clickListener);
   }
 
+  private void hideActionButton() {
+    actionButton.setVisibility(View.GONE);
+  }
+
   private void endTurn() {
-    getGoBlobActivity().endTurn(goGameController.getGameData());
+    getGoBlobActivity().endTurn(goGameController.buildGameData());
   }
 
 
@@ -260,7 +268,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
     } else {
       getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-      if (goGameController.isLocalPlayer(gameDatas.getWinner(goGameController.getGameData()))) {
+      if (goGameController.isLocalPlayer(goGameController.getWinner())) {
         getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
       }
     }

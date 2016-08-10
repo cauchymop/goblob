@@ -5,15 +5,12 @@ import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
 import com.cauchymop.goblob.proto.PlayGameData.GameDataOrBuilder;
 import com.cauchymop.goblob.proto.PlayGameData.GameType;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
-import com.cauchymop.goblob.proto.PlayGameData.MatchEndStatus;
 import com.cauchymop.goblob.proto.PlayGameData.Position;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import dagger.Lazy;
+import javax.inject.Singleton;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
@@ -22,28 +19,25 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
 /**
  * Helper class to build {@link PlayGameData} related messages.
  */
+@Singleton
 public class GameDatas {
 
-  public static final float DEFAULT_KOMI = 7.5f;
-  public static final int DEFAULT_HANDICAP = 0;
-  public static final int DEFAULT_BOARD_SIZE = 9;
-  public static final int VERSION = 2;
-  public static final String PLAYER_ONE_ID = "player1";
-  public static final String PLAYER_TWO_ID = "player2";
-  public static final String LOCAL_MATCH_ID = "local";
   public static final String NEW_GAME_MATCH_ID = "new game";
+  public static final int VERSION = 3;  // Adding sequence_number.
 
-  private final Lazy<String> playerOneDefaultName;
-  private final String playerTwoDefaultName;
-  private final Lazy<String> localGoogleIdentity;
+  private static final float DEFAULT_KOMI = 7.5f;
+  private static final int DEFAULT_HANDICAP = 0;
+  private static final int DEFAULT_BOARD_SIZE = 9;
+
+  private final String localUniqueId;
 
   @Inject
-  public GameDatas(@Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
-      @Named("PlayerTwoDefaultName") String playerTwoDefaultName,
-      @Named("LocalGoogleIdentity") Lazy<String> localGoogleIdentity) {
-    this.playerOneDefaultName = playerOneDefaultName;
-    this.playerTwoDefaultName = playerTwoDefaultName;
-    this.localGoogleIdentity = localGoogleIdentity;
+  public GameDatas(@Named("LocalUniqueId") String localUniqueId) {
+    this.localUniqueId = localUniqueId;
+  }
+
+  public boolean needsApplicationUpdate(GameData gameData) {
+    return gameData.getVersion() > GameDatas.VERSION;
   }
 
   public PlayGameData.Color getCurrentColor(GameDataOrBuilder gameData) {
@@ -51,21 +45,32 @@ public class GameDatas {
   }
 
   public boolean isLocalPlayer(GameDataOrBuilder gameData, GoPlayer player) {
-    return isLocalGame(gameData) || player.getGoogleId().equals(localGoogleIdentity.get());
+    return isLocalGame(gameData) || player.getLocalUniqueId().equals(localUniqueId);
   }
 
   public boolean isLocalTurn(GameDataOrBuilder gameData) {
     return isLocalPlayer(gameData, getCurrentPlayer(gameData)) && !(gameData.getPhase() == Phase.FINISHED);
   }
 
-  public PlayGameData.Color getOpponentColor(GoPlayer black, GoPlayer white) {
-    String localGoogleId = localGoogleIdentity.get();
-    if (black.getGoogleId().equals(localGoogleId)) {
-      return PlayGameData.Color.WHITE;
-    } else if (white.getGoogleId().equals(localGoogleId)) {
+  public PlayGameData.Color getOpponentColor(GameConfiguration gameConfiguration) {
+    PlayGameData.Color localColor = getLocalColor(gameConfiguration);
+    return (localColor == PlayGameData.Color.BLACK) ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK;
+  }
+
+  public PlayGameData.Color getLocalColor(GameConfiguration gameConfiguration) {
+    if (gameConfiguration.getGameType() == GameType.LOCAL) {
       return PlayGameData.Color.BLACK;
     }
-    throw new RuntimeException("Opponent is neither black or white, maybe this is a Connect4 Game...");
+    GoPlayer black = gameConfiguration.getBlack();
+    GoPlayer white = gameConfiguration.getWhite();
+
+    if (black.getLocalUniqueId().equals(localUniqueId)) {
+      return PlayGameData.Color.BLACK;
+    } else if (white.getLocalUniqueId().equals(localUniqueId)) {
+      return PlayGameData.Color.WHITE;
+    } else {
+      throw new RuntimeException("Local Player is neither black or white, maybe this is a Connect4 Game...!");
+    }
   }
 
   public GoPlayer getCurrentPlayer(GameDataOrBuilder gameData) {
@@ -74,10 +79,6 @@ public class GameDatas {
 
   public GoPlayer getGoPlayer(GameDataOrBuilder gameData, PlayGameData.Color color) {
     return color == PlayGameData.Color.BLACK ? getBlackPlayer(gameData) : getWhitePlayer(gameData);
-  }
-
-  public GoPlayer getWinner(GameDataOrBuilder gameData) {
-    return getGoPlayer(gameData, gameData.getMatchEndStatus().getScore().getWinner());
   }
 
   public Move createPassMove() {
@@ -98,38 +99,21 @@ public class GameDatas {
         .build();
   }
 
-  public GameData createGameData(String matchId, Phase phase, int size, int handicap, float komi,
+  public GameData createNewGameData(String matchId,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
-    return createGameData(matchId, phase, null, createGameConfiguration(size, handicap, komi, gameType, blackPlayer, whitePlayer),
-        ImmutableList.<Move>of(), null);
+    GameConfiguration gameConfiguration = createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, gameType, blackPlayer, whitePlayer);
+    return createGameData(matchId, Phase.INITIAL, gameConfiguration, getLocalColor(gameConfiguration));
   }
 
-  public GameData createGameData(String matchId, Phase phase, GameConfiguration gameConfiguration) {
-    return createGameData(matchId, phase, null, gameConfiguration);
-  }
-
-  public GameData createGameData(String matchId, Phase phase, PlayGameData.Color turn,
-      GameConfiguration gameConfiguration) {
-    return createGameData(matchId, phase, turn, gameConfiguration, Lists.<Move>newArrayList(), null);
-  }
-
-  public GameData createGameData(String matchId, Phase phase, PlayGameData.Color turn, GameConfiguration gameConfiguration,
-      Iterable<Move> moves,
-      MatchEndStatus matchEndStatus) {
+  public GameData createGameData(String matchId,
+      Phase phase, GameConfiguration gameConfiguration, PlayGameData.Color turn) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
         .setMatchId(matchId)
         .setPhase(phase)
         .setGameConfiguration(gameConfiguration)
-        .addAllMove(moves);
-
-    if (turn != null) {
-      builder.setTurn(turn);
-    }
-
-    if (matchEndStatus != null) {
-      builder.setMatchEndStatus(matchEndStatus);
-    }
+        .addAllMove(ImmutableList.<Move>of());
+    builder.setTurn(turn);
     return builder.build();
   }
 
@@ -156,18 +140,15 @@ public class GameDatas {
         .build();
   }
 
-  public GoPlayer createGamePlayer(String id, String name, String googleId) {
-    return GoPlayer.newBuilder()
+  public GoPlayer createGamePlayer(String id, String name, String localUniqueId) {
+    GoPlayer.Builder goPlayerBuilder = GoPlayer.newBuilder()
         .setId(id)
-        .setGoogleId(googleId)
-        .setName(name)
-        .build();
-  }
+        .setName(name);
+    if (localUniqueId != null) {
+      goPlayerBuilder.setLocalUniqueId(localUniqueId);
+    }
 
-  public GameData createLocalGame() {
-    GoPlayer black = createGamePlayer(GameDatas.PLAYER_ONE_ID, playerOneDefaultName.get());
-    GoPlayer white = createGamePlayer(GameDatas.PLAYER_TWO_ID, playerTwoDefaultName);
-    return createGameData(LOCAL_MATCH_ID, Phase.INITIAL, createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, GameType.LOCAL, black, white));
+    return goPlayerBuilder.build();
   }
 
   public boolean isLocalGame(GameDataOrBuilder gameData) {
@@ -182,4 +163,13 @@ public class GameDatas {
     return gameData.getGameConfiguration().getBlack();
   }
 
+  public boolean isRemoteGame(GameData gameData) {
+    return !isLocalGame(gameData);
+  }
+
+  public PlayGameData.Color computeInGameTurn(GameConfiguration gameConfiguration, int moveCount) {
+    boolean hasHandicap = gameConfiguration.getHandicap() > 0;
+    boolean isBlackTurn = moveCount % 2 == (hasHandicap ? 1 : 0);
+    return isBlackTurn ? PlayGameData.Color.BLACK : PlayGameData.Color.WHITE;
+  }
 }

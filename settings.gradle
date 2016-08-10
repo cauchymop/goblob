@@ -1,2 +1,2 @@
-include ':goblob', ':goblobBase', ':goblobProtobuf'
+include ':goblob', ':goblobBase'
 include ':BaseGameUtils'

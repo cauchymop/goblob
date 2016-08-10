@@ -1,8 +1,10 @@
 In progress:
-- In GameRepository, handle a cache of remote games
 
-Next things to do:
-- inject GoogleApiClient to clean up the takeTurn* code.
+Next:
+- Popup local/remote
+- In GameRepository: multiple local games
+- GridLayout
+- Thanks to GameRepository: espresso tests
 
 Medium priority:
 - toast/buzz when another game is updated
