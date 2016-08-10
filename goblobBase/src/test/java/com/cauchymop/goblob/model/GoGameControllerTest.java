@@ -32,7 +32,6 @@ public class GoGameControllerTest {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).build();
     controller = new GoGameController(GAME_DATAS, gameData);
 
-    assertThat(controller.buildGameData()).isEqualTo(gameData);
     GoGame goGame = controller.getGame();
     assertThat(goGame.getMoveHistory())
         .containsExactly(goGame.getPos(2, 3), goGame.getPos(4, 5));
@@ -41,16 +40,28 @@ public class GoGameControllerTest {
   }
 
   @Test
+  public void buildGameData_incrementsSequence() {
+    gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).setSequenceNumber(3).build();
+    controller = new GoGameController(GAME_DATAS, gameData);
+
+    GameData controllerGameData = controller.buildGameData();
+
+    assertThat(controllerGameData.getSequenceNumber()).isEqualTo(4);
+  }
+
+  @Test
   public void testPlayMoveOrToggleDeadStone() {
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createMove(0, 0));
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createMove(1, 1));
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createPassMove());
-    assertThat(controller.buildGameData()).isEqualTo(gameData.toBuilder()
-        .addMove(GAME_DATAS.createMove(0, 0))
-        .addMove(GAME_DATAS.createMove(1, 1))
-        .addMove(GAME_DATAS.createPassMove())
-        .setTurn(PlayGameData.Color.WHITE)
-        .build());
+
+    GameData controllerGameData = controller.buildGameData();
+
+    assertThat(controllerGameData.getMoveList()).containsExactly(
+        GAME_DATAS.createMove(0, 0),
+        GAME_DATAS.createMove(1, 1),
+        GAME_DATAS.createPassMove());
+    assertThat(controllerGameData.getTurn()).isEqualTo(PlayGameData.Color.WHITE);
   }
 
   @Test
