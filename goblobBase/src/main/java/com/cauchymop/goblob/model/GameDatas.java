@@ -36,6 +36,10 @@ public class GameDatas {
     this.localUniqueId = localUniqueId;
   }
 
+  public boolean needsApplicationUpdate(GameData gameData) {
+    return gameData.getVersion() > GameDatas.VERSION;
+  }
+
   public PlayGameData.Color getCurrentColor(GameDataOrBuilder gameData) {
     return gameData.getTurn();
   }

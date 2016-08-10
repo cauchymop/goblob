@@ -1,5 +1,4 @@
 In progress:
-- When receiving an invite, there are 5 gameSelected.
 - Test moves on a remote game while offline
 - In GameRepository: multiple local games
 

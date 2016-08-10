@@ -32,8 +32,4 @@ public class CreateNewGameMenuItem extends MatchMenuItem {
     return null;
   }
 
-  @Override
-  public void start(GameStarter gameStarter) {
-    gameStarter.startNewGame();
-  }
 }

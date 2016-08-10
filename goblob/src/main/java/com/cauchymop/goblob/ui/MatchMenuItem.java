@@ -14,7 +14,6 @@ public abstract class MatchMenuItem {
   public abstract String getFirstLine(Context context);
   public abstract String getSecondLine(Context context);
   public abstract Drawable getIcon(Context context);
-  public abstract void start(GameStarter gameStarter);
 
   public MatchMenuItem(String matchId) {
     this.matchId = matchId;

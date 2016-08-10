@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity
   void onMatchItemSelected(int position) {
     MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
     Log.d(TAG, "onItemSelected: " + item.getMatchId());
-    handleMatchMenuItemSelection(item);
+    gameRepository.selectGame(item.getMatchId());
   }
 
   @Override
@@ -272,11 +272,7 @@ public class MainActivity extends AppCompatActivity
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
 
-    String currentMatchId = gameRepository.getCurrentMatchId();
-    int selectedIndex = selectMenuItem(currentMatchId);
-    if (currentMatchId == null || selectedIndex == 0) {
-      handleMatchMenuItemSelection(getCurrentMatchMenuItem());
-    }
+    selectMenuItem(gameRepository.getCurrentMatchId());
   }
 
   @Nullable
@@ -333,11 +329,6 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  public void displayGameConfigurationScreen(GameData gameData) {
-    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(gameData);
-    displayFragment(gameConfigurationFragment);
-  }
-
 
   @Override
   public void gameListChanged() {
@@ -362,11 +353,16 @@ public class MainActivity extends AppCompatActivity
       displayFragment(new PlayerChoiceFragment());
       return;
     }
+
+    if (gameDatas.needsApplicationUpdate(gameData)) {
+      displayFragment(UpdateApplicationFragment.newInstance());
+    }
+
     selectMenuItem(gameData.getMatchId());
     switch (gameData.getPhase()) {
       case INITIAL:
       case CONFIGURATION:
-        displayGameConfigurationScreen(gameData);
+        displayFragment(GameConfigurationFragment.newInstance(gameData));
         return;
       case IN_GAME:
       case DEAD_STONE_MARKING:
@@ -415,28 +411,6 @@ public class MainActivity extends AppCompatActivity
 
   public boolean isSignedIn() {
     return googleApiClient.isConnected();
-  }
-
-  private void handleMatchMenuItemSelection(MatchMenuItem item) {
-    Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
-    GameStarter gameStarter = new GameStarter() {
-      @Override
-      public void startNewGame() {
-        gameRepository.selectGame(GameDatas.NEW_GAME_MATCH_ID);
-        displayFragment(new PlayerChoiceFragment());
-      }
-
-      @Override
-      public void selectGame(String matchId) {
-        gameRepository.selectGame(matchId);
-      }
-
-      @Override
-      public void showUpdateScreen() {
-        displayFragment(UpdateApplicationFragment.newInstance());
-      }
-    };
-    item.start(gameStarter);
   }
 
   public void endTurn(GameData gameData) {
