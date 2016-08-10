@@ -1,11 +1,8 @@
 In progress:
-- Sometimes match creator can negotiate with himself
-- In Dead Stone marking mode, going faster than play games can result in loading an old game => need a sequence number in GameData
-- generate random local identity instead of relying on google
-- In GameRepository: multiple local games
 
 Next:
 - Popup local/remote
+- In GameRepository: multiple local games
 - GridLayout
 - Thanks to GameRepository: espresso tests
 

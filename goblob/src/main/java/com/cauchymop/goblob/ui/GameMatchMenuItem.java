@@ -46,15 +46,6 @@ public class GameMatchMenuItem extends MatchMenuItem {
   }
 
   @Override
-  public void start(GameStarter gameStarter) {
-    if (needsApplicationUpdate()) {
-      gameStarter.showUpdateScreen();
-    } else {
-      gameStarter.selectGame(getMatchId());
-    }
-  }
-
-  @Override
   public boolean isValid() {
     return !needsApplicationUpdate();
   }

@@ -17,7 +17,7 @@ public class GameDatasTest {
   public void testCreateLocalGame() {
     PlayGameData.GoPlayer black = gameDatas.createGamePlayer("pipo", "player1");
     PlayGameData.GoPlayer white = gameDatas.createGamePlayer("bimbo", "player2");
-    PlayGameData.GameData localGame = gameDatas.createGameData("pizza", GameType.LOCAL, black, white);
+    PlayGameData.GameData localGame = gameDatas.createNewGameData("pizza", GameType.LOCAL, black, white);
     assertThat(localGame.getGameConfiguration().getBoardSize()).isEqualTo(9);
     assertThat(localGame.getGameConfiguration().getGameType()).isEqualTo(GameType.LOCAL);
   }

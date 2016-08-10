@@ -2,6 +2,7 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
@@ -19,6 +20,7 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
@@ -31,12 +33,10 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
-import dagger.Lazy;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
 
-
   @Inject
   GoogleApiClient googleApiClient;
   @Inject
@@ -77,9 +76,6 @@ public class MainActivity extends AppCompatActivity
   AvatarManager avatarManager;
   @Inject
   GoogleApiClientManager googleApiClientManager;
-  @Inject
-  @Named("LocalGoogleIdentity")
-  Lazy<String> localGoogleIdentity;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +106,7 @@ public class MainActivity extends AppCompatActivity
   protected void onStart() {
     super.onStart();
     Log.d(TAG, "onStart");
+    updateMatchSpinner();
     googleApiClient.connect();
   }
 
@@ -146,7 +143,7 @@ public class MainActivity extends AppCompatActivity
   void onMatchItemSelected(int position) {
     MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
     Log.d(TAG, "onItemSelected: " + item.getMatchId());
-    handleMatchMenuItemSelection(item);
+    gameRepository.selectGame(item.getMatchId());
   }
 
   @Override
@@ -218,6 +215,7 @@ public class MainActivity extends AppCompatActivity
   @Override
   public void onConnected(Bundle bundle) {
     Log.d(TAG, "onConnected");
+    updateFromConnectionStatus();
     TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, gameRepository);
 
     // Retrieve the TurnBasedMatch from the connectionHint in order to select it
@@ -265,8 +263,6 @@ public class MainActivity extends AppCompatActivity
     if (currentFragment != null) {
       currentFragment.updateFromConnectionStatus();
     }
-
-    setWaitingScreenVisible(false);
   }
 
   private void setMatchMenuItems(List<MatchMenuItem> newMatchMenuItems) {
@@ -276,11 +272,7 @@ public class MainActivity extends AppCompatActivity
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
 
-    String currentMatchId = gameRepository.getCurrentMatchId();
-    int selectedIndex = selectMenuItem(currentMatchId);
-    if (currentMatchId == null || selectedIndex == 0) {
-      handleMatchMenuItemSelection(getCurrentMatchMenuItem());
-    }
+    selectMenuItem(gameRepository.getCurrentMatchId());
   }
 
   @Nullable
@@ -311,6 +303,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void displayFragment(GoBlobBaseFragment fragment) {
+    setWaitingScreenVisible(false);
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
     // Replace whatever is the current_fragment view with this fragment,
@@ -327,7 +320,7 @@ public class MainActivity extends AppCompatActivity
 
   public void configureGame(boolean isLocal) {
     if (isLocal) {
-      GameData localGame = gameRepository.createLocalGame();
+      GameData localGame = gameRepository.createNewLocalGame();
       gameRepository.selectGame(localGame.getMatchId());
     } else {
       setWaitingScreenVisible(true);
@@ -336,41 +329,40 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  public void displayGameConfigurationScreen(GameData gameData) {
-    GameConfigurationFragment gameConfigurationFragment = GameConfigurationFragment.newInstance(gameData);
-    displayFragment(gameConfigurationFragment);
-  }
-
 
   @Override
   public void gameListChanged() {
     updateMatchSpinner();
   }
 
-  private void updateMatchSpinner() {
-    final long requestId = System.currentTimeMillis();
-    Log.d(TAG, String.format("updateMatchSpinner: requestId = %d", requestId));
-
-    List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
-    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
-    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
-
-    setMatchMenuItems(newMatchMenuItems);
-    updateFromConnectionStatus();
+  @Override
+  public void gameChanged(GameData gameData) {
+    if (Objects.equal(gameRepository.getCurrentMatchId(), gameData.getMatchId())) {
+      gameSelected(gameData);
+    }
+    if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
+      Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+      vibrator.vibrate(200);
+    }
   }
 
   @Override
   public void gameSelected(GameData gameData) {
-    Log.d(TAG, "gameSelected gameData = " + gameData);
+    Log.d(TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
     if (gameData == null) {
       displayFragment(new PlayerChoiceFragment());
       return;
     }
+
+    if (gameDatas.needsApplicationUpdate(gameData)) {
+      displayFragment(UpdateApplicationFragment.newInstance());
+    }
+
     selectMenuItem(gameData.getMatchId());
     switch (gameData.getPhase()) {
       case INITIAL:
       case CONFIGURATION:
-        displayGameConfigurationScreen(gameData);
+        displayFragment(GameConfigurationFragment.newInstance(gameData));
         return;
       case IN_GAME:
       case DEAD_STONE_MARKING:
@@ -380,6 +372,16 @@ public class MainActivity extends AppCompatActivity
       default:
         throw new RuntimeException("Invalid phase for game: " + gameData);
     }
+  }
+
+  private void updateMatchSpinner() {
+    Log.d(TAG, "updateMatchSpinner");
+
+    List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
+    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
+    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
+
+    setMatchMenuItems(newMatchMenuItems);
   }
 
   /**
@@ -411,30 +413,8 @@ public class MainActivity extends AppCompatActivity
     return googleApiClient.isConnected();
   }
 
-  private void handleMatchMenuItemSelection(MatchMenuItem item) {
-    Log.d(TAG, "handleMatchMenuItemSelection: " + item.getMatchId());
-    GameStarter gameStarter = new GameStarter() {
-      @Override
-      public void startNewGame() {
-        gameRepository.selectGame(GameDatas.NEW_GAME_MATCH_ID);
-        displayFragment(new PlayerChoiceFragment());
-      }
-
-      @Override
-      public void selectGame(String matchId) {
-        gameRepository.selectGame(matchId);
-      }
-
-      @Override
-      public void showUpdateScreen() {
-        displayFragment(UpdateApplicationFragment.newInstance());
-      }
-    };
-    item.start(gameStarter);
-  }
-
   public void endTurn(GameData gameData) {
-    gameRepository.saveGame(gameData);
+    gameRepository.commitGameChanges(gameData);
     gameSelected(gameData);
   }
 }
