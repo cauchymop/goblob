@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     gameRepository.refreshRemoteGameListFromServer();
+    gameRepository.publishUnpublishedGames();
   }
 
   @Override
