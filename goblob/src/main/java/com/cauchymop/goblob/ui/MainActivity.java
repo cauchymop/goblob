@@ -23,7 +23,6 @@ import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.games.Games;
 import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.common.base.Objects;
@@ -293,8 +292,7 @@ public class MainActivity extends AppCompatActivity
   protected void signOut() {
     Log.d(TAG, "signOut");
     signInClicked = false;
-    Games.signOut(googleApiClient);
-    googleApiClient.disconnect();
+    googleApiClientManager.signout();
     updateFromConnectionStatus();
   }
 
