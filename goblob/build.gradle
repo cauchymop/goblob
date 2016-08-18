@@ -40,8 +40,8 @@ android {
     buildToolsVersion android_version
 
     defaultConfig {
-        versionCode 11
-        versionName "1.0.3"
+        versionCode 12
+        versionName "1.0.4"
         minSdkVersion android_min_sdk_version
         targetSdkVersion android_compile_version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

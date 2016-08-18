@@ -5,6 +5,7 @@ option java_package = "com.cauchymop.goblob.proto";
 
 message GameList {
   map<string, GameData> games = 1;
+  map<string, string> unpublished = 2;
 }
 
 message GameData {

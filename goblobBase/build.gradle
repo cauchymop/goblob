@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.7.5'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.0'
     }
 }
 
@@ -24,7 +24,7 @@ dependencies {
     compile "com.google.guava:guava:${guava_version}"
     compile "com.google.dagger:dagger:${dagger_version}"
     compile "com.google.dagger:dagger-compiler:${dagger_version}"
-    compile 'com.google.protobuf:protobuf-java:3.0.0-alpha-3'
+    compile 'com.google.protobuf:protobuf-java:3.0.0'
     testCompile "com.google.guava:guava-testlib:${guava_version}"
     testCompile "junit:junit:${junit_version}"
     testCompile "org.mockito:mockito-all:${mockito_version}"
@@ -45,7 +45,7 @@ test {
 protobuf {
     protoc {
         // Download from repositories
-        artifact = 'com.google.protobuf:protoc:3.0.0-alpha-3'
+        artifact = 'com.google.protobuf:protoc:3.0.0'
     }
 }
 

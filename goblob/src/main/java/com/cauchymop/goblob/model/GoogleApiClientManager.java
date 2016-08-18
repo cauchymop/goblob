@@ -86,6 +86,11 @@ public class GoogleApiClientManager implements GoogleApiClientListener, Provider
     googleApiClient.unregisterConnectionFailedListener(googleApiClientListener);
   }
 
+  public void signout() {
+    Games.signOut(googleApiClient);
+    googleApiClient.disconnect();
+  }
+
   private interface DelayedCall {
     void execute(GoogleApiClientListener googleApiClientListener);
   }
