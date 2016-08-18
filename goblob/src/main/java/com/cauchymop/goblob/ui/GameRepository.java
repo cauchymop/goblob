@@ -35,6 +35,7 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -68,6 +69,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   private static final String GAMES = "games";
   private static final int CACHE_CHANGED_MESSAGE = 1;
   private static final long CACHE_CHANGED_DELAY = 100;
+  public static final String IGNORED_VALUE = "";
 
 
   private final SharedPreferences prefs;
@@ -152,15 +154,31 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     editor.apply();
   }
 
-  public void publishRemoteGameState(GameData gameData) {
-    Log.d(TAG, "publishRemoteGameState: " + gameData);
-    String turnParticipantId = gameDatas.getCurrentPlayer(gameData).getId();
-    byte[] gameDataBytes = gameData.toByteArray();
-    Log.d(TAG, "takeTurn " + turnParticipantId);
-    TurnBasedMultiplayer.takeTurn(googleApiClient, gameData.getMatchId(), gameDataBytes, turnParticipantId);
-    if (gameData.getPhase() == Phase.FINISHED) {
-      TurnBasedMultiplayer.finishMatch(googleApiClient, gameData.getMatchId());
-      fireGameSelected(gameData);
+  public void publishUnpublishedGames() {
+    for (String matchId : ImmutableSet.copyOf(gameCache.getUnpublishedMap().keySet())) {
+      GameData gameData = gameCache.getGamesMap().get(matchId);
+      // The match can be absent if the user changed.
+      if (gameData != null && publishRemoteGameState(gameData)) {
+        gameCache.removeUnpublished(gameData.getMatchId());
+      }
+    }
+  }
+
+  public boolean publishRemoteGameState(GameData gameData) {
+    if (googleApiClient.isConnected()) {
+      Log.d(TAG, "publishRemoteGameState: " + gameData);
+      String turnParticipantId = gameDatas.getCurrentPlayer(gameData).getId();
+      byte[] gameDataBytes = gameData.toByteArray();
+      Log.d(TAG, "takeTurn " + turnParticipantId);
+      TurnBasedMultiplayer.takeTurn(googleApiClient, gameData.getMatchId(), gameDataBytes, turnParticipantId);
+      if (gameData.getPhase() == Phase.FINISHED) {
+        TurnBasedMultiplayer.finishMatch(googleApiClient, gameData.getMatchId());
+        fireGameSelected(gameData);
+      }
+      return true;
+    } else {
+      gameCache.putUnpublished(gameData.getMatchId(), IGNORED_VALUE);
+      return false;
     }
   }
 
