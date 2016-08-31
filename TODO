@@ -1,4 +1,7 @@
 In progress:
+- Fix bug when backing out the Remote Opponent Choice Activity
+- Espresso tests
+- FireBase Stats
 
 Next:
 - Popup local/remote

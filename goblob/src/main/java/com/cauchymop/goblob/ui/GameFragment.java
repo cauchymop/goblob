@@ -25,8 +25,9 @@ import com.cauchymop.goblob.proto.PlayGameData;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
@@ -49,12 +50,13 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Inject GameDatas gameDatas;
   @Inject AvatarManager avatarManager;
 
-  @Bind(R.id.boardViewContainer) FrameLayout boardViewContainer;
-  @Bind(R.id.action_button) Button actionButton;
-  @Bind(R.id.title) TextView titleView;
-  @Bind(R.id.titleImage) ImageView titleImage;
-  @Bind(R.id.avatarImage) ImageView avatarImage;
-  @Bind(R.id.message_textview) TextView messageView;
+  @BindView(R.id.boardViewContainer) FrameLayout boardViewContainer;
+  @BindView(R.id.action_button) Button actionButton;
+  @BindView(R.id.title) TextView titleView;
+  @BindView(R.id.titleImage) ImageView titleImage;
+  @BindView(R.id.avatarImage) ImageView avatarImage;
+  @BindView(R.id.message_textview) TextView messageView;
+  private Unbinder unbinder;
 
   public static GameFragment newInstance(PlayGameData.GameData gameData) {
     GameFragment fragment = new GameFragment();
@@ -82,7 +84,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_game, container, false);
-    ButterKnife.bind(this, view);
+    unbinder = ButterKnife.bind(this, view);
     return view;
   }
 
@@ -97,7 +99,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     super.onDestroyView();
     Log.d(TAG, "onDestroyView");
     cleanBoardView();
-    ButterKnife.unbind(this);
+    unbinder.unbind();
   }
 
   @Override

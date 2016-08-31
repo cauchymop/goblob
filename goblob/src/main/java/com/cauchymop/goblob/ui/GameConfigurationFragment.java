@@ -23,9 +23,10 @@ import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 /**
  * Home Page Fragment.
@@ -34,27 +35,27 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   private static final String EXTRA_GAME_DATA = "game_configuration";
 
-  @Bind(R.id.configuration_container)
+  @BindView(R.id.configuration_container)
   LinearLayout configurationContainer;
-  @Bind(R.id.configuration_message)
+  @BindView(R.id.configuration_message)
   TextView configurationMessage;
-  @Bind(R.id.configuration_done_button)
+  @BindView(R.id.configuration_done_button)
   Button configurationDoneButton;
-  @Bind(R.id.black_player_name)
+  @BindView(R.id.black_player_name)
   EditText blackPlayerNameField;
-  @Bind(R.id.white_player_name)
+  @BindView(R.id.white_player_name)
   EditText whitePlayerNameField;
-  @Bind(R.id.handicap_spinner)
+  @BindView(R.id.handicap_spinner)
   Spinner handicapSpinner;
-  @Bind(R.id.komi_value)
+  @BindView(R.id.komi_value)
   EditText komiText;
-  @Bind(R.id.board_size_radio_group)
+  @BindView(R.id.board_size_radio_group)
   RadioGroup boardSizeRadioGroup;
-  @Bind(R.id.board_size_9)
+  @BindView(R.id.board_size_9)
   RadioButton boardSize9;
-  @Bind(R.id.board_size_13)
+  @BindView(R.id.board_size_13)
   RadioButton boardSize13;
-  @Bind(R.id.board_size_19)
+  @BindView(R.id.board_size_19)
   RadioButton boardSize19;
 
   @Inject
@@ -63,6 +64,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   GoPlayer blackPlayer;
   GoPlayer whitePlayer;
   private GoGameController goGameController;
+  private Unbinder unbinder;
 
 
   public static GameConfigurationFragment newInstance(GameData gameData) {
@@ -85,7 +87,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_game_configuration, container, false);
-    ButterKnife.bind(this, v);
+    unbinder = ButterKnife.bind(this, v);
 
     init((GameData) getArguments().getSerializable(EXTRA_GAME_DATA));
 
@@ -132,7 +134,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   @Override
   public void onDestroyView() {
     super.onDestroyView();
-    ButterKnife.unbind(this);
+    unbinder.unbind();
   }
 
   @OnClick(R.id.configuration_done_button)
