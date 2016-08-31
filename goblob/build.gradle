@@ -19,13 +19,13 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     compile "com.android.support:appcompat-v7:${appcompat_library_version}"
-    compile "com.google.android.gms:play-services-plus:${gms_library_version}"
     compile "com.google.android.gms:play-services-games:${gms_library_version}"
     compile "com.google.guava:guava:${guava_version}"
-    compile 'com.jakewharton:butterknife:7.0.1'
+    compile "com.jakewharton:butterknife:${butterknife_version}"
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile "com.google.dagger:dagger:${dagger_version}"
     apt "com.google.dagger:dagger-compiler:${dagger_version}"
+    apt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     compile project(':BaseGameUtils')
     compile project(':goblobBase')
     androidTestCompile "junit:junit:${junit_version}"
@@ -63,10 +63,16 @@ android {
         debug {
             applicationIdSuffix ".debug"
             testCoverageEnabled true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
         }
 
         release {
             signingConfig signingConfigs.release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
         }
     }
 
@@ -85,5 +91,7 @@ android {
 }
 
 private String getReleasePassword() {
-    System.getProperty("GOBLOB_KEY_PASSWORD")
+    // Create a gradle configuration for assembleRelease with
+    // -Pgoblob.key.password=realpassword
+    getProperty("goblob.key.password")
 }

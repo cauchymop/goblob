@@ -11,9 +11,12 @@ import com.cauchymop.goblob.R;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 
 
 public class UpdateApplicationFragment extends GoBlobBaseFragment {
+
+  private Unbinder unbinder;
 
   /**
    * Use this factory method to create a new instance of
@@ -35,13 +38,13 @@ public class UpdateApplicationFragment extends GoBlobBaseFragment {
       Bundle savedInstanceState) {
     // Inflate the layout for this fragment
     View view = inflater.inflate(R.layout.fragment_update_application, container, false);
-    ButterKnife.bind(this, view);
+    unbinder = ButterKnife.bind(this, view);
     return view;
   }
 
   @Override public void onDestroyView() {
     super.onDestroyView();
-    ButterKnife.unbind(this);
+    unbinder.unbind();
   }
 
   @OnClick(R.id.update_button)

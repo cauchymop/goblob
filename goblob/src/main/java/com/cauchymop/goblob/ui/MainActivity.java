@@ -33,9 +33,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
+import butterknife.Unbinder;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
@@ -52,11 +53,11 @@ public class MainActivity extends AppCompatActivity
   private static final String TAG = MainActivity.class.getName();
   private static final String CURRENT_MATCH_ID = "CURRENT_MATCH_ID";
 
-  @Bind(R.id.toolbar_match_spinner)
+  @BindView(R.id.toolbar_match_spinner)
   Spinner matchSpinner;
-  @Bind(R.id.app_toolbar)
+  @BindView(R.id.app_toolbar)
   Toolbar toolbar;
-  @Bind(R.id.waiting_view)
+  @BindView(R.id.waiting_view)
   View waitingScreen;
 
   private MatchesAdapter navigationSpinnerAdapter;
@@ -72,9 +73,8 @@ public class MainActivity extends AppCompatActivity
   @Inject
   GameRepository gameRepository;
   @Inject
-  AvatarManager avatarManager;
-  @Inject
   GoogleApiClientManager googleApiClientManager;
+  private Unbinder unbinder;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity
     Log.d(TAG, "onCreate");
 
     setContentView(R.layout.activity_main);
-    ButterKnife.bind(this);
+    unbinder = ButterKnife.bind(this);
 
     ((GoApplication) getApplication()).getComponent().inject(this);
 
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity
     Log.d(TAG, "onDestroy");
     googleApiClientManager.unregisterGoogleApiClientListener(this);
     gameRepository.removeGameRepositoryListener(this);
-    ButterKnife.unbind(this);
+    unbinder.unbind();
   }
 
   private void setUpToolbar() {

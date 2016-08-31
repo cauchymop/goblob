@@ -21,9 +21,9 @@ repositories {
 }
 
 dependencies {
+    compileOnly "com.google.dagger:dagger-compiler:${dagger_version}"
     compile "com.google.guava:guava:${guava_version}"
     compile "com.google.dagger:dagger:${dagger_version}"
-    compile "com.google.dagger:dagger-compiler:${dagger_version}"
     compile 'com.google.protobuf:protobuf-java:3.0.0'
     testCompile "com.google.guava:guava-testlib:${guava_version}"
     testCompile "junit:junit:${junit_version}"
