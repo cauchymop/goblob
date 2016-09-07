@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Game of Go (debug)</string>
+    <string name="app_name">Jeu de Go</string>
     <string name="achievements">Trophées</string>
     <string name="black_label">Noir</string>
     <string name="board_size_label">Taille du Goban</string>
