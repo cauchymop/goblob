@@ -1,7 +1,9 @@
 In progress:
-- Fix bug when backing out the Remote Opponent Choice Activity
-- Espresso tests
+- When only an expired game is left in the cache, starting the app shows that game with only
+  "new game" in the combo. We should keep the finished/expired/deleted games somewhere.
+- allow replay of a finished game
 - FireBase Stats
+- Espresso tests
 
 Next:
 - Popup local/remote

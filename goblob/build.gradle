@@ -40,11 +40,12 @@ android {
     buildToolsVersion android_version
 
     defaultConfig {
-        versionCode 12
-        versionName "1.0.4"
+        versionCode 13
+        versionName "1.0.5"
         minSdkVersion android_min_sdk_version
         targetSdkVersion android_compile_version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        resConfigs "en", "fr"
     }
 
     signingConfigs {

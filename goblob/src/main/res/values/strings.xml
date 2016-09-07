@@ -10,9 +10,9 @@
   <string name="choose_game_type_label">Select game type</string>
   <string name="configure_game_label">Configure Game</string>
   <string name="game_type_local_label">Local game</string>
-  <string name="board_size_label_9x9">9x9</string>
-  <string name="board_size_label_13x13">13x13</string>
-  <string name="board_size_label_19x19">19x19</string>
+  <string name="board_size_label_9x9" translatable="false">9x9</string>
+  <string name="board_size_label_13x13" translatable="false">13x13</string>
+  <string name="board_size_label_19x19" translatable="false">19x19</string>
   <string name="you_label">You</string>
   <string name="name_label">Name</string>
   <string name="color_label">Color</string>
@@ -25,20 +25,20 @@
   <string name="sign_out">Sign out</string>
   <string name="achievements">Achievements</string>
   <string name="sign_in">Sign In</string>
-  <string name="achievements_winner">CggImpiG6GMQAhAB</string>
-  <string name="achievements_9x9">CggImpiG6GMQAhAC</string>
-  <string name="achievements_13x13">CggImpiG6GMQAhAD</string>
-  <string name="achievements_19x19">CggImpiG6GMQAhAG</string>
-  <string name="achievements_remote">CggImpiG6GMQAhAE</string>
-  <string name="achievements_local">CggImpiG6GMQAhAF</string>
-  <string name="game_type_remote_label">Remote game</string>
+  <string name="achievements_winner" translatable="false">CggImpiG6GMQAhAB</string>
+  <string name="achievements_9x9" translatable="false">CggImpiG6GMQAhAC</string>
+  <string name="achievements_13x13" translatable="false">CggImpiG6GMQAhAD</string>
+  <string name="achievements_19x19" translatable="false">CggImpiG6GMQAhAG</string>
+  <string name="achievements_remote" translatable="false">CggImpiG6GMQAhAE</string>
+  <string name="achievements_local" translatable="false">CggImpiG6GMQAhAF</string>
+  <string name="game_type_remote_label">Online game</string>
   <string name="please_wait">Please Wait…</string>
   <string name="button_label_check_matches">Check matches</string>
-  <string name="player_avatar_content_description">player_avatar</string>
-  <string name="player_stonecolor_content_description">Player Color Icon</string>
+  <string name="player_avatar_content_description" translatable="false">player_avatar</string>
+  <string name="player_stonecolor_content_description" translatable="false">Player Color Icon</string>
   <string name="new_game_label">New Game</string>
-  <string name="match_label_remote_first_line_format">"%1$s vs %2$s"</string>
-  <string name="match_label_remote_second_line_format">"%1$d x %1$d - %2$s"</string>
+  <string name="match_label_remote_first_line_format" translatable="false">"%1$s vs %2$s"</string>
+  <string name="match_label_remote_second_line_format" translatable="false">"%1$d x %1$d - %2$s"</string>
   <string name="imfeelinglucky">"I'm feeling lucky"</string>
   <string name="button_done_label">Done</string>
   <string name="marking_message">Marking dead stones…</string>
@@ -55,6 +55,7 @@
   <string name="configuration_message_initial">Configure Game</string>
   <string name="configuration_message_waiting_for_opponent">Waiting for other player to validate or change settings</string>
   <string name="configuration_message_accept_or_change">Please, validate or change the game settings</string>
+  <string name="app_id" translatable="false">26793315354</string>
 
   <string-array name="handicap_values">
     <item>@string/handicap_even</item>

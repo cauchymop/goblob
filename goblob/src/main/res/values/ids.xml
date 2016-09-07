@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item type="id" name="board_size_9x9"/>
-    <item type="id" name="board_size_13x13"/>
-    <item type="id" name="board_size_19x19"/>
-    <item type="id" name="menu_undo"/>
-    <item type="id" name="menu_redo"/>
-    <item type="id" name="menu_resign"/>
-  <string name="app_id">26793315354</string>
+    <item name="board_size_9x9" type="id"/>
+    <item name="board_size_13x13" type="id"/>
+    <item name="board_size_19x19" type="id"/>
+    <item name="menu_undo" type="id"/>
+    <item name="menu_redo" type="id"/>
+    <item name="menu_resign" type="id"/>
 </resources>
