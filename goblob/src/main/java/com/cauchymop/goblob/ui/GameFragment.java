@@ -238,7 +238,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
       if (score.getResigned()) {
         message = getString(R.string.end_of_game_resigned_message, score.getWinner());
       } else {
-        message = getString(R.string.end_of_game_message, score.getWinner(), score.getWonBy());
+        message = getString(R.string.end_of_game_message, goGameController.getPlayerForColor(score.getWinner()).getName(), score.getWonBy());
       }
     } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
       message = getString(R.string.marking_message);

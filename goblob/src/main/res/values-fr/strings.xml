@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Jeu de Go</string>
+    <string name="achievements">Trophées</string>
+    <string name="black_label">Noir</string>
+    <string name="board_size_label">Taille du Goban</string>
+    <string name="button_done_label" translatable="false">Terminé</string>
+    <string name="button_label_check_matches">Mes parties</string>
+    <string name="button_pass_label">Passer</string>
+    <string name="choose_game_type_label">Type de partie</string>
+    <string name="color_label">Couleur</string>
+    <string name="configuration_done_label">Valider</string>
+    <string name="configuration_message_accept_or_change">Veuillez valider ou modifier ces paramètres</string>
+    <string name="configuration_message_initial">Configurer la partie</string>
+    <string name="configuration_message_waiting_for_opponent">En attente de la confirmation de votre adversaire</string>
+    <string name="configure_game_label">Configurer la partie</string>
+    <string name="end_of_game_message">"Partie terminée, %1$s a gagné de %2$.1f points."</string>
+    <string name="end_of_game_resigned_message">"Partie terminée, %1$s a gagné par abandon."</string>
+    <string name="game_type_local_label">Partie locale</string>
+    <string name="game_type_remote_label">Partie en ligne</string>
+    <string name="handicap_even">Égalité</string>
+    <string name="handicap_label">Handicap</string>
+    <string name="imfeelinglucky">J\'ai de la chance</string>
+    <string name="komi_label">Komi</string>
+    <string name="local_match_item_label">Partie locale en cours</string>
+    <string name="marking_message">Marquage des pierres mortes…</string>
+    <string name="name_label">Nom</string>
+    <string name="new_game_label">Nouvelle partie</string>
+    <string name="opponent_label">Votre adversaire</string>
+    <string name="opponent_passed_message">"%1$s a passé"</string>
+    <string name="player_one_default_name">Joueur 1</string>
+    <string name="player_two_default_name">Joueur 2</string>
+    <string name="please_wait" translatable="false">Veuillez patienter…</string>
+    <string name="redo">Refaire</string>
+    <string name="resign">Abandonner</string>
+    <string name="sign_in">Se connecter</string>
+    <string name="sign_out">Se déconnecter</string>
+    <string name="signin_other_error">Erreur de connexion, veuillez réessayer ultérieurement.</string>
+    <string name="undo">Annuler</string>
+    <string name="update_app_button_label">Mettre à jour</string>
+    <string name="update_app_message">Votre version de l\'application est obsolète et incompatible avec le format de cette partie.\n\nVeuillez mettre à jour pour continuer cette partie.</string>
+    <string name="white_label">Blanc</string>
+    <string name="you_label">Vous</string>
+</resources>

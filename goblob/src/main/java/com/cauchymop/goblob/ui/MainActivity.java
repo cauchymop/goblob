@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
@@ -184,7 +183,11 @@ public class MainActivity extends AppCompatActivity
     Log.d(TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
     switch (requestCode) {
       case RC_SELECT_PLAYER:
-        gameRepository.handleSelectPlayersResult(responseCode, intent);
+        if (responseCode == RESULT_OK) {
+          gameRepository.handlePlayersSelected(intent);
+        } else {
+          setWaitingScreenVisible(false);
+        }
         break;
       case RC_CHECK_MATCHES:
         gameRepository.handleCheckMatchesResult(responseCode, intent);

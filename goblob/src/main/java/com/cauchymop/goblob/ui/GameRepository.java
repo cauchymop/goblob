@@ -429,12 +429,8 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     }
   }
 
-  public void handleSelectPlayersResult(int responseCode, Intent intent) {
-    Log.d(TAG, "handleSelectPlayersResult");
-    if (responseCode != Activity.RESULT_OK) {
-      return;
-    }
-    Log.d(TAG, "Select players UI succeeded.");
+  public void handlePlayersSelected(Intent intent) {
+    Log.d(TAG, "handlePlayersSelected");
 
     // get the invitee list
     final ArrayList<String> invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
