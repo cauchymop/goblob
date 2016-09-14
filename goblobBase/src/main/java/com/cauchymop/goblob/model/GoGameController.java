@@ -265,4 +265,8 @@ public class GoGameController implements Serializable {
       throw new IllegalArgumentException("Invalid phase: " + getPhase());
     }
   }
+
+  public GoPlayer getPlayerForColor(Color player) {
+    return gameDatas.getGoPlayer(gameData, player);
+  }
 }

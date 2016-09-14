@@ -1,10 +1,8 @@
 In progress:
-- LOCAL and REMOTE use enum strings in dropdown items
-- Player 2 still appears in French instead of Joueur 2
+- FireBase Stats
 - When only an expired game is left in the cache, starting the app shows that game with only
   "new game" in the combo. We should keep the finished/expired/deleted games somewhere.
 - allow replay of a finished game
-- FireBase Stats
 - Espresso tests
 
 Next:
