@@ -27,6 +27,7 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.example.games.basegameutils.BaseGameUtils;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.List;
 
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity
   private boolean resolvingError;
   private boolean signInClicked;
   private boolean autoStartSignInFlow = true;
+  private FirebaseAnalytics mFirebaseAnalytics;
 
   @Inject
   GoogleApiClient googleApiClient;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity
 
     ((GoApplication) getApplication()).getComponent().inject(this);
 
+    mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
     gameRepository.addGameRepositoryListener(this);
 
     setUpToolbar();

@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "26793315354",
+    "firebase_url": "https://moonlit-outlet-832.firebaseio.com",
+    "project_id": "moonlit-outlet-832",
+    "storage_bucket": "moonlit-outlet-832.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26793315354:android:7cc899b55df9b95a",
+        "android_client_info": {
+          "package_name": "com.cauchymop.goblob"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "26793315354-4cb6v698aiid36d29o9srir4pip5c3a3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cauchymop.goblob",
+            "certificate_hash": "A9D82DD6A12A528C0E6D3FB95EBDF817F29BC62F"
+          }
+        },
+        {
+          "client_id": "26793315354.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cauchymop.goblob",
+            "certificate_hash": "77FE179BB7455310D18076FD2B93AE89E841C04E"
+          }
+        },
+        {
+          "client_id": "26793315354-5280m6nncdbbr85jb35sqofea41p9kkn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyeVxrQwaOZcAguQSbY4-edNGs8yGaDXc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26793315354-5280m6nncdbbr85jb35sqofea41p9kkn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
