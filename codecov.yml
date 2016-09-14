@@ -1,4 +1,19 @@
 comment:
   layout: header, changes, diff
 coverage:
-  status: {}
+  status:
+    project:
+      default:
+        target: auto
+        threshold: null
+        branches: null
+
+    patch:
+      default:
+        target: 0
+        branches: null
+
+    changes:
+      default:
+        target: 0
+        branches: null
