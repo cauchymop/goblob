@@ -4,7 +4,7 @@
     <string name="achievements">Trophées</string>
     <string name="black_label">Noir</string>
     <string name="board_size_label">Taille du Goban</string>
-    <string name="button_done_label" translatable="false">Terminé</string>
+    <string name="button_done_label">Terminé</string>
     <string name="button_label_check_matches">Mes parties</string>
     <string name="button_pass_label">Passer</string>
     <string name="choose_game_type_label">Type de partie</string>
@@ -30,7 +30,7 @@
     <string name="opponent_passed_message">"%1$s a passé"</string>
     <string name="player_one_default_name">Joueur 1</string>
     <string name="player_two_default_name">Joueur 2</string>
-    <string name="please_wait" translatable="false">Veuillez patienter…</string>
+    <string name="please_wait">Veuillez patienter…</string>
     <string name="redo">Refaire</string>
     <string name="resign">Abandonner</string>
     <string name="sign_in">Se connecter</string>

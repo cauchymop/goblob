@@ -20,10 +20,12 @@ tasks.withType(JavaCompile) {
 dependencies {
     compile "com.android.support:appcompat-v7:${appcompat_library_version}"
     compile "com.google.android.gms:play-services-games:${gms_library_version}"
+    compile "com.google.firebase:firebase-core:${gms_library_version}"
     compile "com.google.guava:guava:${guava_version}"
     compile "com.jakewharton:butterknife:${butterknife_version}"
     compile 'javax.annotation:javax.annotation-api:1.2'
     compile "com.google.dagger:dagger:${dagger_version}"
+    compile 'com.google.firebase:firebase-analytics:9.2.1'
     apt "com.google.dagger:dagger-compiler:${dagger_version}"
     apt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     compile project(':BaseGameUtils')
@@ -46,6 +48,7 @@ android {
         targetSdkVersion android_compile_version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         resConfigs "en", "fr"
+        applicationId "com.cauchymop.goblob"
     }
 
     signingConfigs {
@@ -64,9 +67,9 @@ android {
         debug {
             applicationIdSuffix ".debug"
             testCoverageEnabled true
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
-                    'proguard-rules.pro'
+                    'proguard-rules-debug.pro'
         }
 
         release {
@@ -96,3 +99,5 @@ private String getReleasePassword() {
     // -Pgoblob.key.password=realpassword
     getProperty("goblob.key.password")
 }
+
+apply plugin: 'com.google.gms.google-services'
