@@ -26,5 +26,22 @@
         app:showAsAction="never"
         android:title="@string/sign_in"/>
   </group>
+  <group android:id="@+id/group_ingame" android:visible="false">
+    <item
+        android:id="@+id/menu_undo"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:title="@string/undo"/>
+    <item
+        android:id="@+id/menu_redo"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:title="@string/redo"/>
+    <item
+        android:id="@+id/menu_resign"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:title="@string/resign"/>
+  </group>
 
 </menu>
