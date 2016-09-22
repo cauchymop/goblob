@@ -1,3 +1,4 @@
+apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'com.google.protobuf'
@@ -47,10 +48,17 @@ protobuf {
         // Download from repositories
         artifact = 'com.google.protobuf:protoc:3.0.0'
     }
+    generatedFilesBaseDir = "$projectDir/generated"
 }
 
 jacocoTestReport {
     reports {
         xml.enabled true
+    }
+}
+
+idea {
+    module {
+        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java");
     }
 }
