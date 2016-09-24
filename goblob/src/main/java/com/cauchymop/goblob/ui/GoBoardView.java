@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.views.GoBoardViewListener;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -35,7 +36,7 @@ public class GoBoardView extends ZoomableView {
   private Bitmap blackStoneBitmap;
   private int boardSize;
 
-  private Set<Listener> listeners = Sets.newHashSet();
+  private Set<GoBoardViewListener> listeners = Sets.newHashSet();
   private Rect rect = new Rect();  // For draw() usage.
 
   public GoBoardView(Context context, GoGameController gameController) {
@@ -91,16 +92,16 @@ public class GoBoardView extends ZoomableView {
   }
 
   private void firePlayed(int x, int y) {
-    for (Listener listener : listeners) {
+    for (GoBoardViewListener listener : listeners) {
       listener.played(x, y);
     }
   }
 
-  public void addListener(Listener listener) {
+  public void addListener(GoBoardViewListener listener) {
     listeners.add(listener);
   }
 
-  public void removeListener(Listener listener) {
+  public void removeListener(GoBoardViewListener listener) {
     listeners.remove(listener);
   }
 
@@ -232,9 +233,5 @@ public class GoBoardView extends ZoomableView {
       res.add(new Point(center, center));
     }
     return res;
-  }
-
-  public interface Listener {
-    void played(int x, int y);
   }
 }
