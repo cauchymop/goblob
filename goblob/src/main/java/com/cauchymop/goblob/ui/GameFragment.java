@@ -25,7 +25,6 @@ import com.cauchymop.goblob.presenters.GamePresenter;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.views.GameView;
-import com.cauchymop.goblob.views.GoBoardViewListener;
 
 import java.util.List;
 
@@ -39,7 +38,7 @@ import butterknife.Unbinder;
 /**
  * Game Page Fragment.
  */
-public class GameFragment extends GoBlobBaseFragment implements GameView {
+public class GameFragment extends GoBlobBaseFragment implements GameView, GoBoardView.Listener {
 
   private static final String TAG = GameFragment.class.getName();
   private static final String EXTRA_GO_GAME = "GO_GAME";
@@ -95,7 +94,8 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME)) {
       GameData gameData = (GameData) getArguments().getSerializable(EXTRA_GO_GAME);
       Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
-      gamePresenter.startPresenting(gameData, this);
+      GoGameController goGameController = new GoGameController(gameDatas, gameData);
+      gamePresenter.startPresenting(goGameController, this);
     }
   }
 
@@ -157,9 +157,9 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   }
 
   @Override
-  public void initGoBoardView(GoGameController goGameController, GoBoardViewListener goBoardViewListener) {
+  public void initGoBoardView(GoGameController goGameController) {
     goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
-    goBoardView.addListener(goBoardViewListener);
+    goBoardView.addListener(this);
     boardViewContainer.addView(goBoardView);
   }
 
@@ -245,7 +245,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @Override
   public void cleanBoardView() {
     if (goBoardView != null) {
-      goBoardView.removeListener(gamePresenter);
+      goBoardView.removeListener(this);
     }
   }
 
@@ -281,4 +281,8 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
     return getString(achievementStringId);
   }
 
+  @Override
+  public void played(int x, int y) {
+    gamePresenter.onMovePlayed(x, y);
+  }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 public interface GameView {
   void updateMenu(boolean undoMenuItemAvailable, boolean redoMenuItemAvailable, boolean resignMenuItemAvailable);
 
-  void initGoBoardView(GoGameController goGameController, GoBoardViewListener goBoardViewListener);
+  void initGoBoardView(GoGameController goGameController);
 
   void showCurrentPlayerInfo(String currentPlayerName, PlayGameData.Color currentPlayerColor);
 

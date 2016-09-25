@@ -4,7 +4,6 @@ import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.views.GameView;
-import com.cauchymop.goblob.views.GoBoardViewListener;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class GamePresenter implements GoBoardViewListener {
+public class GamePresenter {
 
   private GameDatas gameDatas;
   private GoGameController goGameController;
@@ -37,12 +36,12 @@ public class GamePresenter implements GoBoardViewListener {
     this.gameDatas = gameDatas;
   }
 
-  public void startPresenting(PlayGameData.GameData gameData, GameView gameView) {
-    this.goGameController = new GoGameController(gameDatas, gameData);
+  public void startPresenting(GoGameController goGameController, GameView gameView) {
+    this.goGameController = goGameController;
     this.gameView = gameView;
-    gameView.updateMenu(goGameController.canUndo(), goGameController.canRedo(), goGameController.isLocalTurn());
-    gameView.initGoBoardView(goGameController, this);
-    gameView.showCurrentPlayerInfo(goGameController.getCurrentPlayer().getName(), goGameController.getCurrentColor());
+    gameView.updateMenu(this.goGameController.canUndo(), this.goGameController.canRedo(), this.goGameController.isLocalTurn());
+    gameView.initGoBoardView(this.goGameController);
+    gameView.showCurrentPlayerInfo(this.goGameController.getCurrentPlayer().getName(), this.goGameController.getCurrentColor());
     gameView.unlockAchievements(getAchievements());
     initActionButton();
     initMessageArea();
@@ -69,8 +68,7 @@ public class GamePresenter implements GoBoardViewListener {
     gameView.endTurn(goGameController.buildGameData());
   }
 
-  @Override
-  public void played(int x, int y) {
+  public void onMovePlayed(int x, int y) {
     play(gameDatas.createMove(x, y));
   }
 
