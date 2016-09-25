@@ -121,12 +121,15 @@ public class GamePresenter {
       } else {
         gameView.showPlayerWonMessage(goGameController.getPlayerForColor(score.getWinner()).getName(), score.getWonBy());
       }
-    } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
-      gameView.showMarkingDeadStonesMessage();
-    } else if (goGameController.getGame().isLastMovePass()) {
-      gameView.showPlayerPassedMessage(goGameController.getOpponent().getName());
     } else {
-      gameView.clearMessage();
+      PlayGameData.GameData.Phase phase = goGameController.getPhase();
+      if (phase == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
+        gameView.showMarkingDeadStonesMessage();
+      } else if (phase == PlayGameData.GameData.Phase.IN_GAME && goGameController.getGame().isLastMovePass()) {
+        gameView.showPlayerPassedMessage(goGameController.getOpponent().getName());
+      } else {
+        gameView.clearMessage();
+      }
     }
   }
 
