@@ -3,7 +3,4 @@
     <item name="board_size_9x9" type="id"/>
     <item name="board_size_13x13" type="id"/>
     <item name="board_size_19x19" type="id"/>
-    <item name="menu_undo" type="id"/>
-    <item name="menu_redo" type="id"/>
-    <item name="menu_resign" type="id"/>
 </resources>
