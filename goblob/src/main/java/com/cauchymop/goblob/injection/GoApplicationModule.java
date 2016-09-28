@@ -6,10 +6,13 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
+import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.UUID;
 
@@ -81,5 +84,17 @@ public class GoApplicationModule {
   @Singleton
   public SharedPreferences getSharedPreferences(Context context) {
     return PreferenceManager.getDefaultSharedPreferences(context);
+  }
+
+  @Provides
+  @Singleton
+  public FirebaseAnalytics getFireBaFirebaseAnalytics(Context context) {
+    return FirebaseAnalytics.getInstance(context);
+  }
+
+  @Provides
+  @Singleton
+  public Analytics getAnalytics(FirebaseAnalyticsSender analytics) {
+    return analytics;
   }
 }
