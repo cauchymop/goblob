@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.proto.PlayGameData;
@@ -75,6 +76,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   private final SharedPreferences prefs;
   private final GameDatas gameDatas;
   private final GoogleApiClient googleApiClient;
+  private Analytics analytics;
   private final Lazy<String> playerOneDefaultName;
   private final String playerTwoDefaultName;
 
@@ -98,7 +100,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
 
   @Inject
   public GameRepository(SharedPreferences prefs, GameDatas gameDatas,
-      GoogleApiClient googleApiClient, AvatarManager avatarManager,
+      GoogleApiClient googleApiClient, AvatarManager avatarManager, Analytics analytics,
       @Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
       @Named("PlayerTwoDefaultName") String playerTwoDefaultName,
       @Named("LocalUniqueId") String localUniqueId) {
@@ -106,6 +108,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     this.gameDatas = gameDatas;
     this.googleApiClient = googleApiClient;
     this.avatarManager = avatarManager;
+    this.analytics = analytics;
     this.playerOneDefaultName = playerOneDefaultName;
     this.playerTwoDefaultName = playerTwoDefaultName;
     this.localUniqueId = localUniqueId;
@@ -304,6 +307,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId, null);
     GameData gameData = gameDatas.createNewGameData(turnBasedMatch.getMatchId(),
         PlayGameData.GameType.REMOTE, blackPlayer, whitePlayer);
+    analytics.gameCreated(gameData);
 
     commitGameChanges(gameData);
     return gameData;
@@ -523,6 +527,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName);
     removeFromCache(LOCAL_MATCH_ID);
     GameData localGame = gameDatas.createNewGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
+    analytics.gameCreated(localGame);
     commitGameChanges(localGame);
     return localGame;
   }
