@@ -33,7 +33,6 @@ import butterknife.Unbinder;
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
 import static com.cauchymop.goblob.proto.PlayGameData.Move;
-import static com.cauchymop.goblob.proto.PlayGameData.Score;
 
 /**
  * Game Page Fragment.
@@ -239,11 +238,11 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private void initMessageArea() {
     final String message;
     if (goGameController.isGameFinished()) {
-      Score score = goGameController.getScore();
-      if (score.getResigned()) {
-        message = getString(R.string.end_of_game_resigned_message, score.getWinner());
+      String winnerName = goGameController.getPlayerForColor(goGameController.getScore().getWinner()).getName();
+      if (goGameController.getScore().getResigned()) {
+        message = getString(R.string.end_of_game_resigned_message, winnerName);
       } else {
-        message = getString(R.string.end_of_game_message, goGameController.getPlayerForColor(score.getWinner()).getName(), score.getWonBy());
+        message = getString(R.string.end_of_game_message, winnerName, goGameController.getScore().getWonBy());
       }
     } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
       message = getString(R.string.marking_message);
