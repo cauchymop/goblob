@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
@@ -45,10 +46,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   private GoGameController goGameController;
   private GoBoardView goBoardView;
 
-  @Inject
-  GameRepository gameRepository;
+  @Inject GameRepository gameRepository;
   @Inject GameDatas gameDatas;
   @Inject AvatarManager avatarManager;
+  @Inject Analytics analytics;
 
   @BindView(R.id.boardViewContainer) FrameLayout boardViewContainer;
   @BindView(R.id.action_button) Button actionButton;
@@ -122,16 +123,19 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     if (id == R.id.menu_undo) {
       if (goGameController.undo()) {
         endTurn();
+        analytics.undo();
       }
       return true;
     } else if (id == R.id.menu_redo) {
       if (goGameController.redo()) {
+        analytics.redo();
         endTurn();
       }
       return true;
     } else if (id == R.id.menu_resign) {
       goGameController.resign();
       endTurn();
+      analytics.resign();
       return true;
     }
     return super.onOptionsItemSelected(item);

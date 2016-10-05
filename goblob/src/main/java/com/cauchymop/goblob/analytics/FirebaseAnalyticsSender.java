@@ -32,4 +32,19 @@ public class FirebaseAnalyticsSender implements Analytics {
       firebaseAnalytics.logEvent("configuration changed", bundle);
     }
   }
+
+  @Override
+  public void undo() {
+    firebaseAnalytics.logEvent("undo", Bundle.EMPTY);
+  }
+
+  @Override
+  public void redo() {
+    firebaseAnalytics.logEvent("redo", Bundle.EMPTY);
+  }
+
+  @Override
+  public void resign() {
+    firebaseAnalytics.logEvent("resign", Bundle.EMPTY);
+  }
 }
