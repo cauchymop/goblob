@@ -77,7 +77,7 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
       PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
       Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
-      this.goGameController = new GoGameController(gameDatas, gameData);
+      this.goGameController = new GoGameController(gameDatas, gameData, analytics);
     }
 
   }
@@ -203,7 +203,6 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     boolean played = goGameController.playMoveOrToggleDeadStone(move);
     if(played) {
       endTurn();
-      analytics.movePlayed(goGameController.getGameConfiguration(), move, goGameController.getPhase());
     } else {
       buzz();
       analytics.invalidMovePlayed(goGameController.getGameConfiguration());

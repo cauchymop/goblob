@@ -27,11 +27,13 @@ public class GoGameController implements Serializable {
   private final GoGame goGame;
   private GameData.Builder gameData;
   private GameData initialGameData;
+  private Analytics analytics;
 
-  public GoGameController(GameDatas gameDatas, GameData gameData) {
+  public GoGameController(GameDatas gameDatas, GameData gameData, Analytics analytics) {
     this.gameDatas = gameDatas;
     this.initialGameData = gameData;
     this.gameData = Preconditions.checkNotNull(gameData).toBuilder();
+    this.analytics = analytics;
     GameConfiguration gameConfiguration = getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
     for (Move move : this.gameData.getMoveList()) {
@@ -66,6 +68,7 @@ public class GoGameController implements Serializable {
       gameData.addMove(move);
       gameData.setTurn(getOpponentColor());
       checkForMatchEnd();
+      analytics.movePlayed(getGameConfiguration(), move);
       return true;
     }
     return false;
@@ -126,6 +129,7 @@ public class GoGameController implements Serializable {
     }
     matchEndStatus.setLastModifier(gameData.getTurn());
     matchEndStatus.setScore(calculateScore());
+    analytics.deadStoneToggled(getGameConfiguration());
     return true;
   }
 
@@ -136,6 +140,7 @@ public class GoGameController implements Serializable {
   public void markingTurnDone() {
     if (isLocalGame() || !getMatchEndStatus().getLastModifier().equals(getCurrentColor())) {
       gameData.setPhase(Phase.FINISHED);
+      analytics.gameFinished(getGameConfiguration(), getScore());
     }
     gameData.setTurn(getOpponentColor());
   }
@@ -153,6 +158,7 @@ public class GoGameController implements Serializable {
     Score.Builder score = gameData.getMatchEndStatusBuilder().getScoreBuilder();
     score.setWinner(getOpponentColor());
     score.setResigned(true);
+    analytics.gameFinished(getGameConfiguration(), getScore());
   }
 
   public boolean isLocalPlayer(GoPlayer player) {

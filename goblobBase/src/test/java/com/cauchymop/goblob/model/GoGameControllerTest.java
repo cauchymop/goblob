@@ -6,6 +6,9 @@ import com.google.common.collect.ImmutableList;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static org.fest.assertions.Assertions.assertThat;
@@ -13,7 +16,11 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Tests for {@link GoGameController}.
  */
+@RunWith(MockitoJUnitRunner.class)
 public class GoGameControllerTest {
+
+  @Mock
+  private Analytics analytics;
 
   private static final GameDatas GAME_DATAS = new GameDatas(null);
   private GameData gameData;
@@ -24,13 +31,13 @@ public class GoGameControllerTest {
     PlayGameData.GoPlayer black = GAME_DATAS.createGamePlayer("pipo", "player1");
     PlayGameData.GoPlayer white = GAME_DATAS.createGamePlayer("bimbo", "player2");
     gameData = GAME_DATAS.createNewGameData("pizza", PlayGameData.GameType.LOCAL, black, white).toBuilder().setPhase(Phase.IN_GAME).build();
-    controller = new GoGameController(GAME_DATAS, gameData);
+    controller = new GoGameController(GAME_DATAS, gameData, analytics);
   }
 
   @Test
   public void testNew_initGoGame() {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).build();
-    controller = new GoGameController(GAME_DATAS, gameData);
+    controller = new GoGameController(GAME_DATAS, gameData, analytics);
 
     GoGame goGame = controller.getGame();
     assertThat(goGame.getMoveHistory())
@@ -42,7 +49,7 @@ public class GoGameControllerTest {
   @Test
   public void buildGameData_incrementsSequence() {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).setSequenceNumber(3).build();
-    controller = new GoGameController(GAME_DATAS, gameData);
+    controller = new GoGameController(GAME_DATAS, gameData, analytics);
 
     GameData controllerGameData = controller.buildGameData();
 

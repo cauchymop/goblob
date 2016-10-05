@@ -8,7 +8,7 @@ import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
-import com.cauchymop.goblob.proto.PlayGameData.Move;
+import com.cauchymop.goblob.proto.PlayGameData.Score;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Inject;
@@ -53,27 +53,31 @@ public class FirebaseAnalyticsSender implements Analytics {
   }
 
   @Override
+  public void movePlayed(GameConfiguration gameConfiguration, PlayGameData.Move move) {
+    if (move.getType() == PlayGameData.Move.MoveType.PASS) {
+      firebaseAnalytics.logEvent("passed", getGameConfigurationBundle(gameConfiguration));
+    } else {
+      firebaseAnalytics.logEvent("movePlayed", getGameConfigurationBundle(gameConfiguration));
+    }
+  }
+
+  @Override
+  public void deadStoneToggled(GameConfiguration gameConfiguration) {
+    firebaseAnalytics.logEvent("deadStoneToggled", getGameConfigurationBundle(gameConfiguration));
+  }
+
+  @Override
   public void invalidMovePlayed(GameConfiguration gameConfiguration) {
     firebaseAnalytics.logEvent("invalidMovePlayed", getGameConfigurationBundle(gameConfiguration));
   }
 
   @Override
-  public void movePlayed(GameConfiguration gameConfiguration, Move move, Phase phase) {
+  public void gameFinished(GameConfiguration gameConfiguration, Score score) {
     Bundle gameConfigurationBundle = getGameConfigurationBundle(gameConfiguration);
-    if (move.getType() == Move.MoveType.PASS) {
-      firebaseAnalytics.logEvent("passed", gameConfigurationBundle);
-    } else {
-      switch (phase) {
-        case IN_GAME:
-          firebaseAnalytics.logEvent("movePlayed", gameConfigurationBundle);
-          break;
-        case DEAD_STONE_MARKING:
-          firebaseAnalytics.logEvent("deadStoneMarked", gameConfigurationBundle);
-          break;
-        default:
-          break;
-      }
-    }
+    gameConfigurationBundle.putBoolean("resigned", score.getResigned());
+    gameConfigurationBundle.putFloat("wonBy", score.getWonBy());
+    gameConfigurationBundle.putString("winner", score.getWinner().toString());
+    firebaseAnalytics.logEvent("gameFinished", gameConfigurationBundle);
   }
 
   @NonNull

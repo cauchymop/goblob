@@ -122,7 +122,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     komiText.setText(String.valueOf(configuration.getKomi()));
     setHandicap(configuration.getHandicap());
     setBoardSize(configuration.getBoardSize());
-    goGameController = new GoGameController(gameDatas, gameData);
+    goGameController = new GoGameController(gameDatas, gameData, analytics);
   }
 
   private void setEnabled(ViewGroup vg, boolean enable) {
