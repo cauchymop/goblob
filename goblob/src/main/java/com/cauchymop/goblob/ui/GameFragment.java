@@ -203,8 +203,10 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
     boolean played = goGameController.playMoveOrToggleDeadStone(move);
     if(played) {
       endTurn();
+      analytics.movePlayed(goGameController.getGameConfiguration(), move, goGameController.getPhase());
     } else {
       buzz();
+      analytics.invalidMovePlayed(goGameController.getGameConfiguration());
     }
   }
 
