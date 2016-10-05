@@ -1,7 +1,9 @@
 package com.cauchymop.goblob.model;
 
-import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.proto.PlayGameData.GameData;
 
 public interface Analytics {
-  void gameCreated(PlayGameData.GameData localGame);
+  void gameCreated(GameData localGame);
+
+  void configurationChanged(GameData gameData);
 }

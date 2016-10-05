@@ -22,4 +22,14 @@ public class FirebaseAnalyticsSender implements Analytics {
     bundle.putString("type", game.getGameConfiguration().getGameType().name());
     firebaseAnalytics.logEvent("game created", bundle);
   }
+
+  @Override
+  public void configurationChanged(PlayGameData.GameData game) {
+    Bundle bundle = new Bundle();
+    PlayGameData.GameType gameType = game.getGameConfiguration().getGameType();
+    if (gameType == PlayGameData.GameType.REMOTE) {
+      bundle.putBoolean("agreed", (game.getPhase() == PlayGameData.GameData.Phase.IN_GAME));
+      firebaseAnalytics.logEvent("configuration changed", bundle);
+    }
+  }
 }

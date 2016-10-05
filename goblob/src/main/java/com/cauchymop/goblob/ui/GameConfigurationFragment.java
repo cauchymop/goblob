@@ -14,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -60,6 +61,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
 
   @Inject
   GameDatas gameDatas;
+
+  @Inject
+  Analytics analytics;
 
   GoPlayer blackPlayer;
   GoPlayer whitePlayer;
@@ -143,7 +147,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
     GoPlayer whitePlayer = getWhitePlayer();
     goGameController.updateGameConfiguration(getBoardSize(), getHandicap(),
         getKomi(), blackPlayer, whitePlayer);
-    getGoBlobActivity().endTurn(goGameController.buildGameData());
+    GameData gameData = goGameController.buildGameData();
+    getGoBlobActivity().endTurn(gameData);
+    analytics.configurationChanged(gameData);
   }
 
   private int getBoardSize() {
