@@ -18,6 +18,7 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
+    compile 'com.google.firebase:firebase-crash:9.6.1'
     compile "com.android.support:appcompat-v7:${appcompat_library_version}"
     compile "com.google.android.gms:play-services-games:${gms_library_version}"
     compile "com.google.firebase:firebase-core:${gms_library_version}"
@@ -42,8 +43,8 @@ android {
     buildToolsVersion android_version
 
     defaultConfig {
-        versionCode 14
-        versionName "1.0.6"
+        versionCode 15
+        versionName "1.0.7"
         minSdkVersion android_min_sdk_version
         targetSdkVersion android_compile_version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

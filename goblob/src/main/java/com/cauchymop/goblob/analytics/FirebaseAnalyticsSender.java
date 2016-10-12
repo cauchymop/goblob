@@ -24,7 +24,7 @@ public class FirebaseAnalyticsSender implements Analytics {
   @Override
   public void gameCreated(GameData game) {
     Bundle bundle = getGameConfigurationBundle(game.getGameConfiguration());
-    firebaseAnalytics.logEvent("game created", bundle);
+    firebaseAnalytics.logEvent("gameCreated", bundle);
   }
 
   @Override
@@ -33,7 +33,7 @@ public class FirebaseAnalyticsSender implements Analytics {
     if (gameType == PlayGameData.GameType.REMOTE) {
       Bundle bundle = getGameConfigurationBundle(game.getGameConfiguration());
       bundle.putBoolean("agreed", (game.getPhase() == Phase.IN_GAME));
-      firebaseAnalytics.logEvent("configuration changed", bundle);
+      firebaseAnalytics.logEvent("configurationChanged", bundle);
     }
   }
 
