@@ -54,7 +54,11 @@ public class GameDatas {
 
   public PlayGameData.Color getOpponentColor(GameConfiguration gameConfiguration) {
     PlayGameData.Color localColor = getLocalColor(gameConfiguration);
-    return (localColor == PlayGameData.Color.BLACK) ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK;
+    return getOppositeColor(localColor);
+  }
+
+  public PlayGameData.Color getOppositeColor(PlayGameData.Color color) {
+    return (color == PlayGameData.Color.BLACK) ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK;
   }
 
   public PlayGameData.Color getLocalColor(GameConfiguration gameConfiguration) {

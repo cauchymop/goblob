@@ -361,19 +361,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     selectMenuItem(gameData.getMatchId());
-    switch (gameData.getPhase()) {
-      case INITIAL:
-      case CONFIGURATION:
-        displayFragment(GameConfigurationFragment.newInstance(gameData));
-        return;
-      case IN_GAME:
-      case DEAD_STONE_MARKING:
-      case FINISHED:
-        displayFragment(GameFragment.newInstance(gameData));
-        return;
-      default:
-        throw new RuntimeException("Invalid phase for game: " + gameData);
-    }
+    displayFragment(GameFragment.newInstance(gameData));
   }
 
   private void updateMatchSpinner() {

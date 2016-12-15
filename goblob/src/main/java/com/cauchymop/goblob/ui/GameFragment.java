@@ -1,62 +1,26 @@
 package com.cauchymop.goblob.ui;
 
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.Analytics;
-import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.MonteCarlo;
+import com.cauchymop.goblob.model.ConfigurationViewModel;
+import com.cauchymop.goblob.model.InGameViewModel;
+import com.cauchymop.goblob.presenter.MovePlayedListener;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.view.GameView;
 
-import javax.inject.Inject;
+public class GameFragment extends GoBlobBaseFragment implements GameView {
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
-
-import static com.cauchymop.goblob.proto.PlayGameData.Color;
-import static com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
-import static com.cauchymop.goblob.proto.PlayGameData.Move;
-
-/**
- * Game Page Fragment.
- */
-public class GameFragment extends GoBlobBaseFragment implements GoBoardView.Listener {
-
-  private static final String TAG = GameFragment.class.getName();
   private static final String EXTRA_GO_GAME = "GO_GAME";
 
-  private GoGameController goGameController;
-  private GoBoardView goBoardView;
-
-  @Inject GameRepository gameRepository;
-  @Inject GameDatas gameDatas;
-  @Inject AvatarManager avatarManager;
-  @Inject Analytics analytics;
-
-  @BindView(R.id.boardViewContainer) FrameLayout boardViewContainer;
-  @BindView(R.id.action_button) Button actionButton;
-  @BindView(R.id.title) TextView titleView;
-  @BindView(R.id.titleImage) ImageView titleImage;
-  @BindView(R.id.avatarImage) ImageView avatarImage;
-  @BindView(R.id.message_textview) TextView messageView;
-  private Unbinder unbinder;
+  private InGameFragment inGameView;
+  private GameConfigurationFragment gameConfigurationView;
 
   public static GameFragment newInstance(PlayGameData.GameData gameData) {
     GameFragment fragment = new GameFragment();
@@ -67,235 +31,45 @@ public class GameFragment extends GoBlobBaseFragment implements GoBoardView.List
   }
 
   @Override
-  public void onCreate(Bundle savedInstanceState) {
+  public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    getComponent().inject(this);
-
-    setHasOptionsMenu(true);
-    Log.d(TAG, "onCreate");
-    if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
-      PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
-      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
-      this.goGameController = new GoGameController(gameDatas, gameData, analytics);
-    }
-
+    PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
+    inGameView = InGameFragment.newInstance(gameData);
+    gameConfigurationView = GameConfigurationFragment.newInstance(gameData);
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    View view = inflater.inflate(R.layout.fragment_game, container, false);
-    unbinder = ButterKnife.bind(this, view);
-    return view;
+
+    // TODO:
+    // When InGameView and ConfigurationView will simply be custom Views and not fragments,
+    // we will simply instantiate and return the appropriate one form the given state/viewModel (gameData for now)
+    return inflater.inflate(R.layout.fragment_game, container, false);
   }
 
-  @Override
-  public void onViewCreated(View view, Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    initViews();
-  }
 
-  @Override
-  public void onDestroyView() {
-    super.onDestroyView();
-    Log.d(TAG, "onDestroyView");
-    cleanBoardView();
-    unbinder.unbind();
-  }
-
-  @Override
-  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-    super.onCreateOptionsMenu(menu, inflater);
-    if (goGameController.canUndo()) {
-      menu.add(Menu.NONE, R.id.menu_undo, Menu.NONE, R.string.undo);
-    }
-    if (goGameController.canRedo()) {
-      menu.add(Menu.NONE, R.id.menu_redo, Menu.NONE, R.string.redo);
-    }
-    if (goGameController.isLocalTurn()) {
-      menu.add(Menu.NONE, R.id.menu_resign, Menu.NONE, R.string.resign);
-    }
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    int id = item.getItemId();
-    if (id == R.id.menu_undo) {
-      if (goGameController.undo()) {
-        endTurn();
-        analytics.undo();
-      }
-      return true;
-    } else if (id == R.id.menu_redo) {
-      if (goGameController.redo()) {
-        analytics.redo();
-        endTurn();
-      }
-      return true;
-    } else if (id == R.id.menu_resign) {
-      goGameController.resign();
-      endTurn();
-      analytics.resign();
-      return true;
-    }
-    return super.onOptionsItemSelected(item);
-  }
-
-  private void initViews() {
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
-    goBoardView.addListener(this);
-    showActionButton();
-    boardViewContainer.addView(goBoardView);
-    initFromGameState();
-    enableInteractions(goGameController.isLocalTurn());
-  }
-
-  private void enableInteractions(boolean enabled) {
-    actionButton.setEnabled(enabled);
-    goBoardView.setClickable(enabled);
-  }
-
-  private void showActionButton() {
-    switch(goGameController.getPhase()) {
-      case IN_GAME:
-        showActionButton(R.string.button_pass_label, new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            play(gameDatas.createPassMove());
-          }
-        });
-        break;
-      case DEAD_STONE_MARKING:
-        showActionButton(R.string.button_done_label, new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            goGameController.markingTurnDone();
-            endTurn();
-          }
-        });
-        break;
-      default:
-        hideActionButton();
-    }
-  }
-
-  private void showActionButton(int buttonLabel, View.OnClickListener clickListener) {
-    actionButton.setVisibility(View.VISIBLE);
-    actionButton.setText(buttonLabel);
-    actionButton.setOnClickListener(clickListener);
-  }
-
-  private void hideActionButton() {
-    actionButton.setVisibility(View.GONE);
-  }
-
-  private void endTurn() {
-    getGoBlobActivity().endTurn(goGameController.buildGameData());
-  }
 
 
   @Override
-  public void played(int x, int y) {
-    play(gameDatas.createMove(x, y));
+  public void initInGameView(InGameViewModel inGameViewModel) {
+    displaySubView(inGameView);
+    inGameView.setInGameModel(inGameViewModel);
   }
 
-  private void play(Move move) {
-    boolean played = goGameController.playMoveOrToggleDeadStone(move);
-    if(played) {
-      endTurn();
-    } else {
-      buzz();
-      analytics.invalidMovePlayed(goGameController.getGameConfiguration());
-    }
+  public void displaySubView(Fragment fragment) {
+    FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+    ft.replace(R.id.current_fragment, fragment).commitAllowingStateLoss();
   }
 
-  private void cleanBoardView() {
-    if (goBoardView != null) {
-      goBoardView.removeListener(this);
-    }
+  @Override
+  public void setMovePlayedListener(MovePlayedListener movePlayedListener) {
+    inGameView.setMovePlayedListener(movePlayedListener);
   }
 
-  private void initFromGameState() {
-    getActivity().runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        initTitleArea();
-        initMessageArea();
-        updateAchievements();
-      }
-    });
-  }
-
-  private void initTitleArea() {
-    final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
-    titleView.setText(currentPlayer.getName());
-    titleImage.setImageResource(goGameController.getCurrentColor() == Color.WHITE ? R.drawable.white_stone : R.drawable.black_stone);
-    avatarManager.loadImage(avatarImage, currentPlayer.getName());
-  }
-
-  /**
-   * Display a message if needed (other player has passed...), clean the message area otherwise.
-   */
-  private void initMessageArea() {
-    final String message;
-    if (goGameController.isGameFinished()) {
-      String winnerName = goGameController.getPlayerForColor(goGameController.getScore().getWinner()).getName();
-      if (goGameController.getScore().getResigned()) {
-        message = getString(R.string.end_of_game_resigned_message, winnerName);
-      } else {
-        message = getString(R.string.end_of_game_message, winnerName, goGameController.getScore().getWonBy());
-      }
-    } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
-      message = getString(R.string.marking_message);
-    } else if (goGameController.getGame().isLastMovePass()) {
-      message = getString(R.string.opponent_passed_message, goGameController.getOpponent().getName());
-    } else {
-      message = null;
-    }
-
-    messageView.setText(message);
-  }
-
-  private void updateAchievements() {
-    if (!isSignedIn() || !goGameController.isGameFinished()) {
-      return;
-    }
-    switch (goGameController.getGame().getBoardSize()) {
-      case 9:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_9x9));
-        break;
-      case 13:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_13x13));
-        break;
-      case 19:
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_19x19));
-        break;
-    }
-    if (goGameController.isLocalGame()) {
-      getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
-    } else {
-      getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-      if (goGameController.isLocalPlayer(goGameController.getWinner())) {
-        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
-      }
-    }
-  }
-
-  private void buzz() {
-    try {
-      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-      Ringtone r = RingtoneManager.getRingtone(getActivity().getApplicationContext(), notification);
-      r.play();
-    } catch (Exception e) {
-      System.err.println("Exception while buzzing");
-      e.printStackTrace();
-    }
-  }
-
-  private void playMonteCarloMove() {
-    int bestMove = MonteCarlo.getBestMove(goGameController.getGame(), 1000);
-    int boardSize = goGameController.getGameConfiguration().getBoardSize();
-    int x = bestMove % boardSize;
-    int y = bestMove / boardSize;
-    goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
+  @Override
+  public void initConfigurationView(ConfigurationViewModel configurationViewModel) {
+    displaySubView(gameConfigurationView);
+    //TODO:
+    //gameConfigurationView.setXXXModel
   }
 }

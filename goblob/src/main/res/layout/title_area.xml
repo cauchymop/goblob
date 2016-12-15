@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:padding="10dip"
     android:layout_gravity="center_horizontal|top"
-    tools:showIn="@layout/fragment_game">
+    tools:showIn="@layout/fragment_game_ingame">
 
   <ImageView
       android:layout_width="44dip"

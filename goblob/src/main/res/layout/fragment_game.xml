@@ -1,19 +1,12 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center_horizontal"
-              android:orientation="vertical"
-              tools:context=".MainActivity">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
 
-  <include layout="@layout/title_area"/>
+  <FrameLayout
+      android:id="@+id/current_game_view"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"/>
 
-  <include layout="@layout/boardview_container"
-           android:layout_width="wrap_content"
-           android:layout_height="0dip"
-           android:layout_weight="1"
-           tools:layout_width="300dp"/>
-
-  <include layout="@layout/message_area"/>
-
-</LinearLayout>
+</FrameLayout>

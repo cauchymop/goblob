@@ -7,17 +7,20 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.model.BoardViewModel;
+import com.cauchymop.goblob.presenter.MovePlayedListener;
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.cauchymop.goblob.view.GoBoardView;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import java.util.List;
-import java.util.Set;
 
-public class GoBoardView extends ZoomableView {
+public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
 
   private static final Paint lastMovePaint = createLinePaint(0xFFFF0000, 5);
   private static final Paint linePaint = createLinePaint(0xFF000000, 2);
@@ -27,21 +30,19 @@ public class GoBoardView extends ZoomableView {
   private static final double STONE_RATIO = 0.95;
   public static final float HOSHI_SIZE = .1F;
 
-  private GoGameController gameController;
+  private BoardViewModel boardViewModel;
+  private MovePlayedListener movePlayedListener;
+
   private int marginX;
   private int marginY;
   private int cellSizeInPixels;
   private Bitmap whiteStoneBitmap;
   private Bitmap blackStoneBitmap;
-  private int boardSize;
 
-  private Set<Listener> listeners = Sets.newHashSet();
   private Rect rect = new Rect();  // For draw() usage.
 
-  public GoBoardView(Context context, GoGameController gameController) {
+  public GoBoardViewAndroid(Context context) {
     super(context);
-    this.gameController = gameController;
-    this.boardSize = gameController.getGame().getBoardSize();
     setClickable(true);
     blackStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.black_stone);
     whiteStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.white_stone);
@@ -75,7 +76,7 @@ public class GoBoardView extends ZoomableView {
     int boardSizeInPixels = Math.min(getWidth(), getHeight());
     marginX = (getWidth() - boardSizeInPixels) / 2;
     marginY = (getHeight() - boardSizeInPixels) / 2;
-    cellSizeInPixels = boardSizeInPixels / boardSize;
+    cellSizeInPixels = boardSizeInPixels / boardViewModel.getBoardSize();
     linePaint.setStrokeWidth(cellSizeInPixels / 25);
   }
 
@@ -91,22 +92,18 @@ public class GoBoardView extends ZoomableView {
   }
 
   private void firePlayed(int x, int y) {
-    for (Listener listener : listeners) {
-      listener.played(x, y);
+    if (movePlayedListener != null) {
+      movePlayedListener.played(x, y);
     }
-  }
-
-  public void addListener(Listener listener) {
-    listeners.add(listener);
-  }
-
-  public void removeListener(Listener listener) {
-    listeners.remove(listener);
   }
 
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
+    if (boardViewModel == null) {
+      return;
+    }
+
     int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
     int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
     int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
@@ -115,7 +112,6 @@ public class GoBoardView extends ZoomableView {
     drawBoardLines(canvas, startLineX, startLineY);
     drawHoshis(canvas, startLineX, startLineY);
     drawBoardContent(canvas, startLineX, startLineY);
-    drawEndGameStatus(canvas, startLineX, startLineY);
   }
 
   @Override
@@ -126,53 +122,25 @@ public class GoBoardView extends ZoomableView {
 
   private void drawBoardContent(Canvas canvas, int startLineX, int startLineY) {
     int radius = cellSizeInPixels / 2;
-    int lastMove = gameController.getGame().getLastMove();
+    int boardSize = boardViewModel.getBoardSize();
     for (int x = 0; x < boardSize; x++) {
       for (int y = 0; y < boardSize; y++) {
         int centerX = startLineX + cellSizeInPixels * x;
         int centerY = startLineY + cellSizeInPixels * y;
-        drawStone(canvas, radius, gameController.getGame().getColor(x, y), centerX, centerY);
-        int pos = gameController.getGame().getPos(x, y);
-        // Last move
-        if (lastMove == pos) {
+        drawStone(canvas, radius, boardViewModel.getColor(x, y), centerX, centerY);
+        drawTerritory(canvas, startLineX, startLineY, boardViewModel.getTerritory(x, y), centerX, centerY);
+        if (boardViewModel.isLastMove(x, y)) {
           canvas.drawCircle(centerX, centerY, (float) radius, lastMovePaint);
         }
       }
     }
   }
 
-  private void drawEndGameStatus(Canvas canvas, int startLineX, int startLineY) {
-    if (gameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
-      drawTerritories(canvas, startLineX, startLineY);
-    }
-  }
-
-  private void drawTerritories(Canvas canvas, int startLineX, int startLineY) {
-    drawDeadStones(canvas, startLineX, startLineY);
-    drawTerritories(canvas, startLineX, startLineY, gameController.getScore().getBlackTerritoryList(), blackFillPaint);
-    drawTerritories(canvas, startLineX, startLineY, gameController.getScore().getWhiteTerritoryList(), whiteFillPaint);
-  }
-
-  private void drawDeadStones(Canvas canvas, int startLineX, int startLineY) {
-    for (PlayGameData.Position position : gameController.getDeadStones()) {
-      int x = position.getX();
-      int y = position.getY();
-      int centerX = startLineX + cellSizeInPixels * x;
-      int centerY = startLineY + cellSizeInPixels * y;
+  private void drawTerritory(Canvas canvas, int startLineX, int startLineY, PlayGameData.Color contentColor,
+      int centerX, int centerY) {
+    if (contentColor != null) {
       int markSize = cellSizeInPixels / 6;
-      canvas.drawRect(centerX - markSize, centerY - markSize, centerX + markSize, centerY + markSize,
-          gameController.getGame().getColor(x, y) == PlayGameData.Color.BLACK ? whiteFillPaint : blackFillPaint);
-    }
-  }
-
-  private void drawTerritories(Canvas canvas, int startLineX, int startLineY,
-      List<PlayGameData.Position> territoryList, Paint paint) {
-    for (PlayGameData.Position position : territoryList) {
-      int x = position.getX();
-      int y = position.getY();
-      int centerX = startLineX + cellSizeInPixels * x;
-      int centerY = startLineY + cellSizeInPixels * y;
-      int markSize = cellSizeInPixels / 6;
+      Paint paint = (contentColor == PlayGameData.Color.BLACK) ? blackFillPaint : whiteFillPaint;
       canvas.drawRect(centerX - markSize, centerY - markSize,
           centerX + markSize, centerY + markSize, paint);
     }
@@ -189,6 +157,7 @@ public class GoBoardView extends ZoomableView {
   }
 
   private void drawBoardLines(Canvas canvas, int startLineX, int startLineY) {
+    int boardSize = boardViewModel.getBoardSize();
     int lineLength = cellSizeInPixels * (boardSize - 1);
     for (int x = 0; x < boardSize; x++) {
       canvas.drawLine(startLineX, startLineY + cellSizeInPixels * x,
@@ -208,6 +177,7 @@ public class GoBoardView extends ZoomableView {
 
   private List<Point> getHoshiCoords() {
     List<Point> res = Lists.newArrayList();
+    int boardSize = boardViewModel.getBoardSize();
     if (boardSize >= 9 && boardSize <= 12) {
       int far = boardSize - 3;
       res.add(new Point(2, 2));
@@ -234,7 +204,26 @@ public class GoBoardView extends ZoomableView {
     return res;
   }
 
-  public interface Listener {
-    void played(int x, int y);
+  @Override
+  public void setMovePlayedListener(MovePlayedListener movePlayedListener) {
+    this.movePlayedListener = movePlayedListener;
+  }
+
+  @Override
+  public void setBoard(BoardViewModel boardViewModel) {
+    this.boardViewModel = boardViewModel;
+    setClickable(boardViewModel.isInteractive());
+  }
+
+  @Override
+  public void buzz() {
+    try {
+      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+      Ringtone r = RingtoneManager.getRingtone(getContext().getApplicationContext(), notification);
+      r.play();
+    } catch (Exception e) {
+      System.err.println("Exception while buzzing");
+      e.printStackTrace();
+    }
   }
 }
