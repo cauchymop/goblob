@@ -11,6 +11,8 @@ import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
 
+import java.util.concurrent.Callable;
+
 public class GamePresenter implements MovePlayedListener {
 
   private Analytics analytics;
@@ -19,14 +21,19 @@ public class GamePresenter implements MovePlayedListener {
   private GameDatas gameDatas;
 
   public GamePresenter(GameDatas gameDatas, Analytics analytics,
-      GoGameController goGameController, GameView view) {
+      GoGameController goGameController, final GameView view) {
     this.gameDatas = gameDatas;
     this.analytics = analytics;
     this.goGameController = goGameController;
     this.view = view;
     if (isConfigured()) {
-      view.initInGameView(getInGameViewModel());
-      view.setMovePlayedListener(this);
+      view.initInGameView(getInGameViewModel(), new Callable<Void>(){
+        @Override
+        public Void call() throws Exception {
+          view.setMovePlayedListener(GamePresenter.this);
+          return null;
+        }
+      });
     } else {
       view.initConfigurationView(getConfigurationViewModel());
       // TODO

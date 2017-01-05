@@ -1,6 +1,7 @@
 package com.cauchymop.goblob.injection;
 
 import com.cauchymop.goblob.ui.GameConfigurationFragment;
+import com.cauchymop.goblob.ui.GameFragment;
 import com.cauchymop.goblob.ui.InGameFragment;
 import com.cauchymop.goblob.ui.MainActivity;
 
@@ -18,5 +19,6 @@ import dagger.Component;
 public interface GoApplicationComponent {
   void inject(MainActivity mainActivity);
   void inject(GameConfigurationFragment gameConfigurationFragment);
-  void inject(InGameFragment gameFragment);
+  void inject(InGameFragment inGameFragment);
+  void inject(GameFragment gameFragment);
 }

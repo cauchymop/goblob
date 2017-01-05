@@ -1,4 +1,5 @@
 In progress:
+- TODO NEXT: replace Handler in InGameFragment (use list of continuations in sub fragment onViewCreated()...). Also implement the GameFragment play method...
 - BoardView/BoardViewModel done.
 - Continue to dummify all subviews of GameFragment and ConfigurationFragment
 - Introduce new GameFragment that will contain the InGameView and ConfigurationView (fragments) and display the proper one form set GameViewModel (gameData for now)

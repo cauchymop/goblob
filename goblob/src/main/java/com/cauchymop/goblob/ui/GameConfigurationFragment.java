@@ -15,12 +15,14 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.Analytics;
+import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
 import com.cauchymop.goblob.proto.PlayGameData.GoPlayer;
+import com.cauchymop.goblob.view.GameConfigurationView;
 
 import javax.inject.Inject;
 
@@ -32,7 +34,7 @@ import butterknife.Unbinder;
 /**
  * Home Page Fragment.
  */
-public class GameConfigurationFragment extends GoBlobBaseFragment {
+public class GameConfigurationFragment extends GoBlobBaseFragment implements GameConfigurationView {
 
   private static final String EXTRA_GAME_DATA = "game_configuration";
 
@@ -208,5 +210,10 @@ public class GameConfigurationFragment extends GoBlobBaseFragment {
   private GoPlayer getBlackPlayer() {
     final String blackPayerName = blackPlayerNameField.getText().toString();
     return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getLocalUniqueId());
+  }
+
+  @Override
+  public void setConfigurationModel(ConfigurationViewModel configurationViewModel) {
+    // TODO
   }
 }

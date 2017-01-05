@@ -268,9 +268,12 @@ public class InGameFragment extends GoBlobBaseFragment implements InGameView {
     initFromGameState();
     enableInteractions(goGameController.isLocalTurn());
      */
-    goBoardView = new GoBoardViewAndroid(getActivity().getApplicationContext());
-    goBoardView.setBoard(inGameViewModel.getBoardViewModel());
-    boardViewContainer.addView(goBoardView);
+
+    if (inGameViewModel != null) {
+      goBoardView = new GoBoardViewAndroid(getContext());
+      goBoardView.setBoard(inGameViewModel.getBoardViewModel());
+      boardViewContainer.addView(goBoardView);
+    }
   }
 
   @Override
