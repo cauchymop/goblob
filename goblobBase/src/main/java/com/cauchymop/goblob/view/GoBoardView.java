@@ -6,5 +6,4 @@ import com.cauchymop.goblob.presenter.MovePlayedListener;
 public interface GoBoardView {
   void setMovePlayedListener(MovePlayedListener movePlayedListener);
   void setBoard(BoardViewModel boardViewModel);
-  void buzz();
 }

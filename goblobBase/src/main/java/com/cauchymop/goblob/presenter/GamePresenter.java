@@ -4,6 +4,7 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.BoardViewModel;
 import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
+import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoBoard;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
@@ -11,40 +12,39 @@ import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
 
-import java.util.concurrent.Callable;
-
-public class GamePresenter implements MovePlayedListener {
+public class GamePresenter implements MovePlayedListener, GameRepository.GameRepositoryListener {
 
   private Analytics analytics;
-  private final GoGameController goGameController;
+  private GoGameController goGameController;
+  private GameRepository gameRepository;
   private GameView view;
   private GameDatas gameDatas;
 
   public GamePresenter(GameDatas gameDatas, Analytics analytics,
-      GoGameController goGameController, final GameView view) {
+      GameRepository gameRepository, final GameView view) {
     this.gameDatas = gameDatas;
     this.analytics = analytics;
-    this.goGameController = goGameController;
+    this.gameRepository = gameRepository;
     this.view = view;
-    if (isConfigured()) {
-      view.initInGameView(getInGameViewModel(), new Callable<Void>(){
-        @Override
-        public Void call() throws Exception {
-          view.setMovePlayedListener(GamePresenter.this);
-          return null;
-        }
-      });
-    } else {
-      view.initConfigurationView(getConfigurationViewModel());
-      // TODO
-//      view.setConfigurationViewListener(this);
-    }
+    gameRepository.addGameRepositoryListener(this);
+    updateGame();
 
   }
 
+  private void updateGame() {
+    goGameController = new GoGameController(gameDatas, gameRepository.getCurrentGame(), analytics);
+    if (isConfigured()) {
+      this.view.initInGameView(getInGameViewModel());
+      this.view.setMovePlayedListener(GamePresenter.this);
+    } else {
+      this.view.initConfigurationView(getConfigurationViewModel());
+      // TODO
+//      view.setConfigurationViewListener(this);
+    }
+  }
+
   private ConfigurationViewModel getConfigurationViewModel() {
-    //TODO
-    return null;
+    return new ConfigurationViewModel(goGameController.getGameConfiguration().getKomi());
   }
 
   private boolean isConfigured() {
@@ -101,16 +101,34 @@ public class GamePresenter implements MovePlayedListener {
 
   private void play(PlayGameData.Move move) {
     boolean played = goGameController.playMoveOrToggleDeadStone(move);
-    // TODO
-//    if(played) {
-//      endTurn();
-//    } else {
-//      view.buzz();
-//      analytics.invalidMovePlayed(goGameController.getGameConfiguration());
-//    }
+
+    System.out.println(" ****************************************** PLAYED *********************************");
+    if(played) {
+      gameRepository.commitGameChanges(goGameController.buildGameData());
+    } else {
+      view.buzz();
+      analytics.invalidMovePlayed(goGameController.getGameConfiguration());
+    }
   }
 
   public InGameViewModel getInGameViewModel() {
     return new InGameViewModel(getBoardViewModel());
+  }
+
+  @Override
+  public void gameListChanged() {
+    // Nothing to do
+  }
+
+  @Override
+  public void gameChanged(PlayGameData.GameData gameData) {
+    if (gameData.getMatchId().equals(goGameController.getMatchId())) {
+      updateGame();
+    }
+  }
+
+  @Override
+  public void gameSelected(PlayGameData.GameData gameData) {
+    updateGame();
   }
 }

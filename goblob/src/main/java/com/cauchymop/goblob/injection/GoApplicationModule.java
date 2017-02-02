@@ -9,7 +9,9 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
+import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.ui.AndroidGameRepository;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -72,6 +74,12 @@ public class GoApplicationModule {
   @Named("PlayerTwoDefaultName")
   public String providePlayerTwoDefaultName() {
     return application.getString(R.string.player_two_default_name);
+  }
+
+  @Provides
+  @Singleton
+  public GameRepository provideGameRepository(AndroidGameRepository androidGameRepository) {
+    return androidGameRepository;
   }
 
   @Provides

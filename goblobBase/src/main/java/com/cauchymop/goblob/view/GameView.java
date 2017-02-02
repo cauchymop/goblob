@@ -5,10 +5,9 @@ import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.presenter.MovePlayedListener;
 
-import java.util.concurrent.Callable;
-
 public interface GameView {
-  void initInGameView(InGameViewModel inGameViewModel, Callable<Void> continuation);
+  void initInGameView(InGameViewModel inGameViewModel);
   void initConfigurationView(ConfigurationViewModel configurationViewModel);
   void setMovePlayedListener(MovePlayedListener movePlayedListener);
+  void buzz();
 }

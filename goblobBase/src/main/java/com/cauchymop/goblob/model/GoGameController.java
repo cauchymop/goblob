@@ -275,4 +275,8 @@ public class GoGameController implements Serializable {
   public GoPlayer getPlayerForColor(Color player) {
     return gameDatas.getGoPlayer(gameData, player);
   }
+
+  public String getMatchId() {
+    return gameData.getMatchId();
+  }
 }

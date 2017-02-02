@@ -1,28 +1,31 @@
 package com.cauchymop.goblob.ui;
 
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.Analytics;
+import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.presenter.GamePresenter;
 import com.cauchymop.goblob.presenter.MovePlayedListener;
-import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.view.GameView;
 
-import java.util.concurrent.Callable;
-
 import javax.inject.Inject;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 public class GameFragment extends GoBlobBaseFragment implements GameView {
 
@@ -30,19 +33,24 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   GameDatas gameDatas;
 
   @Inject
+  AvatarManager avatarManager;
+
+  @Inject
   Analytics analytics;
 
-  private static final String EXTRA_GO_GAME = "GO_GAME";
+  @Inject
+  GameRepository gameRepository;
 
-  private InGameFragment inGameView;
-  private GameConfigurationFragment gameConfigurationView;
+  @BindView(R.id.current_game_view)
+  FrameLayout currentGameViewContainer;
+
+  private InGameViewAndroid inGameView;
+  private GameConfigurationViewAndroid gameConfigurationView;
   private GamePresenter gamePresenter;
+  private Unbinder unbinder;
 
-  public static GameFragment newInstance(GameData gameData) {
+  public static GameFragment newInstance() {
     GameFragment fragment = new GameFragment();
-    Bundle args = new Bundle();
-    args.putSerializable(EXTRA_GO_GAME, gameData);
-    fragment.setArguments(args);
     return fragment;
   }
 
@@ -57,43 +65,54 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
     // TODO:
     // When InGameView and ConfigurationView will simply be custom Views and not fragments,
     // we will simply instantiate and return the appropriate one form the given state/viewModel (gameData for now)
-    return inflater.inflate(R.layout.fragment_game, container, false);
+    View view = inflater.inflate(R.layout.fragment_game, container, false);
+    unbinder = ButterKnife.bind(this, view);
+    return view;
   }
 
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    GameData gameData = (GameData) getArguments().getSerializable(EXTRA_GO_GAME);
-    inGameView = InGameFragment.newInstance(gameData);
-    gameConfigurationView = GameConfigurationFragment.newInstance(gameData);
-    gamePresenter = new GamePresenter(gameDatas, analytics, new GoGameController(gameDatas, gameData, analytics), this);
+    inGameView = new InGameViewAndroid(getContext(), gameDatas, avatarManager);
+    gameConfigurationView = new GameConfigurationViewAndroid(getContext());
+    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, this);
   }
 
   @Override
-  public void initInGameView(final InGameViewModel inGameViewModel, final Callable<Void> continuation) {
-    displaySubView(inGameView);
-    new Handler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        inGameView.setInGameModel(inGameViewModel);
-        try {
-          continuation.call();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    }, 2000);
-
+  public void onDestroyView() {
+    super.onDestroyView();
+    unbinder.unbind();
   }
 
-  public void displaySubView(Fragment fragment) {
-    FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-    ft.replace(R.id.current_game_view, fragment).commitAllowingStateLoss();
+  @Override
+  public void initInGameView(final InGameViewModel inGameViewModel) {
+    displaySubView(inGameView);
+    inGameView.setInGameModel(inGameViewModel);
+  }
+
+  public void displaySubView(View view) {
+    currentGameViewContainer.removeAllViews();
+    currentGameViewContainer.addView(view);
+//    FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+//    ft.replace(R.id.current_game_view, fragment).commitAllowingStateLoss();
+
   }
 
   @Override
   public void setMovePlayedListener(MovePlayedListener movePlayedListener) {
     inGameView.setMovePlayedListener(movePlayedListener);
+  }
+
+  @Override
+  public void buzz() {
+    try {
+      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+      Ringtone r = RingtoneManager.getRingtone(getContext().getApplicationContext(), notification);
+      r.play();
+    } catch (Exception e) {
+      System.err.println("Exception while buzzing");
+      e.printStackTrace();
+    }
   }
 
   @Override

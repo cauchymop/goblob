@@ -1,13 +1,19 @@
 In progress:
-- TODO NEXT: replace Handler in InGameFragment (use list of continuations in sub fragment onViewCreated()...). Also implement the GameFragment play method...
-- BoardView/BoardViewModel done.
-- Continue to dummify all subviews of GameFragment and ConfigurationFragment
-- Introduce new GameFragment that will contain the InGameView and ConfigurationView (fragments) and display the proper one form set GameViewModel (gameData for now)
+- Make same GameView represent all games in inGame mode and not just one move.
+    - GameController still represents only one move.
+    - GameRepository callback when current game change and we create the gameController for current game
+    - endTurn only calls  commitChanges in androidGameRepository and triggers a refresh.
+    - TODO: Same update system in GameConfigurationFragment
+- Moving sub-Fragments to Views (GameConfigurationFragment -> GameConfigurationViewAndroid, InGameFragment -> InGameViewAndroid)
+- TODO NEXT:
+    - BoardView/BoardViewModel done.
+    - Continue to dummify all subviews of GameFragment and ConfigurationFragment.
+    - Think of how to add subviews better and possible get rid of immutable views.
+
 - TO REMEMBER:
   - GameData is an "acting" ViewModel to init the GameView for now until we create a proper GameViewModel
   - We still pass it to the InGameView and Configuration for now but we will pass specific InGameViewModel and ConfigurationViewModel
   - We only have one big GamePresenter which implements specific listeners interfaces and knows how to create ViewModels for all Views
-
 
 - Move to MVP, where the Activity is in charge of building instances and connecting them:
   - It build instances of subviews, and make them know their presenter

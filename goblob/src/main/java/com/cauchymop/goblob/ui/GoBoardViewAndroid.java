@@ -7,9 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.BoardViewModel;
@@ -213,17 +210,5 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   public void setBoard(BoardViewModel boardViewModel) {
     this.boardViewModel = boardViewModel;
     setClickable(boardViewModel.isInteractive());
-  }
-
-  @Override
-  public void buzz() {
-    try {
-      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-      Ringtone r = RingtoneManager.getRingtone(getContext().getApplicationContext(), notification);
-      r.play();
-    } catch (Exception e) {
-      System.err.println("Exception while buzzing");
-      e.printStackTrace();
-    }
   }
 }
