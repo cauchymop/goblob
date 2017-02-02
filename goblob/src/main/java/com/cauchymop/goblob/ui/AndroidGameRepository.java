@@ -13,6 +13,7 @@ import android.util.Log;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
+import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
@@ -32,19 +33,15 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,94 +57,49 @@ import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
  * Class to persist games.
  */
 @Singleton
-public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
+public class AndroidGameRepository extends GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
 
-  private static final String TAG = GameRepository.class.getName();
-  private static final String LOCAL_MATCH_ID = "local";
-  private static final String PLAYER_ONE_ID = "player1";
-  private static final String PLAYER_TWO_ID = "player2";
-  private static final String GAME_DATA = "gameData";
-  private static final String GAMES = "games";
+  private static final String TAG = AndroidGameRepository.class.getName();
   private static final int CACHE_CHANGED_MESSAGE = 1;
   private static final long CACHE_CHANGED_DELAY = 100;
-  public static final String IGNORED_VALUE = "";
+  private static final String IGNORED_VALUE = "";
 
 
   private final SharedPreferences prefs;
-  private final GameDatas gameDatas;
   private final GoogleApiClient googleApiClient;
-  private Analytics analytics;
-  private final Lazy<String> playerOneDefaultName;
-  private final String playerTwoDefaultName;
-
-  private String currentMatchId;
-
-  private GameList.Builder gameCache;
 
   private AvatarManager avatarManager;
-  private String localUniqueId;
-  private List<GameRepositoryListener> listeners = Lists.newArrayList();
-
-  private final Predicate<GameData> isLocalTurnPredicate = new Predicate<GameData>() {
-    @Override
-    public boolean apply(GameData gameData) {
-      return gameDatas.isLocalTurn(gameData);
-    }
-  };
 
   private final Handler cacheRefreshHandler = new CacheRefreshHandler(this);
 
 
   @Inject
-  public GameRepository(SharedPreferences prefs, GameDatas gameDatas,
+  public AndroidGameRepository(SharedPreferences prefs, GameDatas gameDatas,
       GoogleApiClient googleApiClient, AvatarManager avatarManager, Analytics analytics,
       @Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
       @Named("PlayerTwoDefaultName") String playerTwoDefaultName,
       @Named("LocalUniqueId") String localUniqueId) {
+    super(analytics, localUniqueId, playerOneDefaultName, playerTwoDefaultName, gameDatas);
     this.prefs = prefs;
-    this.gameDatas = gameDatas;
     this.googleApiClient = googleApiClient;
     this.avatarManager = avatarManager;
-    this.analytics = analytics;
-    this.playerOneDefaultName = playerOneDefaultName;
-    this.playerTwoDefaultName = playerTwoDefaultName;
-    this.localUniqueId = localUniqueId;
     gameCache = loadGameList();
     loadLegacyLocalGame();
     fireGameListChanged();
   }
 
-  public void commitGameChanges(GameData gameData) {
-    saveToCache(gameData);
-    if (gameDatas.isRemoteGame(gameData)) {
-      publishRemoteGameState(gameData);
-    }
-    postCacheRefresh(false);
+  @Override
+  protected void forceCacheRefresh() {
+    requestCacheRefresh(true);
   }
-
-  private void postCacheRefresh() {
-    postCacheRefresh(true);
-  }
-  private void postCacheRefresh(boolean immediate) {
-    Log.d(TAG, "CacheRefreshHandler postCacheRefresh()");
+  @Override
+  protected void requestCacheRefresh(boolean immediate) {
+    log("CacheRefreshHandler forceCacheRefresh()");
     cacheRefreshHandler.removeMessages(CACHE_CHANGED_MESSAGE);
     if (immediate) {
       cacheRefreshHandler.handleMessage(cacheRefreshHandler.obtainMessage(CACHE_CHANGED_MESSAGE));
     } else {
       cacheRefreshHandler.sendEmptyMessageDelayed(CACHE_CHANGED_MESSAGE, CACHE_CHANGED_DELAY);
-    }
-  }
-
-  private void saveToCache(@NonNull GameData gameData) {
-    Log.d(TAG, "saveToCache " + gameData.getMatchId());
-    GameData existingGame = gameCache.getGames().get(gameData.getMatchId());
-    Log.d(TAG, " -> existingGame found = " + (existingGame != null));
-    if (existingGame == null || gameData.getSequenceNumber() > existingGame.getSequenceNumber()) {
-      gameCache.getMutableGames().put(gameData.getMatchId(), gameData);
-      postCacheRefresh();
-      fireGameChanged(gameData);
-    } else {
-      Log.d(TAG, String.format("Ignoring GameData with an old or same sequence number (%s when existing is %s)", gameData.getSequenceNumber(), existingGame.getSequenceNumber() ));
     }
   }
 
@@ -157,16 +109,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     editor.apply();
   }
 
-  public void publishUnpublishedGames() {
-    for (String matchId : ImmutableSet.copyOf(gameCache.getUnpublishedMap().keySet())) {
-      GameData gameData = gameCache.getGamesMap().get(matchId);
-      // The match can be absent if the user changed.
-      if (gameData != null && publishRemoteGameState(gameData)) {
-        gameCache.removeUnpublished(gameData.getMatchId());
-      }
-    }
-  }
-
+  @Override
   public boolean publishRemoteGameState(GameData gameData) {
     if (googleApiClient.isConnected()) {
       Log.d(TAG, "publishRemoteGameState: " + gameData);
@@ -185,12 +128,17 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     }
   }
 
+  @Override
+  protected void log(String message) {
+    Log.d(AndroidGameRepository.TAG, message);
+  }
+
   private void loadLegacyLocalGame() {
     String gameDataString = prefs.getString(GAME_DATA, null);
     if (gameDataString == null) {
       return;
     }
-    Log.i(TAG, "loadLegacyLocalGame");
+    log("loadLegacyLocalGame");
     GameData.Builder gameDataBuilder = GameData.newBuilder();
     try {
       TextFormat.merge(gameDataString, gameDataBuilder);
@@ -203,7 +151,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
   }
 
   private GameList.Builder loadGameList() {
-    Log.i(TAG, "loadGameList");
+    log("loadGameList");
     String gameListString = prefs.getString(GAMES, "");
     GameList.Builder gameListBuilder = GameList.newBuilder();
     try {
@@ -211,7 +159,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     } catch (TextFormat.ParseException e) {
       Log.e(TAG, "Error parsing local GameList: " + e.getMessage());
     }
-    Log.i(TAG, "loadGameList: " + gameListBuilder.getGames().size() + " games loaded.");
+    log("loadGameList: " + gameListBuilder.getGames().size() + " games loaded.");
     return gameListBuilder;
   }
 
@@ -245,7 +193,7 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
               }
             }
             if (clearRemoteGamesIfAbsent(games)) {
-              postCacheRefresh();
+              forceCacheRefresh();
             }
             for (GameData game : games) {
               saveToCache(game);
@@ -417,22 +365,6 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     removeFromCache(matchId);
   }
 
-  private void removeFromCache(String matchId) {
-    Log.d(TAG, "removeFromCache " + matchId);
-    gameCache.getMutableGames().remove(matchId);
-    postCacheRefresh();
-  }
-
-  public void selectGame(@NonNull String matchId) {
-    Log.d(TAG, "selectGame matchId = " + matchId);
-    currentMatchId = matchId;
-    if (matchId.equals(GameDatas.NEW_GAME_MATCH_ID)) {
-      fireGameSelected(null);
-    } else {
-      fireGameSelected(gameCache.getGames().get(matchId));
-    }
-  }
-
   public void handlePlayersSelected(Intent intent) {
     Log.d(TAG, "handlePlayersSelected");
 
@@ -484,75 +416,19 @@ public class GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
     }
   }
 
-  public void addGameRepositoryListener(GameRepositoryListener listener) {
-    listeners.add(listener);
-  }
-
-  public void removeGameRepositoryListener(GameRepositoryListener listener) {
-    listeners.remove(listener);
-  }
-
-  private void fireGameListChanged() {
-    for (GameRepositoryListener listener : listeners) {
-      listener.gameListChanged();
-    }
-  }
-
-  private void fireGameChanged(GameData gameData) {
-    for (GameRepositoryListener listener : listeners) {
-      listener.gameChanged(gameData);
-    }
-  }
-
-  private void fireGameSelected(GameData gameData) {
-    for (GameRepositoryListener listener : listeners) {
-      listener.gameSelected(gameData);
-    }
-  }
-
-  public String getCurrentMatchId() {
-    return currentMatchId;
-  }
-
-  public Iterable<GameData> getMyTurnGames() {
-    return Iterables.filter(gameCache.getGames().values(), isLocalTurnPredicate);
-  }
-
-  public Iterable<GameData> getTheirTurnGames() {
-    return Iterables.filter(gameCache.getGames().values(), Predicates.not(isLocalTurnPredicate));
-  }
-
-  public GameData createNewLocalGame() {
-    PlayGameData.GoPlayer black = gameDatas.createGamePlayer(PLAYER_ONE_ID, playerOneDefaultName.get());
-    PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName);
-    removeFromCache(LOCAL_MATCH_ID);
-    GameData localGame = gameDatas.createNewGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
-    analytics.gameCreated(localGame);
-    commitGameChanges(localGame);
-    return localGame;
-  }
-
-  public interface GameRepositoryListener {
-    void gameListChanged();
-
-    void gameChanged(GameData gameData);
-
-    void gameSelected(GameData gameData);
-  }
-
   private static class CacheRefreshHandler extends Handler {
 
-    private final GameRepository gameRepository;
+    private final AndroidGameRepository androidGameRepository;
 
-    public CacheRefreshHandler(GameRepository gameRepository) {
-      this.gameRepository = gameRepository;
+    public CacheRefreshHandler(AndroidGameRepository androidGameRepository) {
+      this.androidGameRepository = androidGameRepository;
     }
 
     @Override
     public void handleMessage(Message msg) {
       Log.d(TAG, "CacheRefreshHandler handleMessage");
-      gameRepository.persistCache();
-      gameRepository.fireGameListChanged();
+      androidGameRepository.persistCache();
+      androidGameRepository.fireGameListChanged();
     }
   }
 }
