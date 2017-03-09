@@ -5,35 +5,7 @@ Debugging:
 - playing a game (alternating moves) is  flaky if 2 remote players on same device.
 
 In progress:
-- Make same GameView represent all games in inGame mode and not just one move.
-    - GameController still represents only one move.
-    - GameRepository callback when current game change and we create the gameController for current game
-    - endTurn only calls  commitChanges in androidGameRepository and triggers a refresh.
-    - TODO: Same update system in GameConfigurationFragment
-- Moving sub-Fragments to Views (GameConfigurationFragment -> GameConfigurationViewAndroid, InGameFragment -> InGameViewAndroid)
-- TODO NEXT:
-    - BoardView/BoardViewModel done.
-    - Continue to dummify all subviews of GameFragment and ConfigurationFragment.
-    - Think of how to add subviews better and possible get rid of immutable views.
-
-- TO REMEMBER:
-  - GameData is an "acting" ViewModel to init the GameView for now until we create a proper GameViewModel
-  - We still pass it to the InGameView and Configuration for now but we will pass specific InGameViewModel and ConfigurationViewModel
-  - We only have one big GamePresenter which implements specific listeners interfaces and knows how to create ViewModels for all Views
-
-- Move to MVP, where the Activity is in charge of building instances and connecting them:
-  - It build instances of subviews, and make them know their presenter
-  - It build instances of view containers, and them know their presenter and subviews
-
-- Initial notes:
-  - new GameFragment which can display any state
-  - the activity creates:
-    - the top level view
-    - the top level presenter (giving the top level view)
-  - the top level view has 2 subviews (configuration and ingame)
-  - solution 1: the top level presenter fetches the current subview, and gives it to the current sub-presenter it creates.
-  - solution 2: the top level presenter gives the right subpresenter to the toplevel view (showConfiguration(ConfigurationPresenter))
-- Or move to MVVM using Google Data Binding
+    - Continue to dummify all subviews of InGameView.
 
 Next:
 - When only an expired game is left in the cache, starting the app shows that game with only
