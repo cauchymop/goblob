@@ -14,5 +14,6 @@ dependencies {
 android {
     compileSdkVersion rootProject.ext.android_compile_version
     buildToolsVersion rootProject.ext.android_version
+    buildToolsVersion '25.0.0'
 }
 

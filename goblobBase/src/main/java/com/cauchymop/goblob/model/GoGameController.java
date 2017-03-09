@@ -24,7 +24,7 @@ public class GoGameController implements Serializable {
 
   transient GameDatas gameDatas;
 
-  private final GoGame goGame;
+  private GoGame goGame;
   private GameData.Builder gameData;
   private GameData initialGameData;
   private Analytics analytics;
@@ -34,11 +34,17 @@ public class GoGameController implements Serializable {
     this.initialGameData = gameData;
     this.gameData = Preconditions.checkNotNull(gameData).toBuilder();
     this.analytics = analytics;
+    if (gameData.getPhase() == Phase.IN_GAME) {
+      createGoGame();
+      for (Move move : this.gameData.getMoveList()) {
+        goGame.play(getPos(move));
+      }
+    }
+  }
+
+  public void createGoGame() {
     GameConfiguration gameConfiguration = getGameConfiguration();
     goGame = new GoGame(gameConfiguration.getBoardSize(), gameConfiguration.getHandicap());
-    for (Move move : this.gameData.getMoveList()) {
-      goGame.play(getPos(move));
-    }
   }
 
   public Score getScore() {
@@ -161,10 +167,6 @@ public class GoGameController implements Serializable {
     analytics.gameFinished(getGameConfiguration(), getScore());
   }
 
-  public boolean isLocalPlayer(GoPlayer player) {
-    return gameDatas.isLocalPlayer(gameData, player);
-  }
-
   public boolean isLocalGame() {
     return gameDatas.isLocalGame(gameData);
   }
@@ -247,22 +249,25 @@ public class GoGameController implements Serializable {
     return gameDatas.getGoPlayer(gameData, gameData.getMatchEndStatus().getScore().getWinner());
   }
 
-  public void updateGameConfiguration(int boardSize, int handicap, float komi,
-      GoPlayer blackPlayer, GoPlayer whitePlayer) {
-    gameData.setGameConfiguration(gameDatas.createGameConfiguration(boardSize, handicap, komi,
-            getGameConfiguration().getGameType(), blackPlayer, whitePlayer));
-    gameData.setPhase(isConfigurationAgreed(initialGameData, getGameConfiguration()) ? Phase.IN_GAME : Phase.CONFIGURATION);
-    gameData.setTurn(computeConfigurationTurn());
+  public void validateConfiguration() {
+
+    if (isConfigurationAgreed(initialGameData, getGameConfiguration())) {
+      gameData.setPhase(Phase.IN_GAME);
+      createGoGame();
+    } else {
+      gameData.setPhase(Phase.CONFIGURATION);
+    }
+    gameData.setTurn(computeConfigurationNextTurn());
   }
 
   private boolean isConfigurationAgreed(GameData initialGame,
       GameConfiguration newGameConfiguration) {
     return initialGame.getGameConfiguration().getGameType() == PlayGameData.GameType.LOCAL
-        || initialGame.getPhase() == Phase.CONFIGURATION
-        && initialGame.getGameConfiguration().equals(newGameConfiguration);
+        || (initialGame.getPhase() == Phase.CONFIGURATION
+          && initialGame.getGameConfiguration().equals(newGameConfiguration));
   }
 
-  private PlayGameData.Color computeConfigurationTurn() {
+  private PlayGameData.Color computeConfigurationNextTurn() {
     if (getPhase() == Phase.CONFIGURATION) {
       return gameDatas.getOpponentColor(getGameConfiguration());
     } else if (getPhase() == Phase.IN_GAME) {
@@ -278,5 +283,34 @@ public class GoGameController implements Serializable {
 
   public String getMatchId() {
     return gameData.getMatchId();
+  }
+
+  public void setBlackPlayerName(String blackPlayerName) {
+    gameData.getGameConfigurationBuilder().getBlackBuilder().setName(blackPlayerName);
+  }
+
+  public void setWhitePlayerName(String whitePlayerName) {
+    gameData.getGameConfigurationBuilder().getWhiteBuilder().setName(whitePlayerName);
+  }
+
+  public void setBoardSize(int boardSize) {
+    gameData.getGameConfigurationBuilder().setBoardSize(boardSize);
+  }
+
+  public void setKomi(float komi) {
+    gameData.getGameConfigurationBuilder().setKomi(komi);
+  }
+
+  public void setHandicap(int handicap) {
+    gameData.getGameConfigurationBuilder().setHandicap(handicap);
+  }
+
+  public void swapPlayers() {
+    GameConfiguration gameConfiguration = getGameConfiguration();
+    PlayGameData.GoPlayer black = gameConfiguration.getBlack();
+    PlayGameData.GoPlayer white = gameConfiguration.getWhite();
+    gameData.getGameConfigurationBuilder().setBlack(white);
+    gameData.getGameConfigurationBuilder().setWhite(black);
+    gameData.setTurn(getOpponentColor());
   }
 }

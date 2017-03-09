@@ -10,7 +10,7 @@ import android.graphics.Rect;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.BoardViewModel;
-import com.cauchymop.goblob.presenter.MovePlayedListener;
+import com.cauchymop.goblob.presenter.BoardEventListener;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GoBoardView;
 import com.google.common.collect.Lists;
@@ -28,7 +28,7 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   public static final float HOSHI_SIZE = .1F;
 
   private BoardViewModel boardViewModel;
-  private MovePlayedListener movePlayedListener;
+  private BoardEventListener boardEventListener;
 
   private int marginX;
   private int marginY;
@@ -84,13 +84,13 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
     }
     int xPos = (int) ((x - marginX) / cellSizeInPixels);
     int yPos = (int) ((y - marginY) / cellSizeInPixels);
-    firePlayed(xPos, yPos);
+    fireClicked(xPos, yPos);
     return true;
   }
 
-  private void firePlayed(int x, int y) {
-    if (movePlayedListener != null) {
-      movePlayedListener.played(x, y);
+  private void fireClicked(int x, int y) {
+    if (boardEventListener != null) {
+      boardEventListener.onIntersectionSelected(x, y);
     }
   }
 
@@ -201,9 +201,8 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
     return res;
   }
 
-  @Override
-  public void setMovePlayedListener(MovePlayedListener movePlayedListener) {
-    this.movePlayedListener = movePlayedListener;
+  public void setBoardEventListener(BoardEventListener boardEventListener) {
+    this.boardEventListener = boardEventListener;
   }
 
   @Override

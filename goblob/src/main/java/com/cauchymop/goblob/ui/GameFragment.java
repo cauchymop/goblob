@@ -17,8 +17,9 @@ import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.InGameViewModel;
+import com.cauchymop.goblob.presenter.BoardEventListener;
+import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.presenter.GamePresenter;
-import com.cauchymop.goblob.presenter.MovePlayedListener;
 import com.cauchymop.goblob.view.GameView;
 
 import javax.inject.Inject;
@@ -82,6 +83,8 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   public void onDestroyView() {
     super.onDestroyView();
     unbinder.unbind();
+    gamePresenter.clear();
+    gamePresenter = null;
   }
 
   @Override
@@ -99,8 +102,13 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   }
 
   @Override
-  public void setMovePlayedListener(MovePlayedListener movePlayedListener) {
-    inGameView.setMovePlayedListener(movePlayedListener);
+  public void setMovePlayedListener(BoardEventListener boardEventListener) {
+    inGameView.setMovePlayedListener(boardEventListener);
+  }
+
+  @Override
+  public void setConfigurationViewListener(ConfigurationEventListener configurationEventListener) {
+    gameConfigurationView.setConfigurationViewListener(configurationEventListener);
   }
 
   @Override
@@ -116,8 +124,18 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   }
 
   @Override
+  public void clear() {
+    // TODO
+  }
+
+  @Override
+  public void setConfigurationViewModel(ConfigurationViewModel configurationViewModel) {
+    gameConfigurationView.setConfigurationModel(configurationViewModel);
+  }
+
+  @Override
   public void initConfigurationView(ConfigurationViewModel configurationViewModel) {
     displaySubView(gameConfigurationView);
-    gameConfigurationView.setConfigurationModel(configurationViewModel);
+    setConfigurationViewModel(configurationViewModel);
   }
 }

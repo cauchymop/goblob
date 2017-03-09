@@ -32,16 +32,14 @@ public abstract class GameRepository {
   };
   protected Analytics analytics;
   protected PlayGameData.GameList.Builder gameCache;
-  protected String localUniqueId;
   private String currentMatchId;
   private List<GameRepositoryListener> listeners = Lists.newArrayList();
 
   public GameRepository(
-      Analytics analytics, @Named("LocalUniqueId") String localUniqueId,
+      Analytics analytics,
       @Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
       @Named("PlayerTwoDefaultName") String playerTwoDefaultName, GameDatas gameDatas) {
     this.analytics = analytics;
-    this.localUniqueId = localUniqueId;
     this.playerOneDefaultName = playerOneDefaultName;
     this.playerTwoDefaultName = playerTwoDefaultName;
     this.gameDatas = gameDatas;

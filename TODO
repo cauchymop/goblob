@@ -1,3 +1,9 @@
+- In Progress
+ - Make Local Games Great Again
+
+Debugging:
+- playing a game (alternating moves) is  flaky if 2 remote players on same device.
+
 In progress:
 - Make same GameView represent all games in inGame mode and not just one move.
     - GameController still represents only one move.

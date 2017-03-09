@@ -64,7 +64,6 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
   private static final long CACHE_CHANGED_DELAY = 100;
   private static final String IGNORED_VALUE = "";
 
-
   private final SharedPreferences prefs;
   private final GoogleApiClient googleApiClient;
 
@@ -72,14 +71,12 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
 
   private final Handler cacheRefreshHandler = new CacheRefreshHandler(this);
 
-
   @Inject
   public AndroidGameRepository(SharedPreferences prefs, GameDatas gameDatas,
       GoogleApiClient googleApiClient, AvatarManager avatarManager, Analytics analytics,
       @Named("PlayerOneDefaultName") Lazy<String> playerOneDefaultName,
-      @Named("PlayerTwoDefaultName") String playerTwoDefaultName,
-      @Named("LocalUniqueId") String localUniqueId) {
-    super(analytics, localUniqueId, playerOneDefaultName, playerTwoDefaultName, gameDatas);
+      @Named("PlayerTwoDefaultName") String playerTwoDefaultName) {
+    super(analytics, playerOneDefaultName, playerTwoDefaultName, gameDatas);
     this.prefs = prefs;
     this.googleApiClient = googleApiClient;
     this.avatarManager = avatarManager;
@@ -251,8 +248,8 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
   private GameData createNewGameData(TurnBasedMatch turnBasedMatch) {
     String myId = getMyId(turnBasedMatch);
     String opponentId = getOpponentId(turnBasedMatch);
-    PlayGameData.GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId, localUniqueId);
-    PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId, null);
+    PlayGameData.GoPlayer blackPlayer = createGoPlayer(turnBasedMatch, myId, true);
+    PlayGameData.GoPlayer whitePlayer = createGoPlayer(turnBasedMatch, opponentId, false);
     GameData gameData = gameDatas.createNewGameData(turnBasedMatch.getMatchId(),
         PlayGameData.GameType.REMOTE, blackPlayer, whitePlayer);
     analytics.gameCreated(gameData);
@@ -271,8 +268,8 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
       String myId = getMyId(turnBasedMatch);
       String opponentId = getOpponentId(turnBasedMatch);
       Map<String, PlayGameData.GoPlayer> goPlayers = ImmutableMap.of(
-          myId, createGoPlayer(turnBasedMatch, myId, localUniqueId),
-          opponentId, createGoPlayer(turnBasedMatch, opponentId, null));
+          myId, createGoPlayer(turnBasedMatch, myId, true),
+          opponentId, createGoPlayer(turnBasedMatch, opponentId, false));
       PlayGameData.GameConfiguration gameConfiguration = gameData.getGameConfiguration();
 
       PlayGameData.GoPlayer blackPlayer = goPlayers.get(gameConfiguration.getBlackId());
@@ -311,18 +308,20 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
       }
     }
 
-    return fillLocalUniqueId(turnBasedMatch, gameData).build();
+    return fillLocalStates(turnBasedMatch, gameData).build();
   }
 
-  private GameData.Builder fillLocalUniqueId(TurnBasedMatch turnBasedMatch, GameData.Builder gameData) {
+  private GameData.Builder fillLocalStates(TurnBasedMatch turnBasedMatch, GameData.Builder gameData) {
     boolean isMyTurn = turnBasedMatch.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN;
     boolean turnIsBlack = gameData.getTurn() == PlayGameData.Color.BLACK;
     boolean iAmBlack = isMyTurn && turnIsBlack || (!isMyTurn && !turnIsBlack);
-    PlayGameData.GoPlayer.Builder player = iAmBlack
-        ? gameData.getGameConfigurationBuilder().getBlackBuilder()
-        : gameData.getGameConfigurationBuilder().getWhiteBuilder();
-    player.setLocalUniqueId(localUniqueId);
-    Log.d(TAG, String.format("setting %s to player %s", localUniqueId, player.getName()));
+    PlayGameData.GameConfiguration.Builder gameConfiguration = gameData.getGameConfigurationBuilder();
+    PlayGameData.GoPlayer.Builder blackPlayer = gameConfiguration.getBlackBuilder();
+    PlayGameData.GoPlayer.Builder whitePlayer = gameConfiguration.getWhiteBuilder();
+    blackPlayer.setIsLocal(iAmBlack);
+    whitePlayer.setIsLocal(!iAmBlack);
+    Log.d(TAG, String.format("black: %s", blackPlayer));
+    Log.d(TAG, String.format("white %s", whitePlayer));
     return gameData;
   }
 
@@ -342,10 +341,10 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
   }
 
   private PlayGameData.GoPlayer createGoPlayer(TurnBasedMatch match, String participantId,
-      String localUniqueId) {
+      boolean isLocal) {
     PlayGameData.GoPlayer goPlayer;
     Player player = match.getParticipant(participantId).getPlayer();
-    goPlayer = gameDatas.createGamePlayer(participantId, player.getDisplayName(), localUniqueId);
+    goPlayer = gameDatas.createGamePlayer(participantId, player.getDisplayName(), isLocal);
     avatarManager.setAvatarUri(player.getDisplayName(), player.getIconImageUri());
     return goPlayer;
   }

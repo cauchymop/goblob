@@ -16,8 +16,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import java.util.UUID;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -32,7 +30,6 @@ import static com.google.android.gms.games.Games.Players;
 @Module
 public class GoApplicationModule {
 
-  private static final String LOCAL_UNIQUE_ID = "LOCAL_UNIQUE_ID";
   private Application application;
 
   public GoApplicationModule(Application application) {
@@ -43,18 +40,6 @@ public class GoApplicationModule {
   @Singleton
   public GoogleApiClient provideGoogleApiClient(GoogleApiClientManager googleApiClientManager) {
     return googleApiClientManager.get();
-  }
-
-  @Provides
-  @Singleton
-  @Named("LocalUniqueId")
-  public String getLocalUniqueId(SharedPreferences preferences) {
-    String uid = preferences.getString(LOCAL_UNIQUE_ID, null);
-    if (uid == null) {
-      uid = UUID.randomUUID().toString();
-      preferences.edit().putString(LOCAL_UNIQUE_ID, uid).apply();
-    }
-    return uid;
   }
 
   @Provides

@@ -9,9 +9,11 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
+import com.cauchymop.goblob.model.BoardViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.InGameViewModel;
-import com.cauchymop.goblob.presenter.MovePlayedListener;
+import com.cauchymop.goblob.model.PlayerViewModel;
+import com.cauchymop.goblob.presenter.BoardEventListener;
 import com.cauchymop.goblob.view.InGameView;
 
 import butterknife.BindView;
@@ -238,22 +240,29 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
      */
 
     if (inGameViewModel != null) {
-      initGoBoardView(inGameViewModel);
+      initGoBoardView(inGameViewModel.getBoardViewModel());
+      initCurrentPlayerView(inGameViewModel.getCurrentPlayerViewModel());
     }
   }
 
-  private void initGoBoardView(InGameViewModel inGameViewModel) {
-    goBoardView = new GoBoardViewAndroid(getContext());
-    goBoardView.setBoard(inGameViewModel.getBoardViewModel());
-    boardViewContainer.addView(goBoardView);
+  private void initCurrentPlayerView(PlayerViewModel playerViewModel) {
+    titleView.setText(playerViewModel.getPlayerName());
+  }
+
+  private void initGoBoardView(BoardViewModel boardViewModel) {
+    if (goBoardView == null) {
+      goBoardView = new GoBoardViewAndroid(getContext());
+      boardViewContainer.addView(goBoardView);
+    }
+    goBoardView.setBoard(boardViewModel);
 
 //      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
 //      this.goGameController = new GoGameController(gameDatas, gameData, analytics);
   }
 
   @Override
-  public void setMovePlayedListener(MovePlayedListener movePlayedListener) {
-    goBoardView.setMovePlayedListener(movePlayedListener);
+  public void setMovePlayedListener(BoardEventListener boardEventListener) {
+    goBoardView.setBoardEventListener(boardEventListener);
   }
 
 }

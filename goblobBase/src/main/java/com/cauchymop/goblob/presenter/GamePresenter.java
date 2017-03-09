@@ -9,10 +9,11 @@ import com.cauchymop.goblob.model.GoBoard;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.model.InGameViewModel;
+import com.cauchymop.goblob.model.PlayerViewModel;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
 
-public class GamePresenter implements MovePlayedListener, GameRepository.GameRepositoryListener {
+public class GamePresenter implements BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener {
 
   private Analytics analytics;
   private GoGameController goGameController;
@@ -28,37 +29,64 @@ public class GamePresenter implements MovePlayedListener, GameRepository.GameRep
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
     updateGame();
-
   }
 
   private void updateGame() {
-    goGameController = new GoGameController(gameDatas, gameRepository.getCurrentGame(), analytics);
+    PlayGameData.GameData currentGame = gameRepository.getCurrentGame();
+    if (currentGame == null) {
+      view.clear();
+      return;
+    }
+    goGameController = new GoGameController(gameDatas, currentGame, analytics);
     if (isConfigured()) {
-      this.view.initInGameView(getInGameViewModel());
-      this.view.setMovePlayedListener(GamePresenter.this);
+      view.initInGameView(getInGameViewModel());
+      view.setMovePlayedListener(this);
     } else {
-      this.view.initConfigurationView(getConfigurationViewModel());
-      // TODO
-//      view.setConfigurationViewListener(this);
+      view.initConfigurationView(getConfigurationViewModel());
+      view.setConfigurationViewListener(this);
     }
   }
 
-  private ConfigurationViewModel getConfigurationViewModel() {
-    return new ConfigurationViewModel(goGameController.getGameConfiguration().getKomi());
+  public void onIntersectionSelected(int x, int y) {
+    if (goGameController.isLocalTurn()) {
+      boolean played = goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
+
+      if (played) {
+        commitGameChanges();
+      } else {
+        view.buzz();
+        analytics.invalidMovePlayed(goGameController.getGameConfiguration());
+      }
+    }
   }
 
-  private boolean isConfigured() {
-    switch (goGameController.getPhase()) {
-      case INITIAL:
-      case CONFIGURATION:
-        return false;
-      case IN_GAME:
-      case DEAD_STONE_MARKING:
-      case FINISHED:
-        return true;
-      default:
-        throw new RuntimeException("Invalid phase for game: " + goGameController.getPhase());
+  public InGameViewModel getInGameViewModel() {
+    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel());
+  }
+
+  private PlayerViewModel getCurrentPlayerViewModel() {
+    return new PlayerViewModel(goGameController.getCurrentPlayer().getName());
+  }
+
+  @Override
+  public void gameListChanged() {
+    // Nothing to do
+  }
+
+  @Override
+  public void gameChanged(PlayGameData.GameData gameData) {
+    if (gameData.getMatchId().equals(goGameController.getMatchId())) {
+      updateGame();
     }
+  }
+
+  @Override
+  public void gameSelected(PlayGameData.GameData gameData) {
+    updateGame();
+  }
+
+  public void clear() {
+    gameRepository.removeGameRepositoryListener(this);
   }
 
   private BoardViewModel getBoardViewModel() {
@@ -95,40 +123,85 @@ public class GamePresenter implements MovePlayedListener, GameRepository.GameRep
     return new BoardViewModel(boardSize, stones, territories, lastMoveX, lastMoveY, goGameController.isLocalTurn());
   }
 
-  public void played(int x, int y) {
-    play(gameDatas.createMove(x, y));
+  private ConfigurationViewModel getConfigurationViewModel() {
+    return new ConfigurationViewModel(goGameController.getGameConfiguration(), getConfigurationMessage(), goGameController.isLocalTurn());
   }
 
-  private void play(PlayGameData.Move move) {
-    boolean played = goGameController.playMoveOrToggleDeadStone(move);
-
-    System.out.println(" ****************************************** PLAYED *********************************");
-    if(played) {
-      gameRepository.commitGameChanges(goGameController.buildGameData());
+  private ConfigurationViewModel.ConfigurationMessage getConfigurationMessage() {
+    if (goGameController.getPhase() == PlayGameData.GameData.Phase.INITIAL) {
+      return ConfigurationViewModel.ConfigurationMessage.INITIAL;
+    } else if (goGameController.isLocalTurn()) {
+      return ConfigurationViewModel.ConfigurationMessage.ACCEPT_OR_CHANGE;
     } else {
-      view.buzz();
-      analytics.invalidMovePlayed(goGameController.getGameConfiguration());
+      return ConfigurationViewModel.ConfigurationMessage.WAITING_FOR_OPPONENT;
     }
   }
 
-  public InGameViewModel getInGameViewModel() {
-    return new InGameViewModel(getBoardViewModel());
-  }
-
-  @Override
-  public void gameListChanged() {
-    // Nothing to do
-  }
-
-  @Override
-  public void gameChanged(PlayGameData.GameData gameData) {
-    if (gameData.getMatchId().equals(goGameController.getMatchId())) {
-      updateGame();
+  private boolean isConfigured() {
+    switch (goGameController.getPhase()) {
+      case INITIAL:
+      case CONFIGURATION:
+        return false;
+      case IN_GAME:
+      case DEAD_STONE_MARKING:
+      case FINISHED:
+        return true;
+      default:
+        throw new RuntimeException("Invalid phase for game: " + goGameController.getPhase());
     }
   }
 
   @Override
-  public void gameSelected(PlayGameData.GameData gameData) {
-    updateGame();
+  public void onBlackPlayerNameChanged(String blackPlayerName) {
+    if (!goGameController.getGameConfiguration().getBlack().getName().equals(blackPlayerName)) {
+      goGameController.setBlackPlayerName(blackPlayerName);
+    }
+  }
+
+  @Override
+  public void onWhitePlayerNameChanged(String whitePlayerName) {
+    if (!goGameController.getGameConfiguration().getWhite().getName().equals(whitePlayerName)) {
+      goGameController.setWhitePlayerName(whitePlayerName);
+    }
+  }
+
+  @Override
+  public void onHandicapChanged(int handicap) {
+    if (goGameController.getGameConfiguration().getHandicap() != handicap) {
+      goGameController.setHandicap(handicap);
+    }
+  }
+
+  @Override
+  public void onKomiChanged(float komi) {
+    if (goGameController.getGameConfiguration().getKomi() != komi) {
+      goGameController.setKomi(komi);
+    }
+  }
+
+  @Override
+  public void onBoardSizeChanged(int boardSize) {
+    if (goGameController.getGameConfiguration().getBoardSize() != boardSize) {
+      goGameController.setBoardSize(boardSize);
+    }
+  }
+
+  @Override
+  public void onSwapEvent() {
+    goGameController.swapPlayers();
+    view.setConfigurationViewModel(getConfigurationViewModel());
+  }
+
+  @Override
+  public void onConfigurationValidationEvent() {
+    goGameController.validateConfiguration();
+    commitGameChanges();
+  }
+
+  private void commitGameChanges() {
+    PlayGameData.GameData gameData = goGameController.buildGameData();
+    gameRepository.commitGameChanges(gameData);
+    analytics.configurationChanged(gameData);
+    view.setConfigurationViewModel(getConfigurationViewModel());
   }
 }

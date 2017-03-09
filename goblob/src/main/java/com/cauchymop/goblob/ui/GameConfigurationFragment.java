@@ -18,6 +18,7 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase;
@@ -121,9 +122,9 @@ public class GameConfigurationFragment extends GoBlobBaseFragment implements Gam
 
     blackPlayerNameField.setText(blackPlayer.getName());
     whitePlayerNameField.setText(whitePlayer.getName());
-    komiText.setText(String.valueOf(configuration.getKomi()));
-    setHandicap(configuration.getHandicap());
-    setBoardSize(configuration.getBoardSize());
+//    komiText.setText(String.valueOf(configuration.getKomi()));
+//    setHandicap(configuration.getHandicap());
+//    setBoardSize(configuration.getBoardSize());
     goGameController = new GoGameController(gameDatas, gameData, analytics);
   }
 
@@ -147,8 +148,8 @@ public class GameConfigurationFragment extends GoBlobBaseFragment implements Gam
   void done() {
     GoPlayer blackPlayer = getBlackPlayer();
     GoPlayer whitePlayer = getWhitePlayer();
-    goGameController.updateGameConfiguration(getBoardSize(), getHandicap(),
-        getKomi(), blackPlayer, whitePlayer);
+//    goGameController.updateGameConfiguration(getBoardSize(), getHandicap(),
+//        getKomi(), blackPlayer, whitePlayer);
     GameData gameData = goGameController.buildGameData();
     getGoBlobActivity().endTurn(gameData);
     analytics.configurationChanged(gameData);
@@ -165,12 +166,6 @@ public class GameConfigurationFragment extends GoBlobBaseFragment implements Gam
       default:
         throw new RuntimeException("No size selected! id = " + boardSizeRadioGroup.getCheckedRadioButtonId());
     }
-  }
-
-  private void setBoardSize(int size) {
-    boardSize9.setChecked(size == 9);
-    boardSize13.setChecked(size == 13);
-    boardSize19.setChecked(size == 19);
   }
 
   @OnClick(R.id.swap_players_button)
@@ -193,10 +188,7 @@ public class GameConfigurationFragment extends GoBlobBaseFragment implements Gam
     }
   }
 
-  private void setHandicap(int handicap) {
-    int index = (handicap == 0 ? 0 : handicap - 1);
-    handicapSpinner.setSelection(index);
-  }
+
 
   private float getKomi() {
     return Float.valueOf(komiText.getText().toString());
@@ -204,16 +196,21 @@ public class GameConfigurationFragment extends GoBlobBaseFragment implements Gam
 
   private GoPlayer getWhitePlayer() {
     final String whitePlayerName = whitePlayerNameField.getText().toString();
-    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getLocalUniqueId());
+    return gameDatas.createGamePlayer(whitePlayer.getId(), whitePlayerName, whitePlayer.getIsLocal());
   }
 
   private GoPlayer getBlackPlayer() {
     final String blackPayerName = blackPlayerNameField.getText().toString();
-    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getLocalUniqueId());
+    return gameDatas.createGamePlayer(blackPlayer.getId(), blackPayerName, blackPlayer.getIsLocal());
   }
 
   @Override
   public void setConfigurationModel(ConfigurationViewModel configurationViewModel) {
     // TODO
+  }
+
+  @Override
+  public void setConfigurationViewListener(ConfigurationEventListener configurationEventListener) {
+
   }
 }
