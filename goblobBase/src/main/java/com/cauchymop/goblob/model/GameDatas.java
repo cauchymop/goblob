@@ -129,13 +129,6 @@ public class GameDatas {
         .build();
   }
 
-  public GoPlayer createGamePlayer(String id, String name) {
-    return GoPlayer.newBuilder()
-        .setId(id)
-        .setName(name)
-        .build();
-  }
-
   public GoPlayer createGamePlayer(String id, String name, boolean isLocal) {
     return GoPlayer.newBuilder()
         .setId(id)

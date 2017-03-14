@@ -22,14 +22,14 @@ public class GoGameControllerTest {
   @Mock
   private Analytics analytics;
 
-  private static final GameDatas GAME_DATAS = new GameDatas(null);
+  private static final GameDatas GAME_DATAS = new GameDatas();
   private GameData gameData;
   private GoGameController controller;
 
   @Before
   public void setUp() throws Exception {
-    PlayGameData.GoPlayer black = GAME_DATAS.createGamePlayer("pipo", "player1");
-    PlayGameData.GoPlayer white = GAME_DATAS.createGamePlayer("bimbo", "player2");
+    PlayGameData.GoPlayer black = GAME_DATAS.createGamePlayer("pipo", "player1", true);
+    PlayGameData.GoPlayer white = GAME_DATAS.createGamePlayer("bimbo", "player2", true);
     gameData = GAME_DATAS.createNewGameData("pizza", PlayGameData.GameType.LOCAL, black, white).toBuilder().setPhase(Phase.IN_GAME).build();
     controller = new GoGameController(GAME_DATAS, gameData, analytics);
   }

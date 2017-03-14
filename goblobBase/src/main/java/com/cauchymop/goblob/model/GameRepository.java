@@ -139,8 +139,8 @@ public abstract class GameRepository {
   }
 
   public PlayGameData.GameData createNewLocalGame() {
-    PlayGameData.GoPlayer black = gameDatas.createGamePlayer(PLAYER_ONE_ID, playerOneDefaultName.get());
-    PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName);
+    PlayGameData.GoPlayer black = gameDatas.createGamePlayer(PLAYER_ONE_ID, playerOneDefaultName.get(), true);
+    PlayGameData.GoPlayer white = gameDatas.createGamePlayer(PLAYER_TWO_ID, playerTwoDefaultName, true);
     removeFromCache(LOCAL_MATCH_ID);
     PlayGameData.GameData localGame = gameDatas.createNewGameData(LOCAL_MATCH_ID, PlayGameData.GameType.LOCAL, black, white);
     analytics.gameCreated(localGame);
