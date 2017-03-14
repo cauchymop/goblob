@@ -1,5 +1,20 @@
 - In Progress
-   - Continue InGame Actions: Now playMode is broken, Pass/Pass crashes
+   - Continue InGame Actions: Pass/Pass crashes:
+   03-14 22:56:58.146 31029-31029/com.cauchymop.goblob.debug E/AndroidRuntime: FATAL EXCEPTION: main
+       Process: com.cauchymop.goblob.debug, PID: 31029
+       java.lang.NullPointerException: Attempt to invoke virtual method 'com.cauchymop.goblob.model.GoBoard com.cauchymop.goblob.model.GoGame.getBoard()' on a null object reference
+           at com.cauchymop.goblob.presenter.GamePresenter.getBoardViewModel(GamePresenter.java:85)
+           at com.cauchymop.goblob.presenter.GamePresenter.getInGameViewModel(GamePresenter.java:55)
+           at com.cauchymop.goblob.presenter.GamePresenter.updateGame(GamePresenter.java:44)
+           at com.cauchymop.goblob.presenter.GamePresenter.gameChanged(GamePresenter.java:70)
+           at com.cauchymop.goblob.model.GameRepository.fireGameChanged(GameRepository.java:117)
+           at com.cauchymop.goblob.model.GameRepository.saveToCache(GameRepository.java:67)
+           at com.cauchymop.goblob.model.GameRepository.commitGameChanges(GameRepository.java:49)
+           at com.cauchymop.goblob.presenter.GamePresenter.commitGameChanges(GamePresenter.java:219)
+           at com.cauchymop.goblob.presenter.GamePresenter.onPass(GamePresenter.java:209)
+           at com.cauchymop.goblob.ui.InGameViewAndroid.onPass(InGameViewAndroid.java:278)
+           at com.cauchymop.goblob.ui.InGameViewAndroid_ViewBinding$1.doClick(InGameViewAndroid_ViewBinding.java:37)
+
    - Rename InGameView as it does more than the InGame phase (or rename phase?)
 
 Debugging:

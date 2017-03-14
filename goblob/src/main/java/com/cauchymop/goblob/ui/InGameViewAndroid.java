@@ -52,6 +52,9 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
     this.avatarManager = avatarManager;
     inflate(getContext(), R.layout.fragment_game_ingame, this);
     ButterKnife.bind(this);
+    // TODO: Move BoardView to XML?
+    goBoardView = new GoBoardViewAndroid(getContext());
+    boardViewContainer.addView(goBoardView);
   }
 
 
@@ -258,10 +261,6 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   }
 
   private void updateGoBoardView(BoardViewModel boardViewModel) {
-    if (goBoardView == null) {
-      goBoardView = new GoBoardViewAndroid(getContext());
-      boardViewContainer.addView(goBoardView);
-    }
     goBoardView.setBoard(boardViewModel);
 
 //      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());

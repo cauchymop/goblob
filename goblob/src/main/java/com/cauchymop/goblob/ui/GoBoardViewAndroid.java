@@ -208,5 +208,6 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   public void setBoard(BoardViewModel boardViewModel) {
     this.boardViewModel = boardViewModel;
     setClickable(boardViewModel.isInteractive());
+    invalidate();
   }
 }
