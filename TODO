@@ -1,7 +1,9 @@
 - In Progress
+   - Continue InGame Actions: Now playMode is broken, Pass/Pass crashes
+   - Rename InGameView as it does more than the InGame phase (or rename phase?)
 
 Debugging:
-- playing a game (alternating moves) is  flaky if 2 remote players on same device.
+- playing a game (alternating moves) is flaky if 2 remote players on same device.
 
 In progress:
     - Continue to dummify all subviews of InGameView.

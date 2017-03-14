@@ -258,6 +258,7 @@ public class GoGameController implements Serializable {
       gameData.setPhase(Phase.CONFIGURATION);
     }
     gameData.setTurn(computeConfigurationNextTurn());
+    analytics.configurationChanged(gameData);
   }
 
   private boolean isConfigurationAgreed(GameData initialGame,
@@ -312,5 +313,9 @@ public class GoGameController implements Serializable {
     gameData.getGameConfigurationBuilder().setBlack(white);
     gameData.getGameConfigurationBuilder().setWhite(black);
     gameData.setTurn(getOpponentColor());
+  }
+
+  public boolean pass() {
+    return playMove(gameDatas.createPassMove());
   }
 }

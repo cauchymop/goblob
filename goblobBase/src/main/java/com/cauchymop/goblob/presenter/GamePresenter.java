@@ -12,8 +12,10 @@ import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.model.PlayerViewModel;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
+import com.cauchymop.goblob.view.GoBoardView;
+import com.cauchymop.goblob.view.InGameView;
 
-public class GamePresenter implements BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener {
+public class GamePresenter implements GoBoardView.BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener, InGameView.InGameActionListener {
 
   private Analytics analytics;
   private GoGameController goGameController;
@@ -39,29 +41,18 @@ public class GamePresenter implements BoardEventListener, ConfigurationEventList
     }
     goGameController = new GoGameController(gameDatas, currentGame, analytics);
     if (isConfigured()) {
-      view.initInGameView(getInGameViewModel());
-      view.setMovePlayedListener(this);
+      view.setInGameViewModel(getInGameViewModel());
+      view.setInGameActionListener(this);
     } else {
-      view.initConfigurationView(getConfigurationViewModel());
+      view.setConfigurationViewModel(getConfigurationViewModel());
       view.setConfigurationViewListener(this);
     }
   }
 
-  public void onIntersectionSelected(int x, int y) {
-    if (goGameController.isLocalTurn()) {
-      boolean played = goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
-
-      if (played) {
-        commitGameChanges();
-      } else {
-        view.buzz();
-        analytics.invalidMovePlayed(goGameController.getGameConfiguration());
-      }
-    }
-  }
-
   public InGameViewModel getInGameViewModel() {
-    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel());
+    boolean passActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.IN_GAME;
+    boolean doneActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING;;
+    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel(), passActionAvailable, doneActionAvailable);
   }
 
   private PlayerViewModel getCurrentPlayerViewModel() {
@@ -198,10 +189,46 @@ public class GamePresenter implements BoardEventListener, ConfigurationEventList
     commitGameChanges();
   }
 
+  @Override
+  public void onIntersectionSelected(int x, int y) {
+    if (goGameController.isLocalTurn()) {
+      boolean played = goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
+
+      if (played) {
+        commitGameChanges();
+      } else {
+        view.buzz();
+        analytics.invalidMovePlayed(goGameController.getGameConfiguration());
+      }
+    }
+  }
+
+  @Override
+  public void onPass() {
+    goGameController.pass();
+    commitGameChanges();
+  }
+
+  @Override
+  public void onDone() {
+
+  }
+
   private void commitGameChanges() {
     PlayGameData.GameData gameData = goGameController.buildGameData();
     gameRepository.commitGameChanges(gameData);
-    analytics.configurationChanged(gameData);
-    view.setConfigurationViewModel(getConfigurationViewModel());
+    switch (goGameController.getPhase()) {
+      case CONFIGURATION:
+        view.setConfigurationViewModel(getConfigurationViewModel());
+        break;
+      case IN_GAME:
+      case DEAD_STONE_MARKING:
+      case FINISHED:
+        view.setInGameViewModel(getInGameViewModel());
+        break;
+      default:
+        throw new RuntimeException("Invalid Phase: " + goGameController.getPhase());
+    }
   }
+
 }

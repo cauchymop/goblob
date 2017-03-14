@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.widget.ViewSwitcher;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.Analytics;
@@ -17,10 +17,10 @@ import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.InGameViewModel;
-import com.cauchymop.goblob.presenter.BoardEventListener;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.presenter.GamePresenter;
 import com.cauchymop.goblob.view.GameView;
+import com.cauchymop.goblob.view.InGameView;
 
 import javax.inject.Inject;
 
@@ -29,6 +29,9 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 public class GameFragment extends GoBlobBaseFragment implements GameView {
+
+  private static final int GAME_CONFIGURATION_VIEW_INDEX = 0;
+  private static final int IN_GAME_VIEW_INDEX = 1;
 
   @Inject
   GameDatas gameDatas;
@@ -43,7 +46,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   GameRepository gameRepository;
 
   @BindView(R.id.current_game_view)
-  FrameLayout currentGameViewContainer;
+  ViewSwitcher currentGameViewContainer;
 
   private InGameViewAndroid inGameView;
   private GameConfigurationViewAndroid gameConfigurationView;
@@ -74,8 +77,11 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    inGameView = new InGameViewAndroid(getContext(), gameDatas, avatarManager);
     gameConfigurationView = new GameConfigurationViewAndroid(getContext());
+    inGameView = new InGameViewAndroid(getContext(), gameDatas, avatarManager);
+    ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    currentGameViewContainer.addView(gameConfigurationView, GAME_CONFIGURATION_VIEW_INDEX, params);
+    currentGameViewContainer.addView(inGameView, IN_GAME_VIEW_INDEX, params);
     gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, this);
   }
 
@@ -88,22 +94,20 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   }
 
   @Override
-  public void initInGameView(final InGameViewModel inGameViewModel) {
-    displaySubView(inGameView);
-    inGameView.setInGameModel(inGameViewModel);
-  }
-
-  public void displaySubView(View view) {
-    currentGameViewContainer.removeAllViews();
-    currentGameViewContainer.addView(view);
-//    FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-//    ft.replace(R.id.current_game_view, fragment).commitAllowingStateLoss();
-
+  public void setConfigurationViewModel(ConfigurationViewModel configurationViewModel) {
+    currentGameViewContainer.setDisplayedChild(GAME_CONFIGURATION_VIEW_INDEX);
+    gameConfigurationView.setConfigurationModel(configurationViewModel);
   }
 
   @Override
-  public void setMovePlayedListener(BoardEventListener boardEventListener) {
-    inGameView.setMovePlayedListener(boardEventListener);
+  public void setInGameViewModel(InGameViewModel inGameViewModel) {
+    currentGameViewContainer.setDisplayedChild(IN_GAME_VIEW_INDEX);
+    inGameView.setInGameModel(inGameViewModel);
+  }
+
+  @Override
+  public void setInGameActionListener(InGameView.InGameActionListener inGameActionListener) {
+    inGameView.setInGameActionListener(inGameActionListener);
   }
 
   @Override
@@ -126,16 +130,5 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @Override
   public void clear() {
     // TODO
-  }
-
-  @Override
-  public void setConfigurationViewModel(ConfigurationViewModel configurationViewModel) {
-    gameConfigurationView.setConfigurationModel(configurationViewModel);
-  }
-
-  @Override
-  public void initConfigurationView(ConfigurationViewModel configurationViewModel) {
-    displaySubView(gameConfigurationView);
-    setConfigurationViewModel(configurationViewModel);
   }
 }

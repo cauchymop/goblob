@@ -10,7 +10,6 @@ import android.graphics.Rect;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.BoardViewModel;
-import com.cauchymop.goblob.presenter.BoardEventListener;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GoBoardView;
 import com.google.common.collect.Lists;

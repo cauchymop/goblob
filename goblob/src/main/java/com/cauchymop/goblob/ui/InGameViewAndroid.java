@@ -13,11 +13,11 @@ import com.cauchymop.goblob.model.BoardViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.model.PlayerViewModel;
-import com.cauchymop.goblob.presenter.BoardEventListener;
 import com.cauchymop.goblob.view.InGameView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Game Page Fragment.
@@ -36,13 +36,15 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 
 
   @BindView(R.id.boardViewContainer) FrameLayout boardViewContainer;
-  @BindView(R.id.action_button) Button actionButton;
+  @BindView(R.id.action_button_pass) Button actionButtonPass;
+  @BindView(R.id.action_button_done) Button actionButtonDone;
   @BindView(R.id.title) TextView titleView;
   @BindView(R.id.titleImage) ImageView titleImage;
   @BindView(R.id.avatarImage) ImageView avatarImage;
   @BindView(R.id.message_textview) TextView messageView;
 
   private GoBoardViewAndroid goBoardView;
+  private InGameActionListener inGameActionListener;
 
   public InGameViewAndroid(Context context, GameDatas gameDatas, AvatarManager avatarManager) {
     super(context);
@@ -240,16 +242,22 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
      */
 
     if (inGameViewModel != null) {
-      initGoBoardView(inGameViewModel.getBoardViewModel());
-      initCurrentPlayerView(inGameViewModel.getCurrentPlayerViewModel());
+      updateGoBoardView(inGameViewModel.getBoardViewModel());
+      updateCurrentPlayerView(inGameViewModel.getCurrentPlayerViewModel());
+      updateActionButton(inGameViewModel);
     }
   }
 
-  private void initCurrentPlayerView(PlayerViewModel playerViewModel) {
+  private void updateActionButton(InGameViewModel inGameViewModel) {
+    actionButtonPass.setVisibility(inGameViewModel.isPassActionAvailable() ? VISIBLE : GONE);
+    actionButtonDone.setVisibility(inGameViewModel.isDoneActionAvailable() ? VISIBLE : GONE);
+  }
+
+  private void updateCurrentPlayerView(PlayerViewModel playerViewModel) {
     titleView.setText(playerViewModel.getPlayerName());
   }
 
-  private void initGoBoardView(BoardViewModel boardViewModel) {
+  private void updateGoBoardView(BoardViewModel boardViewModel) {
     if (goBoardView == null) {
       goBoardView = new GoBoardViewAndroid(getContext());
       boardViewContainer.addView(goBoardView);
@@ -261,8 +269,20 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   }
 
   @Override
-  public void setMovePlayedListener(BoardEventListener boardEventListener) {
-    goBoardView.setBoardEventListener(boardEventListener);
+  public void setInGameActionListener(InGameActionListener inGameActionListener) {
+    goBoardView.setBoardEventListener(inGameActionListener);
+    this.inGameActionListener = inGameActionListener;
   }
+
+  @OnClick(R.id.action_button_pass)
+  void onPass() {
+    inGameActionListener.onPass();
+  }
+  
+  @OnClick(R.id.action_button_done)
+  void onDone() {
+    inGameActionListener.onDone();
+  }
+  
 
 }
