@@ -12,9 +12,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.view.GameConfigurationView;
+import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

@@ -1,4 +1,4 @@
-package com.cauchymop.goblob.model;
+package com.cauchymop.goblob.viewmodel;
 
 import com.cauchymop.goblob.proto.PlayGameData;
 

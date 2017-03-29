@@ -1,6 +1,7 @@
 package com.cauchymop.goblob.ui;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -9,11 +10,11 @@ import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.BoardViewModel;
 import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.InGameViewModel;
-import com.cauchymop.goblob.model.PlayerViewModel;
 import com.cauchymop.goblob.view.InGameView;
+import com.cauchymop.goblob.viewmodel.BoardViewModel;
+import com.cauchymop.goblob.viewmodel.InGameViewModel;
+import com.cauchymop.goblob.viewmodel.PlayerViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,8 +57,6 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
     goBoardView = new GoBoardViewAndroid(getContext());
     boardViewContainer.addView(goBoardView);
   }
-
-
 
 //  @Override
 //  public void onCreate(Bundle savedInstanceState) {
@@ -114,61 +113,6 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 //    return super.onOptionsItemSelected(item);
 //  }
 
-//  private void initViews() {
-//    showActionButton();
-//    initFromGameState();
-//    actionButton.setEnabled(goGameController.isLocalTurn());
-//  }
-
-//  private void showActionButton() {
-//    switch(goGameController.getPhase()) {
-//      case IN_GAME:
-//        showActionButton(R.string.button_pass_label, new View.OnClickListener() {
-//          @Override
-//          public void onClick(View v) {
-//            goGameController.playMoveOrToggleDeadStone(gameDatas.createPassMove());
-//          }
-//        });
-//        break;
-//      case DEAD_STONE_MARKING:
-//        showActionButton(R.string.button_done_label, new View.OnClickListener() {
-//          @Override
-//          public void onClick(View v) {
-//            goGameController.markingTurnDone();
-//            endTurn();
-//          }
-//        });
-//        break;
-//      default:
-//        hideActionButton();
-//    }
-//  }
-//
-//  private void showActionButton(int buttonLabel, View.OnClickListener clickListener) {
-//    actionButton.setVisibility(View.VISIBLE);
-//    actionButton.setText(buttonLabel);
-//    actionButton.setOnClickListener(clickListener);
-//  }
-//
-//  private void hideActionButton() {
-//    actionButton.setVisibility(View.GONE);
-//  }
-
-  private void endTurn() {
-//    getGoBlobActivity().endTurn(goGameController.buildGameData());
-  }
-
-
-//  private void initFromGameState() {
-//    getActivity().runOnUiThread(new Runnable() {
-//      @Override
-//      public void run() {
-//        initTitleArea();
-//        initMessageArea();
-//        updateAchievements();
-//      }
-//    });
-//  }
 
 //  private void initTitleArea() {
 //    final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
@@ -177,79 +121,13 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 //    avatarManager.loadImage(avatarImage, currentPlayer.getName());
 //  }
 
-//  /**
-//   * Display a message if needed (other player has passed...), clean the message area otherwise.
-//   */
-//  private void initMessageArea() {
-//    final String message;
-//    if (goGameController.isGameFinished()) {
-//      String winnerName = goGameController.getPlayerForColor(goGameController.getScore().getWinner()).getName();
-//      if (goGameController.getScore().getResigned()) {
-//        message = getString(R.string.end_of_game_resigned_message, winnerName);
-//      } else {
-//        message = getString(R.string.end_of_game_message, winnerName, goGameController.getScore().getWonBy());
-//      }
-//    } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
-//      message = getString(R.string.marking_message);
-//    } else if (goGameController.getGame().isLastMovePass()) {
-//      message = getString(R.string.opponent_passed_message, goGameController.getOpponent().getName());
-//    } else {
-//      message = null;
-//    }
-//
-//    messageView.setText(message);
-//  }
-
-  private void updateAchievements() {
-//    if (!isSignedIn() || !goGameController.isGameFinished()) {
-//      return;
-//    }
-//    switch (goGameController.getGame().getBoardSize()) {
-//      case 9:
-//        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_9x9));
-//        break;
-//      case 13:
-//        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_13x13));
-//        break;
-//      case 19:
-//        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_19x19));
-//        break;
-//    }
-//    if (goGameController.isLocalGame()) {
-//      getGoBlobActivity().unlockAchievement(getString(R.string.achievements_local));
-//    } else {
-//      getGoBlobActivity().unlockAchievement(getString(R.string.achievements_remote));
-//      if (goGameController.isLocalPlayer(goGameController.getWinner())) {
-//        getGoBlobActivity().unlockAchievement(getString(R.string.achievements_winner));
-//      }
-//    }
-  }
-
-//  private void playMonteCarloMove() {
-//    int bestMove = MonteCarlo.getBestMove(goGameController.getGame(), 1000);
-//    int boardSize = goGameController.getGameConfiguration().getBoardSize();
-//    int x = bestMove % boardSize;
-//    int y = bestMove / boardSize;
-//    goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
-//  }
 
   @Override
-  public void setInGameModel(InGameViewModel inGameViewModel) {
-    /*
-    goBoardView = new GoBoardView(getActivity().getApplicationContext(), goGameController);
-    goBoardView.addListener(this);
-    showActionButton();
-    boardViewContainer.addView(goBoardView);
-    initFromGameState();
-    enableInteractions(goGameController.isLocalTurn());
-     */
-
-    if (inGameViewModel != null) {
-      updateGoBoardView(inGameViewModel.getBoardViewModel());
-      updateCurrentPlayerView(inGameViewModel.getCurrentPlayerViewModel());
-      updateActionButton(inGameViewModel);
-      updateMessageArea(inGameViewModel.getMessage());
-    }
+  public void setInGameModel(@NonNull InGameViewModel inGameViewModel) {
+    updateGoBoardView(inGameViewModel.getBoardViewModel());
+    updateCurrentPlayerView(inGameViewModel.getCurrentPlayerViewModel());
+    updateActionButton(inGameViewModel);
+    updateMessageArea(inGameViewModel.getMessage());
   }
 
   public void updateMessageArea(String message) {

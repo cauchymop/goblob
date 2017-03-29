@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity
     if (Objects.equal(androidGameRepository.getCurrentMatchId(), gameData.getMatchId())) {
       gameSelected(gameData);
     }
+
     if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
       Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
       vibrator.vibrate(200);

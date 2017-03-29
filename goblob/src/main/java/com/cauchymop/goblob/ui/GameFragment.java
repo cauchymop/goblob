@@ -13,14 +13,14 @@ import android.widget.ViewSwitcher;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
-import com.cauchymop.goblob.model.InGameViewModel;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.presenter.GamePresenter;
 import com.cauchymop.goblob.view.GameView;
 import com.cauchymop.goblob.view.InGameView;
+import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
+import com.cauchymop.goblob.viewmodel.InGameViewModel;
 
 import javax.inject.Inject;
 
@@ -82,7 +82,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     currentGameViewContainer.addView(gameConfigurationView, GAME_CONFIGURATION_VIEW_INDEX, params);
     currentGameViewContainer.addView(inGameView, IN_GAME_VIEW_INDEX, params);
-    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, new GameMessageGeneratorAndroid(getActivity().getApplicationContext()), this);
+    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, new GameMessageGeneratorAndroid(getActivity().getApplicationContext()), new AchievementManagerAndroid(getGoBlobActivity()), this);
   }
 
   @Override

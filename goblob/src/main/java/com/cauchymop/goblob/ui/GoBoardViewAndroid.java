@@ -9,9 +9,9 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.BoardViewModel;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GoBoardView;
+import com.cauchymop.goblob.viewmodel.BoardViewModel;
 import com.google.common.collect.Lists;
 
 import java.util.List;

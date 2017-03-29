@@ -1,6 +1,6 @@
 package com.cauchymop.goblob.view;
 
-import com.cauchymop.goblob.model.BoardViewModel;
+import com.cauchymop.goblob.viewmodel.BoardViewModel;
 
 public interface GoBoardView {
   void setBoardEventListener(BoardEventListener boardEventListener);

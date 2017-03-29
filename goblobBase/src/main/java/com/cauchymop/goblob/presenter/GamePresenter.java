@@ -1,19 +1,19 @@
 package com.cauchymop.goblob.presenter;
 
 import com.cauchymop.goblob.model.Analytics;
-import com.cauchymop.goblob.model.BoardViewModel;
-import com.cauchymop.goblob.model.ConfigurationViewModel;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoBoard;
 import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
-import com.cauchymop.goblob.model.InGameViewModel;
-import com.cauchymop.goblob.model.PlayerViewModel;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
 import com.cauchymop.goblob.view.GoBoardView;
 import com.cauchymop.goblob.view.InGameView;
+import com.cauchymop.goblob.viewmodel.BoardViewModel;
+import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
+import com.cauchymop.goblob.viewmodel.InGameViewModel;
+import com.cauchymop.goblob.viewmodel.PlayerViewModel;
 
 public class GamePresenter implements GoBoardView.BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener, InGameView.InGameActionListener {
 
@@ -21,15 +21,17 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   private GoGameController goGameController;
   private GameRepository gameRepository;
   private GameMessageGenerator gameMessageGenerator;
+  private AchievementManager achievementManager;
   private GameView view;
   private GameDatas gameDatas;
 
   public GamePresenter(GameDatas gameDatas, Analytics analytics,
-      GameRepository gameRepository, GameMessageGenerator gameMessageGenerator, final GameView view) {
+      GameRepository gameRepository, GameMessageGenerator gameMessageGenerator, AchievementManager achievementManager, final GameView view) {
     this.gameDatas = gameDatas;
     this.analytics = analytics;
     this.gameRepository = gameRepository;
     this.gameMessageGenerator = gameMessageGenerator;
+    this.achievementManager = achievementManager;
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
     updateFromGame(gameRepository.getCurrentGame());
@@ -47,6 +49,33 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     } else {
       view.setConfigurationViewModel(getConfigurationViewModel());
       view.setConfigurationViewListener(this);
+    }
+
+    updateAchievements(gameData);
+  }
+
+  private void updateAchievements(PlayGameData.GameData gameData) {
+    if (!goGameController.isGameFinished()) {
+      return;
+    }
+    switch (goGameController.getGame().getBoardSize()) {
+      case 9:
+        achievementManager.unlockAchievement9x9();
+        break;
+      case 13:
+        achievementManager.unlockAchievement13x13();
+        break;
+      case 19:
+        achievementManager.unlockAchievement19x19();
+        break;
+    }
+    if (goGameController.isLocalGame()) {
+      achievementManager.unlockAchievementLocal();
+    } else {
+      achievementManager.unlockAchievementRemote();
+      if (goGameController.getWinner().getIsLocal()) {
+        achievementManager.unlockAchievementWinner();
+      }
     }
   }
 
@@ -231,7 +260,8 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
 
   @Override
   public void onDone() {
-
+    goGameController.markingTurnDone();
+    commitGameChanges();
   }
 
   private void commitGameChanges() {
@@ -250,5 +280,13 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
         throw new RuntimeException("Invalid Phase: " + goGameController.getPhase());
     }
   }
+
+//  private void playMonteCarloMove() {
+//    int bestMove = MonteCarlo.getBestMove(goGameController.getGame(), 1000);
+//    int boardSize = goGameController.getGameConfiguration().getBoardSize();
+//    int x = bestMove % boardSize;
+//    int y = bestMove / boardSize;
+//    goGameController.playMoveOrToggleDeadStone(gameDatas.createMove(x, y));
+//  }
 
 }
