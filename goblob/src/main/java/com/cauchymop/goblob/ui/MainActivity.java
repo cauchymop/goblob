@@ -401,7 +401,9 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void unlockAchievement(String achievementId) {
-    Achievements.unlock(googleApiClient, achievementId);
+    if (isSignedIn()) {
+      Achievements.unlock(googleApiClient, achievementId);
+    }
   }
 
   public void setWaitingScreenVisible(boolean visible) {

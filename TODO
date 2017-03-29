@@ -1,5 +1,8 @@
 - In Progress
-   - Continue InGame Actions
+   - TODO: Debug: Marking Turn done seems to giveTurn to wrong Player
+   - TODO: Center Message in InGameView
+   - TODO: Finish InGame Current Player View (Icon and Color)
+   - TODO: InGame Actions from menu
    - Rename InGameView as it does more than the InGame phase (or rename phase?)
 
 Debugging:
