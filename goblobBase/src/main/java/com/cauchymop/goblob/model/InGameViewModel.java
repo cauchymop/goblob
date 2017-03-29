@@ -6,13 +6,15 @@ public class InGameViewModel {
   private final PlayerViewModel currentPlayerViewModel;
   private final boolean passActionAvailable;
   private final boolean doneActionAvailable;
+  private final String message;
 
   public InGameViewModel(BoardViewModel boardViewModel, PlayerViewModel currentPlayerViewModel,
-      boolean passActionAvailable, boolean doneActionAvailable) {
+      boolean passActionAvailable, boolean doneActionAvailable, String message) {
     this.boardViewModel = boardViewModel;
     this.currentPlayerViewModel = currentPlayerViewModel;
     this.passActionAvailable = passActionAvailable;
     this.doneActionAvailable = doneActionAvailable;
+    this.message = message;
   }
 
   public BoardViewModel getBoardViewModel() {
@@ -30,4 +32,9 @@ public class InGameViewModel {
   public boolean isDoneActionAvailable() {
     return doneActionAvailable;
   }
+
+  public String getMessage() {
+    return message;
+  }
+
 }

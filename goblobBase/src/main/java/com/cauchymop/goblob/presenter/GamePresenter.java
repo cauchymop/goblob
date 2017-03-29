@@ -20,14 +20,16 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   private Analytics analytics;
   private GoGameController goGameController;
   private GameRepository gameRepository;
+  private GameMessageGenerator gameMessageGenerator;
   private GameView view;
   private GameDatas gameDatas;
 
   public GamePresenter(GameDatas gameDatas, Analytics analytics,
-      GameRepository gameRepository, final GameView view) {
+      GameRepository gameRepository, GameMessageGenerator gameMessageGenerator, final GameView view) {
     this.gameDatas = gameDatas;
     this.analytics = analytics;
     this.gameRepository = gameRepository;
+    this.gameMessageGenerator = gameMessageGenerator;
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
     updateFromGame(gameRepository.getCurrentGame());
@@ -51,7 +53,26 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   public InGameViewModel getInGameViewModel() {
     boolean passActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.IN_GAME;
     boolean doneActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING;;
-    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel(), passActionAvailable, doneActionAvailable);
+    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel(), passActionAvailable, doneActionAvailable, getInGameMessage());
+  }
+
+  private String getInGameMessage() {
+    final String message;
+    if (goGameController.isGameFinished()) {
+      String winnerName = goGameController.getPlayerForColor(goGameController.getScore().getWinner()).getName();
+      if (goGameController.getScore().getResigned()) {
+        message = gameMessageGenerator.getGameResignedMessage(winnerName);
+      } else {
+        message = gameMessageGenerator.getEndOfGameMessage(winnerName, goGameController.getScore().getWonBy());
+      }
+    } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
+      message = gameMessageGenerator.getStoneMarkingMessage();
+    } else if (goGameController.getGame().isLastMovePass()) {
+      message = gameMessageGenerator.getOpponentPassedMessage(goGameController.getOpponent().getName());
+    } else {
+      message = null;
+    }
+    return message;
   }
 
   private PlayerViewModel getCurrentPlayerViewModel() {
@@ -117,13 +138,13 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     return new ConfigurationViewModel(goGameController.getGameConfiguration(), getConfigurationMessage(), goGameController.isLocalTurn());
   }
 
-  private ConfigurationViewModel.ConfigurationMessage getConfigurationMessage() {
+  private String getConfigurationMessage() {
     if (goGameController.getPhase() == PlayGameData.GameData.Phase.INITIAL) {
-      return ConfigurationViewModel.ConfigurationMessage.INITIAL;
+      return gameMessageGenerator.getConfigurationMessageInitial();
     } else if (goGameController.isLocalTurn()) {
-      return ConfigurationViewModel.ConfigurationMessage.ACCEPT_OR_CHANGE;
+      return gameMessageGenerator.getConfigurationMessageAcceptOrChange();
     } else {
-      return ConfigurationViewModel.ConfigurationMessage.WAITING_FOR_OPPONENT;
+      return gameMessageGenerator.getConfigurationMessageWaitingForOpponent();
     }
   }
 

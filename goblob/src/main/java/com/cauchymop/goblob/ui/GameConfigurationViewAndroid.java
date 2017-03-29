@@ -65,11 +65,10 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
     setHandicap(configurationViewModel.getHandicap());
     blackPlayerNameField.setText(configurationViewModel.getBlackPlayerName());
     whitePlayerNameField.setText(configurationViewModel.getWhitePlayerName());
-    configurationMessage.setText(getConfigurationMessage(configurationViewModel.getConfigurationMessage()));
+    configurationMessage.setText(configurationViewModel.getConfigurationMessage());
     boolean interactionsEnabled = configurationViewModel.isInteractionsEnabled();
     setEnabled(configurationContainer, interactionsEnabled);
     configurationDoneButton.setVisibility(interactionsEnabled ? View.VISIBLE : View.GONE);
-
   }
 
   private void setEnabled(ViewGroup vg, boolean enable) {
@@ -79,19 +78,6 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
       if (child instanceof ViewGroup) {
         setEnabled((ViewGroup) child, enable);
       }
-    }
-  }
-
-  private int getConfigurationMessage(ConfigurationViewModel.ConfigurationMessage configurationMessage) {
-    switch (configurationMessage) {
-      case INITIAL:
-        return R.string.configuration_message_initial;
-      case ACCEPT_OR_CHANGE:
-        return R.string.configuration_message_accept_or_change;
-      case WAITING_FOR_OPPONENT:
-        return R.string.configuration_message_waiting_for_opponent;
-      default:
-        throw new RuntimeException("Invalid Configuration Message: " + configurationMessage);
     }
   }
 

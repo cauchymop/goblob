@@ -4,22 +4,16 @@ import com.cauchymop.goblob.proto.PlayGameData;
 
 public class ConfigurationViewModel {
 
-  public enum ConfigurationMessage {
-    INITIAL,
-    ACCEPT_OR_CHANGE,
-    WAITING_FOR_OPPONENT
-  }
-
   private final double komi;
   private final int boardSize;
   private final int handicap;
   private final String blackPlayerName;
   private final String whitePlayerName;
-  private final ConfigurationMessage configurationMessage;
+  private final String configurationMessage;
   private final boolean interactionsEnabled;
 
   public ConfigurationViewModel(PlayGameData.GameConfiguration gameConfiguration,
-      ConfigurationMessage configurationMessage, boolean interactionsEnabled) {
+      String configurationMessage, boolean interactionsEnabled) {
     this.komi = gameConfiguration.getKomi();
     this.boardSize = gameConfiguration.getBoardSize();
     this.handicap = gameConfiguration.getHandicap();
@@ -49,7 +43,7 @@ public class ConfigurationViewModel {
     return whitePlayerName;
   }
 
-  public ConfigurationMessage getConfigurationMessage() {
+  public String getConfigurationMessage() {
     return configurationMessage;
   }
 

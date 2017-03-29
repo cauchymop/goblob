@@ -248,7 +248,12 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
       updateGoBoardView(inGameViewModel.getBoardViewModel());
       updateCurrentPlayerView(inGameViewModel.getCurrentPlayerViewModel());
       updateActionButton(inGameViewModel);
+      updateMessageArea(inGameViewModel.getMessage());
     }
+  }
+
+  public void updateMessageArea(String message) {
+    messageView.setText(message);
   }
 
   private void updateActionButton(InGameViewModel inGameViewModel) {

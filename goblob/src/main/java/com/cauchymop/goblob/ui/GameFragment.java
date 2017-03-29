@@ -82,7 +82,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     currentGameViewContainer.addView(gameConfigurationView, GAME_CONFIGURATION_VIEW_INDEX, params);
     currentGameViewContainer.addView(inGameView, IN_GAME_VIEW_INDEX, params);
-    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, this);
+    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, new GameMessageGeneratorAndroid(getActivity().getApplicationContext()), this);
   }
 
   @Override
