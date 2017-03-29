@@ -30,16 +30,15 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     this.gameRepository = gameRepository;
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
-    updateGame();
+    updateFromGame(gameRepository.getCurrentGame());
   }
 
-  private void updateGame() {
-    PlayGameData.GameData currentGame = gameRepository.getCurrentGame();
-    if (currentGame == null) {
+  private void updateFromGame(PlayGameData.GameData gameData) {
+    if (gameData == null) {
       view.clear();
       return;
     }
-    goGameController = new GoGameController(gameDatas, currentGame, analytics);
+    goGameController = new GoGameController(gameDatas, gameData, analytics);
     if (isConfigured()) {
       view.setInGameViewModel(getInGameViewModel());
       view.setInGameActionListener(this);
@@ -67,13 +66,13 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   @Override
   public void gameChanged(PlayGameData.GameData gameData) {
     if (gameData.getMatchId().equals(goGameController.getMatchId())) {
-      updateGame();
+      updateFromGame(gameData);
     }
   }
 
   @Override
   public void gameSelected(PlayGameData.GameData gameData) {
-    updateGame();
+    updateFromGame(gameData);
   }
 
   public void clear() {

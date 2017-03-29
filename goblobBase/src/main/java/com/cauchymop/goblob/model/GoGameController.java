@@ -34,7 +34,8 @@ public class GoGameController implements Serializable {
     this.initialGameData = gameData;
     this.gameData = Preconditions.checkNotNull(gameData).toBuilder();
     this.analytics = analytics;
-    if (gameData.getPhase() == Phase.IN_GAME) {
+    // The GoGame settings can change during the configuration, so we postpone its creation.
+    if (gameData.getPhase() != Phase.CONFIGURATION) {
       createGoGame();
       for (Move move : this.gameData.getMoveList()) {
         goGame.play(getPos(move));
