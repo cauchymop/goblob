@@ -87,14 +87,14 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
   }
 
   @OnClick(R.id.configuration_done_button)
-  void fireSwapEvent() {
+  void fireConfigurationValidationEvent() {
     if (configurationEventListener != null) {
       configurationEventListener.onConfigurationValidationEvent();
     }
   }
 
   @OnClick(R.id.swap_players_button)
-  void fireConfigurationValidationEvent() {
+  void fireSwapEvent() {
     if (configurationEventListener != null) {
       configurationEventListener.onSwapEvent();
     }

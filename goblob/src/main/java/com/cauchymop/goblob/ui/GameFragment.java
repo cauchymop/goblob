@@ -66,9 +66,6 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    // TODO:
-    // When InGameView and ConfigurationView will simply be custom Views and not fragments,
-    // we will simply instantiate and return the appropriate one form the given state/viewModel (gameData for now)
     View view = inflater.inflate(R.layout.fragment_game, container, false);
     unbinder = ButterKnife.bind(this, view);
     return view;
@@ -95,14 +92,14 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
 
   @Override
   public void setConfigurationViewModel(ConfigurationViewModel configurationViewModel) {
-    currentGameViewContainer.setDisplayedChild(GAME_CONFIGURATION_VIEW_INDEX);
     gameConfigurationView.setConfigurationModel(configurationViewModel);
+    currentGameViewContainer.setDisplayedChild(GAME_CONFIGURATION_VIEW_INDEX);
   }
 
   @Override
   public void setInGameViewModel(InGameViewModel inGameViewModel) {
-    currentGameViewContainer.setDisplayedChild(IN_GAME_VIEW_INDEX);
     inGameView.setInGameModel(inGameViewModel);
+    currentGameViewContainer.setDisplayedChild(IN_GAME_VIEW_INDEX);
   }
 
   @Override

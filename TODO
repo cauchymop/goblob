@@ -1,11 +1,12 @@
 - In Progress
-   - TODO (DONE?): Debug: Marking Turn done seems to giveTurn to wrong Player
+   - TODO: Refresh problem when receiving a game in configuration phase
+     - steps to reproduce: create a local game with specific names, then create a remote game: the configuration view contains the old specific names.
+     - next debug step: textfield.setText(), as the textfields seem to only contain the old wrong value
+   - TODO: Keyboard onFocus is not enough on Configuration
    - TODO: Center Message in InGameView
    - TODO: Finish InGame Current Player View (Icon and Color)
    - TODO: InGame Actions from menu
-   - Rename InGameView as it does more than the InGame phase (or rename phase?)
-   - Keyboard onFocus is not enough on Configuration
-   - Refresh problem when receiving a game in configuration phase
+   - TODO: Rename InGameView as it does more than the InGame phase (or rename phase?)
 
 Debugging:
 - playing a game (alternating moves) is flaky if 2 remote players on same device.
