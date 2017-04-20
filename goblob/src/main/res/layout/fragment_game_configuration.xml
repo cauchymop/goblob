@@ -62,12 +62,8 @@
 
                     <EditText
                         android:id="@+id/black_player_name"
-                        android:layout_width="0dip"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:hint="@string/name_label"
-                        android:inputType="text"
-                        android:singleLine="true"/>
+                        style="@style/configurationPlayerNameEditText"/>
 
                 </LinearLayout>
 
@@ -87,12 +83,8 @@
 
                     <EditText
                         android:id="@+id/white_player_name"
-                        android:layout_width="0dip"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:hint="@string/name_label"
-                        android:inputType="text"
-                        android:singleLine="true"/>
+                        style="@style/configurationPlayerNameEditText"/>
 
                 </LinearLayout>
 

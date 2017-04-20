@@ -24,4 +24,12 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="configurationPlayerNameEditText">
+        <item name="android:layout_width">0dip</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:inputType">textPersonName</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
 </resources>

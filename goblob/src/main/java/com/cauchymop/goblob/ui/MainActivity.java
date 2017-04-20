@@ -414,8 +414,4 @@ public class MainActivity extends AppCompatActivity
     return googleApiClient.isConnected();
   }
 
-  public void endTurn(GameData gameData) {
-    androidGameRepository.commitGameChanges(gameData);
-    gameSelected(gameData);
-  }
 }
