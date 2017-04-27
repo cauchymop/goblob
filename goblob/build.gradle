@@ -67,7 +67,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            testCoverageEnabled true
+            testCoverageEnabled false
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules-debug.pro'
@@ -93,7 +93,6 @@ android {
     packagingOptions {
         exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
-    buildToolsVersion '25.0.0'
 }
 
 private String getReleasePassword() {
