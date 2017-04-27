@@ -1,7 +1,12 @@
 - In Progress
    - TODO: Refresh problem when receiving a game in configuration phase
      - steps to reproduce: create a local game with specific names, then create a remote game: the configuration view contains the old specific names.
-     - next debug step: textfield.setText(), as the textfields seem to only contain the old wrong value
+     - Local Game + Local does not seem to have the bug (just Local + Remote)
+     - Local + Local in debug still showed the old value before changing it to the model one
+     - OnCreateView recreates a ConfigurationView, InGameView and Presenter every time.
+     - The Presenter creation in onCreateView is what triggers the setConfigurationViewModel call
+     - Still nothing explains the bug (we may have too many views, but maybe not)
+
    - TODO: Keyboard onFocus is not enough on Configuration
    - TODO: Center Message in InGameView
    - TODO: Finish InGame Current Player View (Icon and Color)
