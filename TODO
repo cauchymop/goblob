@@ -6,6 +6,8 @@
      - OnCreateView recreates a ConfigurationView, InGameView and Presenter every time.
      - The Presenter creation in onCreateView is what triggers the setConfigurationViewModel call
      - Still nothing explains the bug (we may have too many views, but maybe not)
+     - Using the profiler, ConfigurationView seem to be garbaged correctly in Local + Local case, not tested Local + Remote case (TODO)
+
 
    - TODO: Keyboard onFocus is not enough on Configuration
    - TODO: Center Message in InGameView
