@@ -75,7 +75,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     gameConfigurationView = new GameConfigurationViewAndroid(getContext());
-    inGameView = new InGameViewAndroid(getContext(), gameDatas, avatarManager);
+    inGameView = new InGameViewAndroid(getContext());
     ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     currentGameViewContainer.addView(gameConfigurationView, GAME_CONFIGURATION_VIEW_INDEX, params);
     currentGameViewContainer.addView(inGameView, IN_GAME_VIEW_INDEX, params);

@@ -9,8 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.view.InGameView;
 import com.cauchymop.goblob.viewmodel.BoardViewModel;
 import com.cauchymop.goblob.viewmodel.InGameViewModel;
@@ -32,9 +30,6 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 //  @Inject AvatarManager avatarManager;
 //  @Inject Analytics analytics;
 
-  final GameDatas gameDatas;
-  final AvatarManager avatarManager;
-
 
   @BindView(R.id.boardViewContainer) FrameLayout boardViewContainer;
   @BindView(R.id.action_button_pass) Button actionButtonPass;
@@ -47,10 +42,8 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   private GoBoardViewAndroid goBoardView;
   private InGameActionListener inGameActionListener;
 
-  public InGameViewAndroid(Context context, GameDatas gameDatas, AvatarManager avatarManager) {
+  public InGameViewAndroid(Context context) {
     super(context);
-    this.gameDatas = gameDatas;
-    this.avatarManager = avatarManager;
     inflate(getContext(), R.layout.fragment_game_ingame, this);
     ButterKnife.bind(this);
     // TODO: Move BoardView to XML?
