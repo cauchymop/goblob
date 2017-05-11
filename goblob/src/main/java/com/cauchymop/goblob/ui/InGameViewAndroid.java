@@ -2,8 +2,9 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.AttributeSet;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,24 +32,36 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 //  @Inject Analytics analytics;
 
 
-  @BindView(R.id.boardViewContainer) FrameLayout boardViewContainer;
   @BindView(R.id.action_button_pass) Button actionButtonPass;
   @BindView(R.id.action_button_done) Button actionButtonDone;
   @BindView(R.id.title) TextView titleView;
   @BindView(R.id.titleImage) ImageView titleImage;
   @BindView(R.id.avatarImage) ImageView avatarImage;
   @BindView(R.id.message_textview) TextView messageView;
+  @BindView(R.id.go_board_view) GoBoardViewAndroid goBoardView;
 
-  private GoBoardViewAndroid goBoardView;
   private InGameActionListener inGameActionListener;
 
   public InGameViewAndroid(Context context) {
     super(context);
+    init();
+  }
+
+  public InGameViewAndroid(Context context,
+      @Nullable AttributeSet attrs) {
+    super(context, attrs);
+    init();
+  }
+
+  public InGameViewAndroid(Context context,
+      @Nullable AttributeSet attrs, int defStyleAttr) {
+    super(context, attrs, defStyleAttr);
+    init();
+  }
+
+  public void init() {
     inflate(getContext(), R.layout.fragment_game_ingame, this);
     ButterKnife.bind(this);
-    // TODO: Move BoardView to XML?
-    goBoardView = new GoBoardViewAndroid(getContext());
-    boardViewContainer.addView(goBoardView);
   }
 
 //  @Override

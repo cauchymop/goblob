@@ -48,8 +48,12 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @BindView(R.id.current_game_view)
   ViewSwitcher currentGameViewContainer;
 
-  private InGameViewAndroid inGameView;
-  private GameConfigurationViewAndroid gameConfigurationView;
+  @BindView(R.id.in_game_view)
+  InGameViewAndroid inGameView;
+
+  @BindView(R.id.configuration_view)
+  GameConfigurationViewAndroid gameConfigurationView;
+
   private GamePresenter gamePresenter;
   private Unbinder unbinder;
 
@@ -74,12 +78,9 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    gameConfigurationView = new GameConfigurationViewAndroid(getContext());
-    inGameView = new InGameViewAndroid(getContext());
-    ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-    currentGameViewContainer.addView(gameConfigurationView, GAME_CONFIGURATION_VIEW_INDEX, params);
-    currentGameViewContainer.addView(inGameView, IN_GAME_VIEW_INDEX, params);
-    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, new GameMessageGeneratorAndroid(getActivity().getApplicationContext()), new AchievementManagerAndroid(getGoBlobActivity()), this);
+    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository,
+        new GameMessageGeneratorAndroid(getActivity().getApplicationContext()),
+        new AchievementManagerAndroid(getGoBlobActivity()), this);
   }
 
   @Override

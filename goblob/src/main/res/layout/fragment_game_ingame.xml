@@ -8,11 +8,11 @@
 
   <include layout="@layout/title_area"/>
 
-  <include layout="@layout/boardview_container"
-           android:layout_width="wrap_content"
-           android:layout_height="0dip"
-           android:layout_weight="1"
-           tools:layout_width="300dp"/>
+  <include
+      layout="@layout/boardview_container"
+      android:layout_width="wrap_content"
+      android:layout_height="0dip"
+      android:layout_weight="1"/>
 
   <include layout="@layout/message_area"/>
 

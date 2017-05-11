@@ -40,4 +40,5 @@ public class BoardViewModel {
   public boolean isInteractive() {
     return isInteractive;
   }
+
 }

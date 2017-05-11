@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.AttributeSet;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.proto.PlayGameData;
@@ -26,19 +27,31 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   private static final double STONE_RATIO = 0.95;
   public static final float HOSHI_SIZE = .1F;
 
-  private BoardViewModel boardViewModel;
+  private BoardViewModel boardViewModel = new BoardViewModel(9,new PlayGameData.Color[9][9], new PlayGameData.Color[9][9], -1, -1, false);
   private BoardEventListener boardEventListener;
 
-  private int marginX;
-  private int marginY;
   private int cellSizeInPixels;
   private Bitmap whiteStoneBitmap;
   private Bitmap blackStoneBitmap;
 
   private Rect rect = new Rect();  // For draw() usage.
 
+  public GoBoardViewAndroid(Context context, AttributeSet attrs) {
+    super(context, attrs);
+    init(context);
+  }
+
+  public GoBoardViewAndroid(Context context, AttributeSet attrs, int defStyleAttr) {
+    super(context, attrs, defStyleAttr);
+    init(context);
+  }
+
   public GoBoardViewAndroid(Context context) {
     super(context);
+    init(context);
+  }
+
+  public void init(Context context) {
     setClickable(true);
     blackStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.black_stone);
     whiteStoneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.white_stone);
@@ -69,9 +82,10 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   @Override
   protected void onSizeChanged(int w, int h, int oldw, int oldh) {
     super.onSizeChanged(w, h, oldw, oldh);
+    if (boardViewModel == null) {
+      return;
+    }
     int boardSizeInPixels = Math.min(getWidth(), getHeight());
-    marginX = (getWidth() - boardSizeInPixels) / 2;
-    marginY = (getHeight() - boardSizeInPixels) / 2;
     cellSizeInPixels = boardSizeInPixels / boardViewModel.getBoardSize();
     linePaint.setStrokeWidth(cellSizeInPixels / 25);
   }
@@ -81,8 +95,8 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
     if (!isClickable()) {
       return false;
     }
-    int xPos = (int) ((x - marginX) / cellSizeInPixels);
-    int yPos = (int) ((y - marginY) / cellSizeInPixels);
+    int xPos = (int) (x / cellSizeInPixels);
+    int yPos = (int) (y / cellSizeInPixels);
     fireClicked(xPos, yPos);
     return true;
   }
@@ -101,10 +115,8 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
     }
 
     int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
-    int marginX = (canvas.getWidth() - boardSizeInPixels) / 2;
-    int marginY = (canvas.getHeight() - boardSizeInPixels) / 2;
-    int startLineX = marginX + cellSizeInPixels / 2;
-    int startLineY = marginY + cellSizeInPixels / 2;
+    int startLineX = cellSizeInPixels / 2;
+    int startLineY = cellSizeInPixels / 2;
     drawBoardLines(canvas, startLineX, startLineY);
     drawHoshis(canvas, startLineX, startLineY);
     drawBoardContent(canvas, startLineX, startLineY);

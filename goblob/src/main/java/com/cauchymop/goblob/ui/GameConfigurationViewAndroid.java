@@ -1,6 +1,8 @@
 package com.cauchymop.goblob.ui;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -54,6 +56,22 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
 
   public GameConfigurationViewAndroid(Context context) {
     super(context);
+    init();
+  }
+
+  public GameConfigurationViewAndroid(Context context,
+      @Nullable AttributeSet attrs) {
+    super(context, attrs);
+    init();
+  }
+
+  public GameConfigurationViewAndroid(Context context,
+      @Nullable AttributeSet attrs, int defStyleAttr) {
+    super(context, attrs, defStyleAttr);
+    init();
+  }
+
+  public void init() {
     inflate(getContext(), R.layout.fragment_game_configuration, this);
     ButterKnife.bind(this);
   }
