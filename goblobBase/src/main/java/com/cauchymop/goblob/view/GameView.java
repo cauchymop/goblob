@@ -13,5 +13,4 @@ public interface GameView {
   void setInGameActionListener(InGameView.InGameActionListener inGameActionListener);
 
   void buzz();
-  void clear();
 }

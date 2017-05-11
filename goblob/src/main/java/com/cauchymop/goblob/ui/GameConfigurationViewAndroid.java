@@ -1,6 +1,8 @@
 package com.cauchymop.goblob.ui;
 
 import android.content.Context;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -77,7 +79,7 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
   }
 
   @Override
-  public void setConfigurationModel(ConfigurationViewModel configurationViewModel) {
+  public void setConfigurationModel(@NonNull ConfigurationViewModel configurationViewModel) {
     setBoardSize(configurationViewModel.getBoardSize());
     komiText.setText(String.valueOf(configurationViewModel.getKomi()));
     setHandicap(configurationViewModel.getHandicap());
@@ -102,6 +104,12 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
   @Override
   public void setConfigurationViewListener(ConfigurationEventListener configurationEventListener) {
     this.configurationEventListener = configurationEventListener;
+  }
+
+  @Override
+  protected Parcelable onSaveInstanceState() {
+    // TODO
+    return super.onSaveInstanceState();
   }
 
   @OnClick(R.id.configuration_done_button)

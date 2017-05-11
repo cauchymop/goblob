@@ -39,7 +39,9 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
 
   private void updateFromGame(PlayGameData.GameData gameData) {
     if (gameData == null) {
-      view.clear();
+      view.setInGameActionListener(null);
+      view.setConfigurationViewListener(null);
+      // TODO: Introduce an empty state? self destroy?
       return;
     }
     goGameController = new GoGameController(gameDatas, gameData, analytics);

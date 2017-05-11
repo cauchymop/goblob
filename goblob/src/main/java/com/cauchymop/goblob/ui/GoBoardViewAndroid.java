@@ -24,7 +24,6 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   private static final Paint whiteFillPaint = createFillPaint(0xFFFFFFFF);
   private static final Paint blackFillPaint = createFillPaint(0xFF000000);
 
-  private static final double STONE_RATIO = 0.95;
   public static final float HOSHI_SIZE = .1F;
 
   private BoardViewModel boardViewModel = new BoardViewModel(9,new PlayGameData.Color[9][9], new PlayGameData.Color[9][9], -1, -1, false);

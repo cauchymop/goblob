@@ -58,8 +58,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   private Unbinder unbinder;
 
   public static GameFragment newInstance() {
-    GameFragment fragment = new GameFragment();
-    return fragment;
+    return new GameFragment();
   }
 
   @Override
@@ -123,10 +122,5 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
       System.err.println("Exception while buzzing");
       e.printStackTrace();
     }
-  }
-
-  @Override
-  public void clear() {
-    // TODO
   }
 }
