@@ -5,10 +5,9 @@
      - Local + Local in debug still showed the old value before changing it to the model one
      - The Presenter creation in onCreateView is what triggers the setConfigurationViewModel call
      - Still nothing explains the bug (we may have too many views, but maybe not)
-     - Using the profiler, ConfigurationView seem to be garbaged correctly in Local + Local case, not tested Local + Remote case (TODO)
+     - Using the profiler, ConfigurationView seem to be garbaged correctly in Local + Local case, and Local + Remote case
      - Validation: the game still uses the correct values, not the one displayed (previous ones)
-     - TODO: TEST  Local + Remote case with memory profiler
-     - TODO: implement onSavedInstanceState on customeViews for rotation (probably only GameConfigurationView needs it)
+     - TODO: implement onSavedInstanceState on customViews for rotation (probably only GameConfigurationView needs it)
 
    - TODO: Keyboard onFocus is not enough on Configuration
    - TODO: Center Message in InGameView
