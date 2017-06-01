@@ -1,6 +1,7 @@
 package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData;
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
@@ -90,6 +91,9 @@ public abstract class GameRepository {
 
   public void selectGame(String matchId) {
     log("selectGame matchId = " + matchId);
+    if (Objects.equal(currentMatchId, matchId)) {
+      return;
+    }
     currentMatchId = matchId;
     if (matchId.equals(GameDatas.NEW_GAME_MATCH_ID)) {
       fireGameSelected(null);

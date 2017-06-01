@@ -7,6 +7,8 @@
      - Still nothing explains the bug (we may have too many views, but maybe not)
      - Using the profiler, ConfigurationView seem to be garbaged correctly in Local + Local case, and Local + Remote case
      - Validation: the game still uses the correct values, not the one displayed (previous ones)
+     - TODO: NOW WE REACHED A POINT WHERE LOCAL LOCAL FAILS AS WELL as we removed a useless double update that was hiding the problem in local
+     - TODO: Use Unit Test to reproduce the bug
      - TODO: implement onSavedInstanceState on customViews for rotation (probably only GameConfigurationView needs it)
 
    - TODO: Keyboard onFocus is not enough on Configuration

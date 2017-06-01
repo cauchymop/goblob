@@ -360,13 +360,14 @@ public class MainActivity extends AppCompatActivity
 
     if (gameDatas.needsApplicationUpdate(gameData)) {
       displayFragment(UpdateApplicationFragment.newInstance());
+      return;
     }
 
     selectMenuItem(gameData.getMatchId());
-    displayFragment(getGameFragment(gameData));
+    displayFragment(getGameFragment());
   }
 
-  protected GameFragment getGameFragment(GameData gameData) {
+  protected GameFragment getGameFragment() {
     if (gameFragment == null) {
       gameFragment = GameFragment.newInstance();
     }
