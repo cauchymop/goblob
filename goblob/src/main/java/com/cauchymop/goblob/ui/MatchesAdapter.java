@@ -26,6 +26,17 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
 
   @Override @NonNull
   public View getDropDownView(int position, View convertView, ViewGroup parent) {
+    return populateView(position, convertView, parent, true);
+  }
+
+  @Override
+  public View getView(int position, View convertView, ViewGroup parent) {
+    // TODO: Add number of games by turn status
+    return populateView(position, convertView, parent, false);
+  }
+
+  @NonNull
+  public View populateView(int position, View convertView, ViewGroup parent, boolean hasIcon) {
     final View matchRowView;
 
     if (convertView == null) {
@@ -49,19 +60,13 @@ public class MatchesAdapter extends ArrayAdapter<MatchMenuItem> {
     secondLineLabelView.setTextColor(textColor);
 
     ImageView iconView = (ImageView) matchRowView.findViewById( R.id.match_type_icon);
-    iconView.setImageDrawable(item.getIcon(getContext()));
-    // May have been set to GONE if it was a closed view.
-    iconView.setVisibility(View.VISIBLE);
+    if(hasIcon) {
+      iconView.setImageDrawable(item.getIcon(getContext()));
+      iconView.setVisibility(View.VISIBLE);
+    } else {
+      iconView.setVisibility(View.GONE);
+    }
 
-    return matchRowView;
-  }
-
-  @Override
-  public View getView(int position, View convertView, ViewGroup parent) {
-    // TODO: Add number of games by turn status
-    final View matchRowView = getDropDownView(position, convertView, parent);
-    View icon = matchRowView.findViewById(R.id.match_type_icon);
-    icon.setVisibility(View.GONE);
     return matchRowView;
   }
 }
