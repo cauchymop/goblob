@@ -9,7 +9,7 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-23.0.3
+    - build-tools-25.0.3
     - android-25
     - extra
     - extra-android-m2repository
@@ -18,10 +18,10 @@ android:
     - extra-android-m2repository
     - addon-google_apis-google-19
     - sys-img-armeabi-v7a-android-19
-    licenses:
-        - 'android-sdk-preview-license-.+'
-        - 'android-sdk-license-.+'
-        - 'google-gdk-license-.+'
+  licenses:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
 
 before_script:
   # Nothing for us
