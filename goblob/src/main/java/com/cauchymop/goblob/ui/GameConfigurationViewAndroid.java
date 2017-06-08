@@ -5,6 +5,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -107,9 +108,9 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
   }
 
   @Override
-  protected Parcelable onSaveInstanceState() {
-    // TODO
-    return super.onSaveInstanceState();
+  protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
+    // We do nothing here a we do not want the System to handle our View States
+    // (our presenter will reset the appropriate state).
   }
 
   @OnClick(R.id.configuration_done_button)

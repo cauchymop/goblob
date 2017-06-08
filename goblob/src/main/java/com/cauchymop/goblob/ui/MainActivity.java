@@ -94,10 +94,6 @@ public class MainActivity extends AppCompatActivity
       androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
     }
 
-    if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
-      displayFragment(new PlayerChoiceFragment());
-    }
-
     googleApiClientManager.registerGoogleApiClientListener(this);
   }
 
