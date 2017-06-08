@@ -1,6 +1,4 @@
 - In Progress
-   - TODO: Keyboard onFocus is not enough on Configuration
-   - TODO: Center Message in InGameView
    - TODO: Finish InGame Current Player View (Icon and Color)
    - TODO: InGame Actions from menu
    - TODO: Rename InGameView as it does more than the InGame phase (or rename phase?)

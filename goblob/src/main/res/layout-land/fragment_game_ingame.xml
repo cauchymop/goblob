@@ -19,14 +19,20 @@
       android:gravity="center"
       android:orientation="vertical">
 
-    <include layout="@layout/title_area" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <include layout="@layout/title_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
 
     <View
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1"
         />
-    <include layout="@layout/message_area"/>
+    <include layout="@layout/message_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
   </LinearLayout>
 
 </LinearLayout>
