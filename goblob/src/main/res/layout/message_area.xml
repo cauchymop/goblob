@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:minHeight="70dp"
     android:orientation="vertical"
     android:gravity="center"
     android:layout_gravity="center"
@@ -15,8 +16,6 @@
       android:id="@+id/action_button_pass"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="5dip"
-      android:layout_marginBottom="15dip"
       android:paddingLeft="20dip"
       android:paddingRight="20dip"
       android:text="@string/button_pass_label"
@@ -26,8 +25,6 @@
       android:id="@+id/action_button_done"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="5dip"
-      android:layout_marginBottom="15dip"
       android:paddingLeft="20dip"
       android:paddingRight="20dip"
       android:text="@string/button_done_label"
@@ -40,6 +37,7 @@
       android:layout_height="wrap_content"
       android:gravity="center"
       android:textAppearance="?android:attr/textAppearanceLarge"
+      tools:visibility="visible"
       tools:text="Olivier Bonal has won, once again!" />
 
 </LinearLayout>

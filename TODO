@@ -1,7 +1,9 @@
 - In Progress
-   - TODO: Bug when marking dead stones (one player never got to confirm)
+   - TODO: Configuration validation (empty komi or player names)
    - TODO: InGame Actions from menu (Undo & Resign and of course I Feel Lucky)
    - TODO: Tests Tests Tests
+   - TODO: When marking dead stones: could be nice to have local player marking first
+   - TODO: When marking dead stones: If not changing anything only one player have a say (probalby fixed by previous point)
    - TODO: Rename InGameView as it does more than the InGame phase (or rename phase?)
 
 Events:
