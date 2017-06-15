@@ -1,6 +1,7 @@
 - In Progress
-   - TODO: Finish InGame Current Player View (Icon and Color)
-   - TODO: InGame Actions from menu
+   - TODO: Bug when marking dead stones (one player never got to confirm)
+   - TODO: InGame Actions from menu (Undo & Resign and of course I Feel Lucky)
+   - TODO: Tests Tests Tests
    - TODO: Rename InGameView as it does more than the InGame phase (or rename phase?)
 
 Events:

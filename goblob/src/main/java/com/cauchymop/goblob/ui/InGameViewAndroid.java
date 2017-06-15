@@ -10,10 +10,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.AvatarManager;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.InGameView;
 import com.cauchymop.goblob.viewmodel.BoardViewModel;
 import com.cauchymop.goblob.viewmodel.InGameViewModel;
 import com.cauchymop.goblob.viewmodel.PlayerViewModel;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,17 +30,13 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 
   private static final String TAG = InGameViewAndroid.class.getName();
 
-//  @Inject AndroidGameRepository androidGameRepository;
-//  @Inject GameDatas gameDatas;
-//  @Inject AvatarManager avatarManager;
-//  @Inject Analytics analytics;
-
+  @Inject AvatarManager avatarManager;
 
   @BindView(R.id.action_button_pass) Button actionButtonPass;
   @BindView(R.id.action_button_done) Button actionButtonDone;
-  @BindView(R.id.title) TextView titleView;
-  @BindView(R.id.titleImage) ImageView titleImage;
-  @BindView(R.id.avatarImage) ImageView avatarImage;
+  @BindView(R.id.current_player_name) TextView currentPLayerNameView;
+  @BindView(R.id.player_color_icon) ImageView playerColorIcon;
+  @BindView(R.id.avatar_image) ImageView avatarImage;
   @BindView(R.id.message_textview) TextView messageView;
   @BindView(R.id.go_board_view) GoBoardViewAndroid goBoardView;
 
@@ -62,6 +62,7 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   public void init() {
     inflate(getContext(), R.layout.fragment_game_ingame, this);
     ButterKnife.bind(this);
+    ((GoApplication)getContext().getApplicationContext()).getComponent().inject(this);
   }
 
 //  @Override
@@ -120,14 +121,6 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
 //  }
 
 
-//  private void initTitleArea() {
-//    final GoPlayer currentPlayer = goGameController.getCurrentPlayer();
-//    titleView.setText(currentPlayer.getName());
-//    titleImage.setImageResource(goGameController.getCurrentColor() == Color.WHITE ? R.drawable.white_stone : R.drawable.black_stone);
-//    avatarManager.loadImage(avatarImage, currentPlayer.getName());
-//  }
-
-
   @Override
   public void setInGameModel(@NonNull InGameViewModel inGameViewModel) {
     updateGoBoardView(inGameViewModel.getBoardViewModel());
@@ -146,14 +139,14 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   }
 
   private void updateCurrentPlayerView(PlayerViewModel playerViewModel) {
-    titleView.setText(playerViewModel.getPlayerName());
+    String playerName = playerViewModel.getPlayerName();
+    currentPLayerNameView.setText(playerName);
+    playerColorIcon.setImageResource(playerViewModel.getPlayerColor() == PlayGameData.Color.BLACK ? R.drawable.black_stone : R.drawable.white_stone);
+    avatarManager.loadImage(avatarImage, playerName);
   }
 
   private void updateGoBoardView(BoardViewModel boardViewModel) {
     goBoardView.setBoard(boardViewModel);
-
-//      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
-//      this.goGameController = new GoGameController(gameDatas, gameData, analytics);
   }
 
   @Override

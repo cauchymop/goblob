@@ -107,7 +107,7 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   }
 
   private PlayerViewModel getCurrentPlayerViewModel() {
-    return new PlayerViewModel(goGameController.getCurrentPlayer().getName());
+    return new PlayerViewModel(goGameController.getCurrentPlayer().getName(), goGameController.getCurrentColor());
   }
 
   @Override
