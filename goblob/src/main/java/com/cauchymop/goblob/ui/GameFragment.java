@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ViewSwitcher;
@@ -56,6 +58,9 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
 
   private GamePresenter gamePresenter;
   private Unbinder unbinder;
+  private boolean undoActionAvailable;
+  private boolean redoActionAvailable;
+  private boolean resignActionAvailable;
 
   public static GameFragment newInstance() {
     return new GameFragment();
@@ -65,6 +70,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     getComponent().inject(this);
+    setHasOptionsMenu(true);
   }
 
   @Override
@@ -91,6 +97,30 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   }
 
   @Override
+  public void onPrepareOptionsMenu(Menu menu) {
+    menu.findItem(R.id.menu_undo).setVisible(undoActionAvailable);
+    menu.findItem(R.id.menu_redo).setVisible(redoActionAvailable);
+    menu.findItem(R.id.menu_resign).setVisible(resignActionAvailable);
+    super.onPrepareOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    int id = item.getItemId();
+    if (id == R.id.menu_undo) {
+      gamePresenter.onUndo();
+      return true;
+    } else if (id == R.id.menu_redo) {
+      gamePresenter.onRedo();
+      return true;
+    } else if (id == R.id.menu_resign) {
+      gamePresenter.onResign();
+      return true;
+    }
+    return super.onOptionsItemSelected(item);
+  }
+
+  @Override
   public void setConfigurationViewModel(ConfigurationViewModel configurationViewModel) {
     gameConfigurationView.setConfigurationModel(configurationViewModel);
     currentGameViewContainer.setDisplayedChild(GAME_CONFIGURATION_VIEW_INDEX);
@@ -98,6 +128,9 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
 
   @Override
   public void setInGameViewModel(InGameViewModel inGameViewModel) {
+    undoActionAvailable = inGameViewModel.isUndoActionAvailable();
+    redoActionAvailable = inGameViewModel.isRedoActionAvailable();
+    resignActionAvailable = inGameViewModel.isResignActionAvailable();
     inGameView.setInGameModel(inGameViewModel);
     currentGameViewContainer.setDisplayedChild(IN_GAME_VIEW_INDEX);
   }

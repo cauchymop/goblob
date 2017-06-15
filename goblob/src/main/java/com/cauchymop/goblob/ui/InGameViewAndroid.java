@@ -65,61 +65,6 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
     ((GoApplication)getContext().getApplicationContext()).getComponent().inject(this);
   }
 
-//  @Override
-//  public void onCreate(Bundle savedInstanceState) {
-//    super.onCreate(savedInstanceState);
-//    getComponent().inject(this);
-//
-//    setHasOptionsMenu(true);
-//    Log.d(TAG, "onCreate");
-//    if (getArguments() != null && getArguments().containsKey(EXTRA_GO_GAME) && this.goGameController == null) {
-//      PlayGameData.GameData gameData = (PlayGameData.GameData) getArguments().getSerializable(EXTRA_GO_GAME);
-//      Log.d(TAG, "   onCreate => gameData = " + gameData.getMatchId());
-//      this.goGameController = new GoGameController(gameDatas, gameData, analytics);
-//    }
-//
-//  }
-
-//  }
-//
-//  @Override
-//  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//    super.onCreateOptionsMenu(menu, inflater);
-//    if (goGameController.canUndo()) {
-//      menu.add(Menu.NONE, R.id.menu_undo, Menu.NONE, R.string.undo);
-//    }
-//    if (goGameController.canRedo()) {
-//      menu.add(Menu.NONE, R.id.menu_redo, Menu.NONE, R.string.redo);
-//    }
-//    if (goGameController.isLocalTurn()) {
-//      menu.add(Menu.NONE, R.id.menu_resign, Menu.NONE, R.string.resign);
-//    }
-//  }
-//
-//  @Override
-//  public boolean onOptionsItemSelected(MenuItem item) {
-//    int id = item.getItemId();
-//    if (id == R.id.menu_undo) {
-//      if (goGameController.undo()) {
-//        endTurn();
-//        analytics.undo();
-//      }
-//      return true;
-//    } else if (id == R.id.menu_redo) {
-//      if (goGameController.redo()) {
-//        analytics.redo();
-//        endTurn();
-//      }
-//      return true;
-//    } else if (id == R.id.menu_resign) {
-//      goGameController.resign();
-//      endTurn();
-//      analytics.resign();
-//      return true;
-//    }
-//    return super.onOptionsItemSelected(item);
-//  }
-
 
   @Override
   public void setInGameModel(@NonNull InGameViewModel inGameViewModel) {

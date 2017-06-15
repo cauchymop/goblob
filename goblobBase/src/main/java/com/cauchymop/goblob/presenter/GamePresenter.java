@@ -84,7 +84,10 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   public InGameViewModel getInGameViewModel() {
     boolean passActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.IN_GAME;
     boolean doneActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING;;
-    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel(), passActionAvailable, doneActionAvailable, getInGameMessage());
+    boolean undoActionAvailable = goGameController.canUndo();
+    boolean redoActionAvailable = goGameController.canRedo();
+    boolean resignActionAvailable = goGameController.isLocalTurn();
+    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel(), passActionAvailable, doneActionAvailable, getInGameMessage(), undoActionAvailable, redoActionAvailable, resignActionAvailable);
   }
 
   private String getInGameMessage() {
@@ -264,6 +267,26 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   public void onDone() {
     goGameController.markingTurnDone();
     commitGameChanges();
+  }
+
+  public void onUndo() {
+    if (goGameController.undo()) {
+      commitGameChanges();
+      analytics.undo();
+    }
+  }
+
+  public void onRedo() {
+    if (goGameController.redo()) {
+      analytics.redo();
+      commitGameChanges();
+    }
+  }
+
+  public void onResign() {
+    goGameController.resign();
+    commitGameChanges();
+    analytics.resign();
   }
 
   private void commitGameChanges() {
