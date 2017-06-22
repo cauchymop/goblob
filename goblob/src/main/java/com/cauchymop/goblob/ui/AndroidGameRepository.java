@@ -217,7 +217,7 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
   }
 
   private Iterable<TurnBasedMatch> denullify(@Nullable TurnBasedMatchBuffer nullableIterable) {
-    return nullableIterable == null ? ImmutableList.<TurnBasedMatch>of() : nullableIterable;
+    return nullableIterable == null ? ImmutableList.of() : nullableIterable;
   }
 
   public GameData getGameData(@NonNull TurnBasedMatch turnBasedMatch) {

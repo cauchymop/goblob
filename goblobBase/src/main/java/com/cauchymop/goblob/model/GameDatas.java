@@ -98,23 +98,18 @@ public class GameDatas {
   public GameData createNewGameData(String matchId,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     GameConfiguration gameConfiguration = createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, gameType, blackPlayer, whitePlayer);
-    return createGameData(matchId, Phase.INITIAL, gameConfiguration, getLocalColor(gameConfiguration));
-  }
-
-  public GameData createGameData(String matchId,
-      Phase phase, GameConfiguration gameConfiguration, PlayGameData.Color turn) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
         .setMatchId(matchId)
-        .setPhase(phase)
+        .setPhase(Phase.INITIAL)
         .setGameConfiguration(gameConfiguration)
-        .addAllMove(ImmutableList.<Move>of());
-    builder.setTurn(turn);
+        .addAllMove(ImmutableList.of());
+    builder.setTurn(getLocalColor(gameConfiguration));
     return builder.build();
   }
 
 
-  public GameConfiguration createGameConfiguration(int size, int handicap, float komi,
+  private GameConfiguration createGameConfiguration(int size, int handicap, float komi,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)

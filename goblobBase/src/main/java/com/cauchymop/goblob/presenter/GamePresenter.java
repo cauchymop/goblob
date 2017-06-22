@@ -53,10 +53,10 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
       view.setConfigurationViewListener(this);
     }
 
-    updateAchievements(gameData);
+    updateAchievements();
   }
 
-  private void updateAchievements(PlayGameData.GameData gameData) {
+  private void updateAchievements() {
     if (!goGameController.isGameFinished()) {
       return;
     }
@@ -81,9 +81,9 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     }
   }
 
-  public InGameViewModel getInGameViewModel() {
+  private InGameViewModel getInGameViewModel() {
     boolean passActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.IN_GAME;
-    boolean doneActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING;;
+    boolean doneActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING;
     boolean undoActionAvailable = goGameController.canUndo();
     boolean redoActionAvailable = goGameController.canRedo();
     boolean resignActionAvailable = goGameController.isLocalTurn();

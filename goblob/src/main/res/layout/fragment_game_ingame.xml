@@ -4,7 +4,7 @@
               android:layout_height="match_parent"
               android:gravity="center"
               android:orientation="vertical"
-              tools:context=".MainActivity">
+              tools:context=".ui.MainActivity">
 
   <include layout="@layout/title_area"
       android:layout_width="match_parent"
