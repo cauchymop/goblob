@@ -1,2 +1,2 @@
--include 'proguard-rules.pro'
+-include proguard-rules.pro
 -dontobfuscate

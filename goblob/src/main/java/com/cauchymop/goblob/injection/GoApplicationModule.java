@@ -11,7 +11,9 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.presenter.GameMessageGenerator;
 import com.cauchymop.goblob.ui.AndroidGameRepository;
+import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -89,5 +91,11 @@ public class GoApplicationModule {
   @Singleton
   public Analytics getAnalytics(FirebaseAnalyticsSender analytics) {
     return analytics;
+  }
+
+  @Provides
+  @Singleton
+  public GameMessageGenerator getGameMessageGenerator(GameMessageGeneratorAndroid gameMessageGeneratorAndroid) {
+    return gameMessageGeneratorAndroid;
   }
 }

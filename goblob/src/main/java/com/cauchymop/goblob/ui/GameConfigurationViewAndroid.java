@@ -86,8 +86,8 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
     setHandicap(configurationViewModel.getHandicap());
     blackPlayerNameField.setText(configurationViewModel.getBlackPlayerName());
     whitePlayerNameField.setText(configurationViewModel.getWhitePlayerName());
-    configurationMessage.setText(configurationViewModel.getConfigurationMessage());
-    boolean interactionsEnabled = configurationViewModel.isInteractionsEnabled();
+    configurationMessage.setText(configurationViewModel.getMessage());
+    boolean interactionsEnabled = configurationViewModel.getInteractionsEnabled();
     setEnabled(configurationContainer, interactionsEnabled);
     configurationDoneButton.setVisibility(interactionsEnabled ? View.VISIBLE : View.GONE);
   }

@@ -7,11 +7,14 @@ import android.content.res.Resources;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.presenter.GameMessageGenerator;
 
-class GameMessageGeneratorAndroid implements GameMessageGenerator {
+import javax.inject.Inject;
+
+public class GameMessageGeneratorAndroid implements GameMessageGenerator {
 
   private final Resources resources;
 
-  GameMessageGeneratorAndroid(Context context) {
+  @Inject
+  public GameMessageGeneratorAndroid(Context context) {
     resources = context.getResources();
   }
 

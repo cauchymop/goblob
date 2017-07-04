@@ -17,21 +17,27 @@ import com.cauchymop.goblob.viewmodel.PlayerViewModel;
 
 public class GamePresenter implements GoBoardView.BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener, InGameView.InGameActionListener {
 
-  private Analytics analytics;
+  private final Analytics analytics;
+  private final GameRepository gameRepository;
+  private final GameMessageGenerator gameMessageGenerator;
+  private final AchievementManager achievementManager;
+  private final ConfigurationViewModelCreator configurationViewModelCreator;
+  private final GameView view;
+  private final GameDatas gameDatas;
+
   private GoGameController goGameController;
-  private GameRepository gameRepository;
-  private GameMessageGenerator gameMessageGenerator;
-  private AchievementManager achievementManager;
-  private GameView view;
-  private GameDatas gameDatas;
 
   public GamePresenter(GameDatas gameDatas, Analytics analytics,
-      GameRepository gameRepository, GameMessageGenerator gameMessageGenerator, AchievementManager achievementManager, final GameView view) {
+      GameRepository gameRepository, GameMessageGenerator gameMessageGenerator,
+      AchievementManager achievementManager,
+      ConfigurationViewModelCreator configurationViewModelCreator,
+      final GameView view) {
     this.gameDatas = gameDatas;
     this.analytics = analytics;
     this.gameRepository = gameRepository;
     this.gameMessageGenerator = gameMessageGenerator;
     this.achievementManager = achievementManager;
+    this.configurationViewModelCreator = configurationViewModelCreator;
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
     updateFromGame(gameRepository.getCurrentGame());
@@ -169,17 +175,7 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   }
 
   private ConfigurationViewModel getConfigurationViewModel() {
-    return new ConfigurationViewModel(goGameController.getGameConfiguration(), getConfigurationMessage(), goGameController.isLocalTurn());
-  }
-
-  private String getConfigurationMessage() {
-    if (goGameController.getPhase() == PlayGameData.GameData.Phase.INITIAL) {
-      return gameMessageGenerator.getConfigurationMessageInitial();
-    } else if (goGameController.isLocalTurn()) {
-      return gameMessageGenerator.getConfigurationMessageAcceptOrChange();
-    } else {
-      return gameMessageGenerator.getConfigurationMessageWaitingForOpponent();
-    }
+    return configurationViewModelCreator.getConfigurationViewModel(goGameController);
   }
 
   private boolean isConfigured() {
