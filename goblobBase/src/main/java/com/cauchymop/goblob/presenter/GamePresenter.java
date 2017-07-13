@@ -19,13 +19,14 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
   private final GameRepository gameRepository;
   private final AchievementManager achievementManager;
   private final ConfigurationViewModels configurationViewModels;
-  private InGameViewModels inGameViewModels;
+  private final InGameViewModels inGameViewModels;
   private final GameView view;
   private final GameDatas gameDatas;
 
   private GoGameController goGameController;
 
-  public GamePresenter(GameDatas gameDatas, Analytics analytics,
+  public GamePresenter(GameDatas gameDatas,
+      Analytics analytics,
       GameRepository gameRepository,
       AchievementManager achievementManager,
       ConfigurationViewModels configurationViewModels,
