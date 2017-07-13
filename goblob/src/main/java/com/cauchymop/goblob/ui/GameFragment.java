@@ -18,12 +18,13 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
-import com.cauchymop.goblob.presenter.ConfigurationViewModelCreator;
 import com.cauchymop.goblob.presenter.GamePresenter;
 import com.cauchymop.goblob.view.GameView;
 import com.cauchymop.goblob.view.InGameView;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
+import com.cauchymop.goblob.viewmodel.ConfigurationViewModels;
 import com.cauchymop.goblob.viewmodel.InGameViewModel;
+import com.cauchymop.goblob.viewmodel.InGameViewModels;
 
 import javax.inject.Inject;
 
@@ -49,7 +50,10 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   GameRepository gameRepository;
 
   @Inject
-  ConfigurationViewModelCreator configurationViewModelCreator;
+  ConfigurationViewModels configurationViewModels;
+
+  @Inject
+  InGameViewModels inGameViewModels;
 
   @BindView(R.id.current_game_view)
   ViewSwitcher currentGameViewContainer;
@@ -88,8 +92,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository,
-        new GameMessageGeneratorAndroid(getActivity().getApplicationContext()),
-        new AchievementManagerAndroid(getGoBlobActivity()), configurationViewModelCreator, this);
+        new AchievementManagerAndroid(getGoBlobActivity()), configurationViewModels, inGameViewModels, this);
   }
 
   @Override

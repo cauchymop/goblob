@@ -3,41 +3,40 @@ package com.cauchymop.goblob.presenter;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
-import com.cauchymop.goblob.model.GoBoard;
-import com.cauchymop.goblob.model.GoGame;
 import com.cauchymop.goblob.model.GoGameController;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
 import com.cauchymop.goblob.view.GoBoardView;
 import com.cauchymop.goblob.view.InGameView;
-import com.cauchymop.goblob.viewmodel.BoardViewModel;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
+import com.cauchymop.goblob.viewmodel.ConfigurationViewModels;
 import com.cauchymop.goblob.viewmodel.InGameViewModel;
-import com.cauchymop.goblob.viewmodel.PlayerViewModel;
+import com.cauchymop.goblob.viewmodel.InGameViewModels;
 
 public class GamePresenter implements GoBoardView.BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener, InGameView.InGameActionListener {
 
   private final Analytics analytics;
   private final GameRepository gameRepository;
-  private final GameMessageGenerator gameMessageGenerator;
   private final AchievementManager achievementManager;
-  private final ConfigurationViewModelCreator configurationViewModelCreator;
+  private final ConfigurationViewModels configurationViewModels;
+  private InGameViewModels inGameViewModels;
   private final GameView view;
   private final GameDatas gameDatas;
 
   private GoGameController goGameController;
 
   public GamePresenter(GameDatas gameDatas, Analytics analytics,
-      GameRepository gameRepository, GameMessageGenerator gameMessageGenerator,
+      GameRepository gameRepository,
       AchievementManager achievementManager,
-      ConfigurationViewModelCreator configurationViewModelCreator,
+      ConfigurationViewModels configurationViewModels,
+      InGameViewModels inGameViewModels,
       final GameView view) {
     this.gameDatas = gameDatas;
     this.analytics = analytics;
     this.gameRepository = gameRepository;
-    this.gameMessageGenerator = gameMessageGenerator;
     this.achievementManager = achievementManager;
-    this.configurationViewModelCreator = configurationViewModelCreator;
+    this.configurationViewModels = configurationViewModels;
+    this.inGameViewModels = inGameViewModels;
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
     updateFromGame(gameRepository.getCurrentGame());
@@ -87,38 +86,6 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     }
   }
 
-  private InGameViewModel getInGameViewModel() {
-    boolean passActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.IN_GAME;
-    boolean doneActionAvailable = goGameController.isLocalTurn() && goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING;
-    boolean undoActionAvailable = goGameController.canUndo();
-    boolean redoActionAvailable = goGameController.canRedo();
-    boolean resignActionAvailable = goGameController.isLocalTurn();
-    return new InGameViewModel(getBoardViewModel(), getCurrentPlayerViewModel(), passActionAvailable, doneActionAvailable, getInGameMessage(), undoActionAvailable, redoActionAvailable, resignActionAvailable);
-  }
-
-  private String getInGameMessage() {
-    final String message;
-    if (goGameController.isGameFinished()) {
-      String winnerName = goGameController.getPlayerForColor(goGameController.getScore().getWinner()).getName();
-      if (goGameController.getScore().getResigned()) {
-        message = gameMessageGenerator.getGameResignedMessage(winnerName);
-      } else {
-        message = gameMessageGenerator.getEndOfGameMessage(winnerName, goGameController.getScore().getWonBy());
-      }
-    } else if (goGameController.getPhase() == PlayGameData.GameData.Phase.DEAD_STONE_MARKING) {
-      message = gameMessageGenerator.getStoneMarkingMessage();
-    } else if (goGameController.getGame().isLastMovePass()) {
-      message = gameMessageGenerator.getOpponentPassedMessage(goGameController.getOpponent().getName());
-    } else {
-      message = null;
-    }
-    return message;
-  }
-
-  private PlayerViewModel getCurrentPlayerViewModel() {
-    return new PlayerViewModel(goGameController.getCurrentPlayer().getName(), goGameController.getCurrentColor());
-  }
-
   @Override
   public void gameListChanged() {
     // Nothing to do
@@ -138,58 +105,6 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
 
   public void clear() {
     gameRepository.removeGameRepositoryListener(this);
-  }
-
-  private BoardViewModel getBoardViewModel() {
-    GoGame game = goGameController.getGame();
-    GoBoard board = game.getBoard();
-    int boardSize = game.getBoardSize();
-    int lastMoveX = -1;
-    int lastMoveY = -1;
-    PlayGameData.Color[][] stones = new PlayGameData.Color[boardSize][boardSize];
-    for (int x = 0; x < boardSize; x++) {
-      for (int y = 0; y < boardSize; y++) {
-        stones[y][x] = board.getColor(x, y);
-        int pos = game.getPos(x, y);
-        if (pos == game.getLastMove()) {
-          lastMoveX = x;
-          lastMoveY = y;
-        }
-      }
-    }
-
-    PlayGameData.Color[][] territories = new PlayGameData.Color[boardSize][boardSize];
-    for (PlayGameData.Position position : goGameController.getScore().getBlackTerritoryList()) {
-      territories[position.getY()][position.getX()] = PlayGameData.Color.BLACK;
-    }
-    for (PlayGameData.Position position : goGameController.getScore().getWhiteTerritoryList()) {
-      territories[position.getY()][position.getX()] = PlayGameData.Color.WHITE;
-    }
-    for (PlayGameData.Position position : goGameController.getDeadStones()) {
-      int x = position.getX();
-      int y = position.getY();
-      territories[y][x] = gameDatas.getOppositeColor(stones[y][x]);
-    }
-
-    return new BoardViewModel(boardSize, stones, territories, lastMoveX, lastMoveY, goGameController.isLocalTurn());
-  }
-
-  private ConfigurationViewModel getConfigurationViewModel() {
-    return configurationViewModelCreator.getConfigurationViewModel(goGameController);
-  }
-
-  private boolean isConfigured() {
-    switch (goGameController.getPhase()) {
-      case INITIAL:
-      case CONFIGURATION:
-        return false;
-      case IN_GAME:
-      case DEAD_STONE_MARKING:
-      case FINISHED:
-        return true;
-      default:
-        throw new RuntimeException("Invalid phase for game: " + goGameController.getPhase());
-    }
   }
 
   @Override
@@ -283,6 +198,28 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     goGameController.resign();
     commitGameChanges();
     analytics.resign();
+  }
+
+  private ConfigurationViewModel getConfigurationViewModel() {
+    return configurationViewModels.from(goGameController);
+  }
+
+  private InGameViewModel getInGameViewModel() {
+    return inGameViewModels.from(goGameController);
+  }
+
+  private boolean isConfigured() {
+    switch (goGameController.getPhase()) {
+      case INITIAL:
+      case CONFIGURATION:
+        return false;
+      case IN_GAME:
+      case DEAD_STONE_MARKING:
+      case FINISHED:
+        return true;
+      default:
+        throw new RuntimeException("Invalid phase for game: " + goGameController.getPhase());
+    }
   }
 
   private void commitGameChanges() {

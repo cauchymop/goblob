@@ -1,13 +1,13 @@
-package com.cauchymop.goblob.presenter
+package com.cauchymop.goblob.viewmodel
 
 import com.cauchymop.goblob.model.GoGameController
+import com.cauchymop.goblob.presenter.GameMessageGenerator
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL
-import com.cauchymop.goblob.viewmodel.ConfigurationViewModel
 import javax.inject.Inject
 
-class ConfigurationViewModelCreator @Inject constructor(val gameMessageGenerator: GameMessageGenerator) {
+class ConfigurationViewModels @Inject constructor(val gameMessageGenerator: GameMessageGenerator) {
 
-    fun getConfigurationViewModel(goGameController: GoGameController) = with(goGameController.gameConfiguration) {
+    fun from(goGameController: GoGameController) = with(goGameController.gameConfiguration) {
         ConfigurationViewModel(
                 komi = komi,
                 boardSize = boardSize,

@@ -1,5 +1,4 @@
 - In Progress
-   - TODO: Move other viewModel (InGame) to use Mapper + Kotlin
    - TODO: Configuration validation (empty komi or player names)
    - TODO: Tests Tests Tests
    - TODO: When marking dead stones: could be nice to have local player marking first
