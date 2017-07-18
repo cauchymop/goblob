@@ -9,7 +9,7 @@ import com.cauchymop.goblob.proto.PlayGameData.Color.BLACK
 import com.cauchymop.goblob.proto.PlayGameData.Color.WHITE
 import javax.inject.Inject
 
-open class InGameViewModels @Inject constructor(val gameDatas:GameDatas, val gameMessageGenerator: GameMessageGenerator) {
+class InGameViewModels @Inject constructor(val gameDatas:GameDatas, val gameMessageGenerator: GameMessageGenerator) {
 
     fun from(goGameController: GoGameController) = with(goGameController) {
         InGameViewModel(

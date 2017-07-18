@@ -5,7 +5,7 @@ import com.cauchymop.goblob.presenter.GameMessageGenerator
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL
 import javax.inject.Inject
 
-open class ConfigurationViewModels @Inject constructor(val gameMessageGenerator: GameMessageGenerator) {
+class ConfigurationViewModels @Inject constructor(val gameMessageGenerator: GameMessageGenerator) {
 
     fun from(goGameController: GoGameController) = with(goGameController.gameConfiguration) {
         ConfigurationViewModel(
