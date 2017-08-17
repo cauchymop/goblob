@@ -104,6 +104,8 @@ public abstract class GameRepository {
 
   public void addGameRepositoryListener(GameRepositoryListener listener) {
     listeners.add(listener);
+    listener.gameChanged(getCurrentGame());
+    listener.gameListChanged();
   }
 
   public void removeGameRepositoryListener(GameRepositoryListener listener) {

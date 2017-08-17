@@ -40,7 +40,6 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
     this.inGameViewModels = inGameViewModels;
     this.view = view;
     gameRepository.addGameRepositoryListener(this);
-    updateFromGame(gameRepository.getCurrentGame());
   }
 
   private void updateFromGame(PlayGameData.GameData gameData) {
@@ -94,7 +93,7 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
 
   @Override
   public void gameChanged(PlayGameData.GameData gameData) {
-    if (gameData.getMatchId().equals(goGameController.getMatchId())) {
+    if (goGameController == null || gameData.getMatchId().equals(goGameController.getMatchId())) {
       updateFromGame(gameData);
     }
   }
