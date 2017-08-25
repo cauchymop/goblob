@@ -9,7 +9,6 @@ import com.cauchymop.goblob.viewmodel.InGameViewModels;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -66,11 +65,9 @@ public class GamePresenterTest {
   }
 
   @Test
-  @Ignore
-  // FIXME
   public void gameChanged_withDifferentMatchId_doesNothing() throws Exception {
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-    reset(view);
+    reset(view, inGameViewModels);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pipo").build());
 
@@ -91,12 +88,10 @@ public class GamePresenterTest {
   // TODO: All init cases here
 
   @Test
-  @Ignore
-  // FIXME
   public void gameChanged_withSameMatchIdAndConfigured() throws Exception {
     when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-    reset(view);
+    reset(view, inGameViewModels);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
 
