@@ -9,7 +9,7 @@ tasks.withType(JavaCompile) {
 }
 
 buildscript {
-    ext.kotlin_version = '1.1.4-2'
+    ext.kotlin_version = '1.1.4-3'
     repositories {
         mavenCentral()
     }
@@ -64,6 +64,16 @@ jacocoTestReport {
     reports {
         xml.enabled true
     }
+}
+
+/**
+ * This task is a hack to allow Intellij to find Kotlin classes when compiling Tests.
+ * This is to be called as an extra task in Intellij Run Configuration.
+ * TODO: Remove this once handled properly by Intillij
+ */
+task copyTestClasses(type: Copy) {
+    from "build/classes/kotlin"
+    into "build/classes/java"
 }
 
 idea {

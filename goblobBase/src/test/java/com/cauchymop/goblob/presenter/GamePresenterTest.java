@@ -31,15 +31,16 @@ public class GamePresenterTest {
   @Mock private GameRepository gameRepository;
   @Mock private AchievementManager achievementManager;
   @Mock private GameMessageGenerator gameMessageGenerator;
-  @Mock private InGameViewModels inGameViewModels;
   @Mock private GameView view;
 
   private GamePresenter gamePresenter;
   private ConfigurationViewModels configurationViewModels;
+  private InGameViewModels inGameViewModels;
 
   @Before
   public void setUp() throws Exception {
     configurationViewModels = new ConfigurationViewModels(gameMessageGenerator);
+    inGameViewModels = new InGameViewModels(GAME_DATAS, gameMessageGenerator);
 
     gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, configurationViewModels, inGameViewModels, view);
 
@@ -48,7 +49,7 @@ public class GamePresenterTest {
 
   @After
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(view, inGameViewModels, achievementManager, analytics);
+    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameMessageGenerator, view);
   }
 
   @Test
@@ -67,7 +68,7 @@ public class GamePresenterTest {
   @Test
   public void gameChanged_withDifferentMatchId_doesNothing() throws Exception {
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-    reset(view, inGameViewModels);
+    reset(view, gameMessageGenerator);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pipo").build());
 
@@ -82,6 +83,7 @@ public class GamePresenterTest {
 
     verify(view).setConfigurationViewListener(gamePresenter);
     verify(view).setConfigurationViewModel(any());
+    verify(gameMessageGenerator).getConfigurationMessageInitial();
 
   }
 
@@ -89,14 +91,14 @@ public class GamePresenterTest {
 
   @Test
   public void gameChanged_withSameMatchIdAndConfigured() throws Exception {
+    setInitialGame();
     when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
-    gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-    reset(view, inGameViewModels);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
 
     verify(view).setConfigurationViewListener(gamePresenter);
     verify(view).setConfigurationViewModel(any());
+    verify(gameMessageGenerator).getConfigurationMessageInitial();
   }
 
 //  @Test
@@ -159,6 +161,10 @@ public class GamePresenterTest {
 //  public void onResign() throws Exception {
 //  }
 
-
+  private void setInitialGame() {
+    when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
+    gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
+    reset(view, gameMessageGenerator);
+  }
 
 }
