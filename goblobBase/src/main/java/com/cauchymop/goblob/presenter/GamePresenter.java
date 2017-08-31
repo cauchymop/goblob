@@ -93,7 +93,7 @@ public class GamePresenter implements GoBoardView.BoardEventListener, Configurat
 
   @Override
   public void gameChanged(PlayGameData.GameData gameData) {
-    if (goGameController == null || gameData.getMatchId().equals(goGameController.getMatchId())) {
+    if (goGameController != null && gameData.getMatchId().equals(goGameController.getMatchId())) {
       updateFromGame(gameData);
     }
   }

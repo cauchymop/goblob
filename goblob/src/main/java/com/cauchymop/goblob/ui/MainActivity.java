@@ -86,8 +86,6 @@ public class MainActivity extends AppCompatActivity
 
     ((GoApplication) getApplication()).getComponent().inject(this);
 
-    androidGameRepository.addGameRepositoryListener(this);
-
     setUpToolbar();
 
     if (savedInstanceState != null) {
@@ -95,6 +93,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     googleApiClientManager.registerGoogleApiClientListener(this);
+    androidGameRepository.addGameRepositoryListener(this);
   }
 
   @Override

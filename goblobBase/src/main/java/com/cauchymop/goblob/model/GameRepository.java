@@ -105,10 +105,8 @@ public abstract class GameRepository {
   public void addGameRepositoryListener(GameRepositoryListener listener) {
     listeners.add(listener);
     PlayGameData.GameData currentGame = getCurrentGame();
-    if (currentGame != null) {
-      listener.gameChanged(currentGame);
-      listener.gameListChanged();
-    }
+    listener.gameSelected(currentGame);
+    listener.gameListChanged();
   }
 
   public void removeGameRepositoryListener(GameRepositoryListener listener) {
