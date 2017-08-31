@@ -53,7 +53,7 @@ public class GamePresenterTest {
   }
 
   @Test
-  public void initialisation_fetchInfoFromRepositoryAndUpdateView() {
+  public void initialisation_registersAsGameRepositoryListener() {
     GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, configurationViewModels, inGameViewModels, view);
     verify(gameRepository).addGameRepositoryListener(presenter);
   }
@@ -63,6 +63,14 @@ public class GamePresenterTest {
     gamePresenter.gameListChanged();
 
     // Does nothing.
+  }
+
+  @Test
+  public void gameChanged_withNoGameSelected_DoesNothing() throws Exception {
+
+    gamePresenter.gameChanged(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
+
+    // Does Nothing.
   }
 
   @Test
@@ -76,22 +84,8 @@ public class GamePresenterTest {
   }
 
   @Test
-  public void gameChanged_updateView() throws Exception {
-    when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
-
-    gamePresenter.gameChanged(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
-
-    verify(view).setConfigurationViewListener(gamePresenter);
-    verify(view).setConfigurationViewModel(any());
-    verify(gameMessageGenerator).getConfigurationMessageInitial();
-
-  }
-
-  // TODO: All init cases here
-
-  @Test
-  public void gameChanged_withSameMatchIdAndConfigured() throws Exception {
-    setInitialGame();
+  public void gameChanged_withSameMatchId() throws Exception {
+    setInitialGame("pizza");
     when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
@@ -101,9 +95,19 @@ public class GamePresenterTest {
     verify(gameMessageGenerator).getConfigurationMessageInitial();
   }
 
-//  @Test
-//  public void gameSelected() throws Exception {
-//  }
+  @Test
+  public void gameSelected_updatesView_initialPhase() throws Exception {
+    when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
+
+    gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
+
+    verify(view).setConfigurationViewListener(gamePresenter);
+    verify(view).setConfigurationViewModel(any());
+    verify(gameMessageGenerator).getConfigurationMessageInitial();
+  }
+
+  // TODO: All other update cases here
+
 //
 //  @Test
 //  public void clear() throws Exception {
@@ -161,9 +165,9 @@ public class GamePresenterTest {
 //  public void onResign() throws Exception {
 //  }
 
-  private void setInitialGame() {
+  private void setInitialGame(String matchId) {
     when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
-    gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
+    gamePresenter.gameSelected(createGameData().setMatchId(matchId).build());
     reset(view, gameMessageGenerator);
   }
 
