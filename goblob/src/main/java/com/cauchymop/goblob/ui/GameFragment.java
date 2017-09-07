@@ -19,6 +19,7 @@ import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.presenter.GamePresenter;
+import com.cauchymop.goblob.presenter.GameViewUpdater;
 import com.cauchymop.goblob.view.GameView;
 import com.cauchymop.goblob.view.InGameView;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
@@ -54,6 +55,9 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
 
   @Inject
   InGameViewModels inGameViewModels;
+
+  @Inject
+  GameViewUpdater gameViewUpdater;
 
   @BindView(R.id.current_game_view)
   ViewSwitcher currentGameViewContainer;
@@ -92,7 +96,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository,
-        new AchievementManagerAndroid(getGoBlobActivity()), configurationViewModels, inGameViewModels, this);
+        new AchievementManagerAndroid(getGoBlobActivity()), gameViewUpdater, this);
   }
 
   @Override

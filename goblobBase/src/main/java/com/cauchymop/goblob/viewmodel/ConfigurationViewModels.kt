@@ -15,7 +15,7 @@ class ConfigurationViewModels @Inject constructor(val gameMessageGenerator: Game
                 blackPlayerName = black.name,
                 whitePlayerName = white.name,
                 message = getMessage(goGameController),
-                interactionsEnabled = goGameController.isLocalTurn())
+                interactionsEnabled = goGameController.isLocalTurn)
     }
 
     private fun getMessage(goGameController: GoGameController) = when {

@@ -4,8 +4,6 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.view.GameView;
-import com.cauchymop.goblob.viewmodel.ConfigurationViewModels;
-import com.cauchymop.goblob.viewmodel.InGameViewModels;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,45 +15,42 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static com.cauchymop.goblob.model.TestDataHelperKt.createGameData;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GamePresenterTest {
   private static final GameDatas GAME_DATAS = new GameDatas();
-  private static final String CONFIGURATION_INITIAL_MESSAGE = "configuration initial message";
 
   @Mock private Analytics analytics;
   @Mock private GameRepository gameRepository;
   @Mock private AchievementManager achievementManager;
-  @Mock private GameMessageGenerator gameMessageGenerator;
+
   @Mock private GameView view;
+  @Mock private GameViewUpdater gameViewUpdater;
 
   private GamePresenter gamePresenter;
-  private ConfigurationViewModels configurationViewModels;
-  private InGameViewModels inGameViewModels;
 
   @Before
   public void setUp() throws Exception {
-    configurationViewModels = new ConfigurationViewModels(gameMessageGenerator);
-    inGameViewModels = new InGameViewModels(GAME_DATAS, gameMessageGenerator);
+    gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, view);
 
-    gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, configurationViewModels, inGameViewModels, view);
-
-    reset(gameRepository);
+    reset(gameRepository, view);
   }
 
   @After
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameMessageGenerator, view);
+    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, view, gameViewUpdater);
   }
 
   @Test
-  public void initialisation_registersAsGameRepositoryListener() {
-    GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, configurationViewModels, inGameViewModels, view);
+  public void initialisation_registersListeners() {
+    GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, view);
     verify(gameRepository).addGameRepositoryListener(presenter);
+    verify(view).setConfigurationViewListener(presenter);
+    verify(view).setInGameActionListener(presenter);
   }
 
   @Test
@@ -76,7 +71,7 @@ public class GamePresenterTest {
   @Test
   public void gameChanged_withDifferentMatchId_doesNothing() throws Exception {
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-    reset(view, gameMessageGenerator);
+    reset(view);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pipo").build());
 
@@ -86,27 +81,19 @@ public class GamePresenterTest {
   @Test
   public void gameChanged_withSameMatchId() throws Exception {
     setInitialGame("pizza");
-    when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
 
-    verify(view).setConfigurationViewListener(gamePresenter);
-    verify(view).setConfigurationViewModel(any());
-    verify(gameMessageGenerator).getConfigurationMessageInitial();
+    verify(gameViewUpdater).update(any(), eq(view));
   }
 
   @Test
-  public void gameSelected_updatesView_initialPhase() throws Exception {
-    when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
+  public void gameSelected_updatesView() throws Exception {
 
     gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
 
-    verify(view).setConfigurationViewListener(gamePresenter);
-    verify(view).setConfigurationViewModel(any());
-    verify(gameMessageGenerator).getConfigurationMessageInitial();
+    verify(gameViewUpdater).update(any(), eq(view));
   }
-
-  // TODO: All other update cases here
 
 //
 //  @Test
@@ -166,9 +153,8 @@ public class GamePresenterTest {
 //  }
 
   private void setInitialGame(String matchId) {
-    when(gameMessageGenerator.getConfigurationMessageInitial()).thenReturn(CONFIGURATION_INITIAL_MESSAGE);
     gamePresenter.gameSelected(createGameData().setMatchId(matchId).build());
-    reset(view, gameMessageGenerator);
+    reset(view, gameViewUpdater);
   }
 
 }
