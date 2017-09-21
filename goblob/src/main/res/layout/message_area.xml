@@ -6,27 +6,38 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:minHeight="70dp"
     android:orientation="vertical"
     android:gravity="center"
     android:layout_gravity="center"
-    tools:showIn="@layout/fragment_game">
+    tools:showIn="@layout/fragment_game_ingame">
+
+  <Button
+      android:id="@+id/action_button_pass"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:paddingLeft="20dip"
+      android:paddingRight="20dip"
+      android:text="@string/button_pass_label"
+      android:visibility="gone"/>
+
+  <Button
+      android:id="@+id/action_button_done"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:paddingLeft="20dip"
+      android:paddingRight="20dip"
+      android:text="@string/button_done_label"
+      android:visibility="gone"
+      tools:visibility="gone"/>
 
   <TextView
       android:id="@+id/message_textview"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:gravity="center"
-      tools:text="Olivier Bonal has won, once again!"
-      android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-  <Button
-      android:id="@+id/action_button"
-      tools:text="Done"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="5dip"
-      android:layout_marginBottom="15dip"
-      android:paddingLeft="20dip"
-      android:paddingRight="20dip"/>
+      android:textAppearance="?android:attr/textAppearanceLarge"
+      tools:visibility="visible"
+      tools:text="Olivier Bonal has won, once again!" />
 
 </LinearLayout>

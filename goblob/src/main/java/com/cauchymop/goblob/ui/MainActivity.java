@@ -42,7 +42,7 @@ import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 
 public class MainActivity extends AppCompatActivity
-    implements GoogleApiClientListener, GameRepository.GameRepositoryListener {
+    implements GoogleApiClientListener, AndroidGameRepository.GameRepositoryListener {
 
   private static final int RC_REQUEST_ACHIEVEMENTS = 1;
   private static final int RC_SELECT_PLAYER = 2;
@@ -70,10 +70,11 @@ public class MainActivity extends AppCompatActivity
   @Inject
   GameDatas gameDatas;
   @Inject
-  GameRepository gameRepository;
+  AndroidGameRepository androidGameRepository;
   @Inject
   GoogleApiClientManager googleApiClientManager;
   private Unbinder unbinder;
+  private GameFragment gameFragment;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -85,19 +86,14 @@ public class MainActivity extends AppCompatActivity
 
     ((GoApplication) getApplication()).getComponent().inject(this);
 
-    gameRepository.addGameRepositoryListener(this);
-
     setUpToolbar();
 
     if (savedInstanceState != null) {
-      gameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
-    }
-
-    if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
-      displayFragment(new PlayerChoiceFragment());
+      androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
     }
 
     googleApiClientManager.registerGoogleApiClientListener(this);
+    androidGameRepository.addGameRepositoryListener(this);
   }
 
   @Override
@@ -122,7 +118,7 @@ public class MainActivity extends AppCompatActivity
     super.onDestroy();
     Log.d(TAG, "onDestroy");
     googleApiClientManager.unregisterGoogleApiClientListener(this);
-    gameRepository.removeGameRepositoryListener(this);
+    androidGameRepository.removeGameRepositoryListener(this);
     unbinder.unbind();
   }
 
@@ -141,7 +137,7 @@ public class MainActivity extends AppCompatActivity
   void onMatchItemSelected(int position) {
     MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
     Log.d(TAG, "onItemSelected: " + item.getMatchId());
-    gameRepository.selectGame(item.getMatchId());
+    androidGameRepository.selectGame(item.getMatchId());
   }
 
   @Override
@@ -184,13 +180,13 @@ public class MainActivity extends AppCompatActivity
     switch (requestCode) {
       case RC_SELECT_PLAYER:
         if (responseCode == RESULT_OK) {
-          gameRepository.handlePlayersSelected(intent);
+          androidGameRepository.handlePlayersSelected(intent);
         } else {
           setWaitingScreenVisible(false);
         }
         break;
       case RC_CHECK_MATCHES:
-        gameRepository.handleCheckMatchesResult(responseCode, intent);
+        androidGameRepository.handleCheckMatchesResult(responseCode, intent);
         break;
       case RC_REQUEST_ACHIEVEMENTS:
         break;
@@ -210,7 +206,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   protected void onSaveInstanceState(Bundle outState) {
-    outState.putString(CURRENT_MATCH_ID, gameRepository.getCurrentMatchId());
+    outState.putString(CURRENT_MATCH_ID, androidGameRepository.getCurrentMatchId());
     super.onSaveInstanceState(outState);
   }
 
@@ -218,16 +214,16 @@ public class MainActivity extends AppCompatActivity
   public void onConnected(Bundle bundle) {
     Log.d(TAG, "onConnected");
     updateFromConnectionStatus();
-    TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, gameRepository);
+    TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, androidGameRepository);
 
     // Retrieve the TurnBasedMatch from the connectionHint in order to select it
     if (bundle != null) {
       TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-      gameRepository.selectGame(turnBasedMatch.getMatchId());
+      androidGameRepository.selectGame(turnBasedMatch.getMatchId());
     }
 
-    gameRepository.refreshRemoteGameListFromServer();
-    gameRepository.publishUnpublishedGames();
+    androidGameRepository.refreshRemoteGameListFromServer();
+    androidGameRepository.publishUnpublishedGames();
   }
 
   @Override
@@ -275,7 +271,7 @@ public class MainActivity extends AppCompatActivity
     matchMenuItems.add(new CreateNewGameMenuItem(getString(R.string.new_game_label)));
     navigationSpinnerAdapter.notifyDataSetChanged();
 
-    selectMenuItem(gameRepository.getCurrentMatchId());
+    selectMenuItem(androidGameRepository.getCurrentMatchId());
   }
 
   @Nullable
@@ -322,8 +318,8 @@ public class MainActivity extends AppCompatActivity
 
   public void configureGame(boolean isLocal) {
     if (isLocal) {
-      GameData localGame = gameRepository.createNewLocalGame();
-      gameRepository.selectGame(localGame.getMatchId());
+      GameData localGame = androidGameRepository.createNewLocalGame();
+      androidGameRepository.selectGame(localGame.getMatchId());
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
@@ -339,9 +335,10 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public void gameChanged(GameData gameData) {
-    if (Objects.equal(gameRepository.getCurrentMatchId(), gameData.getMatchId())) {
+    if (Objects.equal(androidGameRepository.getCurrentMatchId(), gameData.getMatchId())) {
       gameSelected(gameData);
     }
+
     if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
       Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
       vibrator.vibrate(200);
@@ -358,30 +355,26 @@ public class MainActivity extends AppCompatActivity
 
     if (gameDatas.needsApplicationUpdate(gameData)) {
       displayFragment(UpdateApplicationFragment.newInstance());
+      return;
     }
 
     selectMenuItem(gameData.getMatchId());
-    switch (gameData.getPhase()) {
-      case INITIAL:
-      case CONFIGURATION:
-        displayFragment(GameConfigurationFragment.newInstance(gameData));
-        return;
-      case IN_GAME:
-      case DEAD_STONE_MARKING:
-      case FINISHED:
-        displayFragment(GameFragment.newInstance(gameData));
-        return;
-      default:
-        throw new RuntimeException("Invalid phase for game: " + gameData);
+    displayFragment(getGameFragment());
+  }
+
+  protected GameFragment getGameFragment() {
+    if (gameFragment == null) {
+      gameFragment = GameFragment.newInstance();
     }
+    return gameFragment;
   }
 
   private void updateMatchSpinner() {
     Log.d(TAG, "updateMatchSpinner");
 
     List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
-    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getMyTurnGames()));
-    newMatchMenuItems.addAll(getMatchMenuItems(gameRepository.getTheirTurnGames()));
+    newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getMyTurnGames()));
+    newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getTheirTurnGames()));
 
     setMatchMenuItems(newMatchMenuItems);
   }
@@ -404,7 +397,9 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void unlockAchievement(String achievementId) {
-    Achievements.unlock(googleApiClient, achievementId);
+    if (isSignedIn()) {
+      Achievements.unlock(googleApiClient, achievementId);
+    }
   }
 
   public void setWaitingScreenVisible(boolean visible) {
@@ -415,8 +410,4 @@ public class MainActivity extends AppCompatActivity
     return googleApiClient.isConnected();
   }
 
-  public void endTurn(GameData gameData) {
-    gameRepository.commitGameChanges(gameData);
-    gameSelected(gameData);
-  }
 }

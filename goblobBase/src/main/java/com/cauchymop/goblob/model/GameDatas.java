@@ -9,7 +9,6 @@ import com.cauchymop.goblob.proto.PlayGameData.Position;
 import com.google.common.collect.ImmutableList;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
@@ -29,11 +28,8 @@ public class GameDatas {
   private static final int DEFAULT_HANDICAP = 0;
   private static final int DEFAULT_BOARD_SIZE = 9;
 
-  private final String localUniqueId;
-
   @Inject
-  public GameDatas(@Named("LocalUniqueId") String localUniqueId) {
-    this.localUniqueId = localUniqueId;
+  public GameDatas() {
   }
 
   public boolean needsApplicationUpdate(GameData gameData) {
@@ -44,17 +40,17 @@ public class GameDatas {
     return gameData.getTurn();
   }
 
-  public boolean isLocalPlayer(GameDataOrBuilder gameData, GoPlayer player) {
-    return isLocalGame(gameData) || player.getLocalUniqueId().equals(localUniqueId);
-  }
-
   public boolean isLocalTurn(GameDataOrBuilder gameData) {
-    return isLocalPlayer(gameData, getCurrentPlayer(gameData)) && !(gameData.getPhase() == Phase.FINISHED);
+    return getCurrentPlayer(gameData).getIsLocal() && !(gameData.getPhase() == Phase.FINISHED);
   }
 
   public PlayGameData.Color getOpponentColor(GameConfiguration gameConfiguration) {
     PlayGameData.Color localColor = getLocalColor(gameConfiguration);
-    return (localColor == PlayGameData.Color.BLACK) ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK;
+    return getOppositeColor(localColor);
+  }
+
+  public PlayGameData.Color getOppositeColor(PlayGameData.Color color) {
+    return (color == PlayGameData.Color.BLACK) ? PlayGameData.Color.WHITE : PlayGameData.Color.BLACK;
   }
 
   public PlayGameData.Color getLocalColor(GameConfiguration gameConfiguration) {
@@ -64,9 +60,9 @@ public class GameDatas {
     GoPlayer black = gameConfiguration.getBlack();
     GoPlayer white = gameConfiguration.getWhite();
 
-    if (black.getLocalUniqueId().equals(localUniqueId)) {
+    if (black.getIsLocal()) {
       return PlayGameData.Color.BLACK;
-    } else if (white.getLocalUniqueId().equals(localUniqueId)) {
+    } else if (white.getIsLocal()) {
       return PlayGameData.Color.WHITE;
     } else {
       throw new RuntimeException("Local Player is neither black or white, maybe this is a Connect4 Game...!");
@@ -102,23 +98,18 @@ public class GameDatas {
   public GameData createNewGameData(String matchId,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     GameConfiguration gameConfiguration = createGameConfiguration(DEFAULT_BOARD_SIZE, DEFAULT_HANDICAP, DEFAULT_KOMI, gameType, blackPlayer, whitePlayer);
-    return createGameData(matchId, Phase.INITIAL, gameConfiguration, getLocalColor(gameConfiguration));
-  }
-
-  public GameData createGameData(String matchId,
-      Phase phase, GameConfiguration gameConfiguration, PlayGameData.Color turn) {
     GameData.Builder builder = GameData.newBuilder()
         .setVersion(VERSION)
         .setMatchId(matchId)
-        .setPhase(phase)
+        .setPhase(Phase.INITIAL)
         .setGameConfiguration(gameConfiguration)
-        .addAllMove(ImmutableList.<Move>of());
-    builder.setTurn(turn);
+        .addAllMove(ImmutableList.of());
+    builder.setTurn(getLocalColor(gameConfiguration));
     return builder.build();
   }
 
 
-  public GameConfiguration createGameConfiguration(int size, int handicap, float komi,
+  private GameConfiguration createGameConfiguration(int size, int handicap, float komi,
       GameType gameType, GoPlayer blackPlayer, GoPlayer whitePlayer) {
     return GameConfiguration.newBuilder()
         .setBoardSize(size)
@@ -133,22 +124,12 @@ public class GameDatas {
         .build();
   }
 
-  public GoPlayer createGamePlayer(String id, String name) {
+  public GoPlayer createGamePlayer(String id, String name, boolean isLocal) {
     return GoPlayer.newBuilder()
         .setId(id)
         .setName(name)
+        .setIsLocal(isLocal)
         .build();
-  }
-
-  public GoPlayer createGamePlayer(String id, String name, String localUniqueId) {
-    GoPlayer.Builder goPlayerBuilder = GoPlayer.newBuilder()
-        .setId(id)
-        .setName(name);
-    if (localUniqueId != null) {
-      goPlayerBuilder.setLocalUniqueId(localUniqueId);
-    }
-
-    return goPlayerBuilder.build();
   }
 
   public boolean isLocalGame(GameDataOrBuilder gameData) {

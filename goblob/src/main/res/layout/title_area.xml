@@ -6,19 +6,19 @@
     android:layout_height="wrap_content"
     android:padding="10dip"
     android:layout_gravity="center_horizontal|top"
-    tools:showIn="@layout/fragment_game">
+    tools:showIn="@layout/fragment_game_ingame">
 
   <ImageView
       android:layout_width="44dip"
       android:layout_height="44dip"
-      android:id="@+id/titleImage"
+      android:id="@+id/player_color_icon"
       android:contentDescription="@string/player_stonecolor_content_description"
       android:layout_gravity="left|center_vertical"
-      tools:src="@drawable/ic_launcher"/>
+      tools:src="@drawable/white_stone"/>
 
   <TextView
       style="@style/Title"
-      android:id="@+id/title"
+      android:id="@+id/current_player_name"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_weight="1"
@@ -26,10 +26,10 @@
       tools:text="Jerome Abela"/>
 
   <ImageView
+      android:id="@+id/avatar_image"
       android:layout_width="44dip"
       android:layout_height="44dip"
-      android:id="@+id/avatarImage"
-      android:contentDescription="@string/player_avatar_content_description"
       android:layout_gravity="left|center_vertical"
-      tools:src="@drawable/white_stone"/>
+      android:contentDescription="@string/player_avatar_content_description"
+      tools:src="@drawable/ic_launcher"/>
 </LinearLayout>

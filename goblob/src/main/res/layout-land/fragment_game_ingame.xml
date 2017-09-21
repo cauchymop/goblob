@@ -5,13 +5,12 @@
               android:baselineAligned="false"
               android:orientation="horizontal"
               android:gravity="center_horizontal"
-              tools:context=".MainActivity">
+              tools:context=".ui.MainActivity">
 
   <include
       layout="@layout/boardview_container"
       android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      tools:layout_width="300dp"/>
+      android:layout_height="match_parent"/>
 
   <LinearLayout
       android:layout_width="wrap_content"
@@ -20,14 +19,20 @@
       android:gravity="center"
       android:orientation="vertical">
 
-    <include layout="@layout/title_area" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <include layout="@layout/title_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
 
     <View
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1"
         />
-    <include layout="@layout/message_area"/>
+    <include layout="@layout/message_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
   </LinearLayout>
 
 </LinearLayout>

@@ -11,12 +11,12 @@ import static org.fest.assertions.Assertions.assertThat;
  * Tests for {@link GameDatas}.
  */
 public class GameDatasTest {
-  private static GameDatas gameDatas = new GameDatas(null);
+  private static GameDatas gameDatas = new GameDatas();
 
   @Test
   public void testCreateLocalGame() {
-    PlayGameData.GoPlayer black = gameDatas.createGamePlayer("pipo", "player1");
-    PlayGameData.GoPlayer white = gameDatas.createGamePlayer("bimbo", "player2");
+    PlayGameData.GoPlayer black = gameDatas.createGamePlayer("pipo", "player1", true);
+    PlayGameData.GoPlayer white = gameDatas.createGamePlayer("bimbo", "player2", true);
     PlayGameData.GameData localGame = gameDatas.createNewGameData("pizza", GameType.LOCAL, black, white);
     assertThat(localGame.getGameConfiguration().getBoardSize()).isEqualTo(9);
     assertThat(localGame.getGameConfiguration().getGameType()).isEqualTo(GameType.LOCAL);

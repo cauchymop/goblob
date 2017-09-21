@@ -1,11 +1,24 @@
+- In Progress
+   - TODO: Tests (continue GamePresenterTest) => Could we delegate to subPresenter so they can be easier to Test
+   - TODO: Configuration validation (empty komi or player names)
+   - TODO: When marking dead stones: could be nice to have local player marking first
+   - TODO: When marking dead stones: If not changing anything only one player have a say (probalby fixed by previous point)
+   - TODO: Rename InGameView as it does more than the InGame phase (or rename phase?)
+
+Events:
+- Add an event for login to play games
+
+Debugging:
+- playing a game (alternating moves) is flaky if 2 remote players on same device.
+
 In progress:
-- FireBase Stats
+    - Continue to dummify all subviews of InGameView.
+
+Next:
 - When only an expired game is left in the cache, starting the app shows that game with only
   "new game" in the combo. We should keep the finished/expired/deleted games somewhere.
 - allow replay of a finished game
 - Espresso tests
-
-Next:
 - Popup local/remote
 - In GameRepository: multiple local games
 - GridLayout

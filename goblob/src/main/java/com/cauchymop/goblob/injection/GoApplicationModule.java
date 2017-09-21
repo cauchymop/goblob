@@ -9,12 +9,14 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
+import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.presenter.GameMessageGenerator;
+import com.cauchymop.goblob.ui.AndroidGameRepository;
+import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Player;
 import com.google.firebase.analytics.FirebaseAnalytics;
-
-import java.util.UUID;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -30,7 +32,6 @@ import static com.google.android.gms.games.Games.Players;
 @Module
 public class GoApplicationModule {
 
-  private static final String LOCAL_UNIQUE_ID = "LOCAL_UNIQUE_ID";
   private Application application;
 
   public GoApplicationModule(Application application) {
@@ -41,18 +42,6 @@ public class GoApplicationModule {
   @Singleton
   public GoogleApiClient provideGoogleApiClient(GoogleApiClientManager googleApiClientManager) {
     return googleApiClientManager.get();
-  }
-
-  @Provides
-  @Singleton
-  @Named("LocalUniqueId")
-  public String getLocalUniqueId(SharedPreferences preferences) {
-    String uid = preferences.getString(LOCAL_UNIQUE_ID, null);
-    if (uid == null) {
-      uid = UUID.randomUUID().toString();
-      preferences.edit().putString(LOCAL_UNIQUE_ID, uid).apply();
-    }
-    return uid;
   }
 
   @Provides
@@ -72,6 +61,12 @@ public class GoApplicationModule {
   @Named("PlayerTwoDefaultName")
   public String providePlayerTwoDefaultName() {
     return application.getString(R.string.player_two_default_name);
+  }
+
+  @Provides
+  @Singleton
+  public GameRepository provideGameRepository(AndroidGameRepository androidGameRepository) {
+    return androidGameRepository;
   }
 
   @Provides
@@ -96,5 +91,11 @@ public class GoApplicationModule {
   @Singleton
   public Analytics getAnalytics(FirebaseAnalyticsSender analytics) {
     return analytics;
+  }
+
+  @Provides
+  @Singleton
+  public GameMessageGenerator getGameMessageGenerator(GameMessageGeneratorAndroid gameMessageGeneratorAndroid) {
+    return gameMessageGeneratorAndroid;
   }
 }

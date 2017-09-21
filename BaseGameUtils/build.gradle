@@ -1,18 +1,12 @@
 apply plugin: 'com.android.library'
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-}
-
 dependencies {
-    compile "com.android.support:appcompat-v7:${rootProject.ext.appcompat_library_version}"
-    compile "com.google.android.gms:play-services-games:${rootProject.ext.gms_library_version}"
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.appcompat_library_version}"
+    implementation "com.google.android.gms:play-services-games:${rootProject.ext.gms_library_version}"
 }
 
 android {
     compileSdkVersion rootProject.ext.android_compile_version
-    buildToolsVersion rootProject.ext.android_version
+    buildToolsVersion rootProject.ext.build_tools_version
 }
 
