@@ -10,7 +10,7 @@ public interface GameView {
   void setConfigurationViewListener(ConfigurationEventListener configurationEventListener);
 
   void setInGameViewModel(InGameViewModel inGameViewModel);
-  void setInGameActionListener(InGameView.InGameActionListener inGameActionListener);
+  void setInGameActionListener(InGameView.InGameEventListener inGameEventListener);
 
   void buzz();
 }

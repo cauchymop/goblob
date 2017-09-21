@@ -40,7 +40,7 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   @BindView(R.id.message_textview) TextView messageView;
   @BindView(R.id.go_board_view) GoBoardViewAndroid goBoardView;
 
-  private InGameActionListener inGameActionListener;
+  private InGameEventListener inGameEventListener;
 
   public InGameViewAndroid(Context context) {
     super(context);
@@ -95,19 +95,19 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   }
 
   @Override
-  public void setInGameActionListener(InGameActionListener inGameActionListener) {
-    goBoardView.setBoardEventListener(inGameActionListener);
-    this.inGameActionListener = inGameActionListener;
+  public void setInGameEventListener(InGameEventListener inGameEventListener) {
+    goBoardView.setBoardEventListener(inGameEventListener);
+    this.inGameEventListener = inGameEventListener;
   }
 
   @OnClick(R.id.action_button_pass)
   void onPass() {
-    inGameActionListener.onPass();
+    inGameEventListener.onPass();
   }
   
   @OnClick(R.id.action_button_done)
   void onDone() {
-    inGameActionListener.onDone();
+    inGameEventListener.onDone();
   }
   
 
