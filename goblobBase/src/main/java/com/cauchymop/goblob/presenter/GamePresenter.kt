@@ -6,7 +6,6 @@ import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.view.GameView
-import com.cauchymop.goblob.view.GoBoardView
 import com.cauchymop.goblob.view.InGameView
 
 class GamePresenter(private val gameDatas: GameDatas,
@@ -14,7 +13,7 @@ class GamePresenter(private val gameDatas: GameDatas,
                     private val gameRepository: GameRepository,
                     private val achievementManager: AchievementManager,
                     private val updater: GameViewUpdater,
-                    private val view: GameView) : GoBoardView.BoardEventListener, ConfigurationEventListener, GameRepository.GameRepositoryListener, InGameView.InGameActionListener {
+                    private val view: GameView) : GameRepository.GameRepositoryListener, ConfigurationEventListener, InGameView.InGameEventListener {
 
     private var goGameController: GoGameController? = null
 

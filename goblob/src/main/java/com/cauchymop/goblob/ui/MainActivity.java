@@ -396,12 +396,6 @@ public class MainActivity extends AppCompatActivity
     return 0;
   }
 
-  public void unlockAchievement(String achievementId) {
-    if (isSignedIn()) {
-      Achievements.unlock(googleApiClient, achievementId);
-    }
-  }
-
   public void setWaitingScreenVisible(boolean visible) {
     waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
   }

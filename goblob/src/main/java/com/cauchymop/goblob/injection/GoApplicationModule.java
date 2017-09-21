@@ -11,7 +11,9 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.presenter.AchievementManager;
 import com.cauchymop.goblob.presenter.GameMessageGenerator;
+import com.cauchymop.goblob.ui.AchievementManagerAndroid;
 import com.cauchymop.goblob.ui.AndroidGameRepository;
 import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -98,4 +100,11 @@ public class GoApplicationModule {
   public GameMessageGenerator getGameMessageGenerator(GameMessageGeneratorAndroid gameMessageGeneratorAndroid) {
     return gameMessageGeneratorAndroid;
   }
+
+  @Provides
+  @Singleton
+  public AchievementManager getAchievementManager(AchievementManagerAndroid achievementManagerAndroid) {
+    return achievementManagerAndroid;
+  }
+
 }

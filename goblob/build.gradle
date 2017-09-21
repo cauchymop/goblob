@@ -4,10 +4,12 @@ buildscript {
     }
     dependencies {
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
     }
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 apply plugin: 'jacoco-android'
 
 tasks.withType(JavaCompile) {

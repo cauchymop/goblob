@@ -1,4 +1,5 @@
 - In Progress
+   - TODO: Inject Presenter and use a startPresenting(View) approach
    - TODO: Tests (continue GamePresenterTest) => Could we delegate to subPresenter so they can be easier to Test
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first
