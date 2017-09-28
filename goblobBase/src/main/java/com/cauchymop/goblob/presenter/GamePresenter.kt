@@ -7,20 +7,28 @@ import com.cauchymop.goblob.model.GoGameController
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.view.GameView
 import com.cauchymop.goblob.view.InGameView
+import javax.inject.Inject
 
-class GamePresenter(private val gameDatas: GameDatas,
-                    private val analytics: Analytics,
-                    private val gameRepository: GameRepository,
-                    private val achievementManager: AchievementManager,
-                    private val updater: GameViewUpdater,
-                    private val view: GameView) : GameRepository.GameRepositoryListener, ConfigurationEventListener, InGameView.InGameEventListener {
+class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
+                                        private val analytics: Analytics,
+                                        private val gameRepository: GameRepository,
+                                        private val achievementManager: AchievementManager,
+                                        private val updater: GameViewUpdater) : GameRepository.GameRepositoryListener, ConfigurationEventListener, InGameView.InGameEventListener {
 
     private var goGameController: GoGameController? = null
 
+    var view: GameView? = null
+        set(value) {
+            value?.let {
+                field = value
+                it.setInGameActionListener(this)
+                it.setConfigurationViewListener(this)
+                updateView()
+            }
+        }
+
     init {
         gameRepository.addGameRepositoryListener(this)
-        view.setInGameActionListener(this)
-        view.setConfigurationViewListener(this)
     }
 
     private fun updateFromGame(gameData: PlayGameData.GameData?) = gameData?.let {
@@ -67,6 +75,7 @@ class GamePresenter(private val gameDatas: GameDatas,
 
     fun clear() {
         gameRepository.removeGameRepositoryListener(this)
+        view = null
     }
 
     override fun onBlackPlayerNameChanged(blackPlayerName: String) = with(goGameController!!) {
@@ -104,9 +113,7 @@ class GamePresenter(private val gameDatas: GameDatas,
         updateView()
     }
 
-    private fun updateView() {
-        updater.update(goGameController, view)
-    }
+    private fun updateView() = updater.update(goGameController, view)
 
     override fun onConfigurationValidationEvent() {
         goGameController!!.validateConfiguration()
@@ -120,7 +127,7 @@ class GamePresenter(private val gameDatas: GameDatas,
             if (played) {
                 commitGameChanges()
             } else {
-                view.buzz()
+                view?.buzz()
                 analytics.invalidMovePlayed(gameConfiguration)
             }
         }

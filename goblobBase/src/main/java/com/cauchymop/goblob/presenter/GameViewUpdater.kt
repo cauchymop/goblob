@@ -11,9 +11,9 @@ import javax.inject.Inject
 
 open class GameViewUpdater @Inject constructor(private val configurationViewModels: ConfigurationViewModels,
                                           private val inGameViewModels: InGameViewModels) {
-    fun update(goGameController: GoGameController?, view: GameView) = goGameController?.let {
-        if (isConfigured(it)) view.setInGameViewModel(inGameViewModel(it))
-        else view.setConfigurationViewModel(configurationViewModel(it))
+    fun update(goGameController: GoGameController?, view: GameView?) = goGameController?.let {
+        if (isConfigured(it)) view?.setInGameViewModel(inGameViewModel(it))
+        else view?.setConfigurationViewModel(configurationViewModel(it))
     }
 
     private fun isConfigured(goGameController: GoGameController): Boolean = with(goGameController) {
