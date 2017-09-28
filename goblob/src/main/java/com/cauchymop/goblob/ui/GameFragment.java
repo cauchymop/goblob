@@ -13,20 +13,12 @@ import android.view.ViewGroup;
 import android.widget.ViewSwitcher;
 
 import com.cauchymop.goblob.R;
-import com.cauchymop.goblob.model.Analytics;
-import com.cauchymop.goblob.model.AvatarManager;
-import com.cauchymop.goblob.model.GameDatas;
-import com.cauchymop.goblob.model.GameRepository;
-import com.cauchymop.goblob.presenter.AchievementManager;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.presenter.GamePresenter;
-import com.cauchymop.goblob.presenter.GameViewUpdater;
 import com.cauchymop.goblob.view.GameView;
 import com.cauchymop.goblob.view.InGameView;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
-import com.cauchymop.goblob.viewmodel.ConfigurationViewModels;
 import com.cauchymop.goblob.viewmodel.InGameViewModel;
-import com.cauchymop.goblob.viewmodel.InGameViewModels;
 
 import javax.inject.Inject;
 
@@ -40,28 +32,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   private static final int IN_GAME_VIEW_INDEX = 1;
 
   @Inject
-  GameDatas gameDatas;
-
-  @Inject
-  AvatarManager avatarManager;
-
-  @Inject
-  Analytics analytics;
-
-  @Inject
-  GameRepository gameRepository;
-
-  @Inject
-  ConfigurationViewModels configurationViewModels;
-
-  @Inject
-  InGameViewModels inGameViewModels;
-
-  @Inject
-  GameViewUpdater gameViewUpdater;
-
-  @Inject
-  AchievementManager achievementManager;
+  GamePresenter gamePresenter;
 
   @BindView(R.id.current_game_view)
   ViewSwitcher currentGameViewContainer;
@@ -72,7 +43,6 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @BindView(R.id.configuration_view)
   GameConfigurationViewAndroid gameConfigurationView;
 
-  private GamePresenter gamePresenter;
   private Unbinder unbinder;
   private boolean undoActionAvailable;
   private boolean redoActionAvailable;
@@ -99,7 +69,7 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    gamePresenter = new GamePresenter(gameDatas, analytics, gameRepository, achievementManager, gameViewUpdater, this);
+    gamePresenter.setView(this);
   }
 
   @Override
@@ -107,7 +77,6 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
     super.onDestroyView();
     unbinder.unbind();
     gamePresenter.clear();
-    gamePresenter = null;
   }
 
   @Override
