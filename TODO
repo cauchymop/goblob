@@ -1,5 +1,6 @@
 - In Progress
-   - TODO: Tests (continue GamePresenterTest) => Could we delegate to subPresenter so they can be easier to Test
+   - TODO: create 2 listeners, and share a helper between the presenter and the listeners.
+   - TODO: Tests (continue GamePresenterTest)
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first
    - TODO: When marking dead stones: If not changing anything only one player have a say (probalby fixed by previous point)
