@@ -30,27 +30,35 @@ public class GamePresenterTest {
 
   @Mock private GameView view;
   @Mock private GameViewUpdater gameViewUpdater;
+  @Mock private FeedbackSender feedbackSender;
 
   private GamePresenter gamePresenter;
 
   @Before
   public void setUp() throws Exception {
-    gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, view);
-
-    reset(gameRepository, view);
+    gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, feedbackSender, gameViewUpdater);
+    reset(gameRepository);
   }
 
   @After
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, view, gameViewUpdater);
+    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, feedbackSender, gameViewUpdater, view);
   }
 
   @Test
-  public void initialisation_registersListeners() {
-    GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, view);
+  public void initialisation_registersAsGameRepositoryListener() {
+    GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, feedbackSender, gameViewUpdater);
+
     verify(gameRepository).addGameRepositoryListener(presenter);
-    verify(view).setConfigurationViewListener(presenter);
-    verify(view).setInGameActionListener(presenter);
+  }
+
+  @Test
+  public void setView_registersViewListenersAndUpdatesView() {
+    gamePresenter.setView(view);
+
+    verify(view).setConfigurationViewListener(gamePresenter);
+    verify(view).setInGameActionListener(gamePresenter);
+    verify(gameViewUpdater).update(null, view);
   }
 
   @Test
@@ -70,8 +78,9 @@ public class GamePresenterTest {
 
   @Test
   public void gameChanged_withDifferentMatchId_doesNothing() throws Exception {
+    gamePresenter.setView(view);
+    reset(view, gameViewUpdater);
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-    reset(view);
 
     gamePresenter.gameChanged(createGameData().setMatchId("pipo").build());
 
@@ -80,6 +89,7 @@ public class GamePresenterTest {
 
   @Test
   public void gameChanged_withSameMatchId() throws Exception {
+    gamePresenter.setView(view);
     setInitialGame("pizza");
 
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
@@ -89,6 +99,8 @@ public class GamePresenterTest {
 
   @Test
   public void gameSelected_updatesView() throws Exception {
+    gamePresenter.setView(view);
+    reset(view, gameViewUpdater);
 
     gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
 

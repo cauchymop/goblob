@@ -12,8 +12,10 @@ import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.cauchymop.goblob.presenter.AchievementManager;
+import com.cauchymop.goblob.presenter.FeedbackSender;
 import com.cauchymop.goblob.presenter.GameMessageGenerator;
 import com.cauchymop.goblob.ui.AchievementManagerAndroid;
+import com.cauchymop.goblob.ui.AndroidFeedbackSender;
 import com.cauchymop.goblob.ui.AndroidGameRepository;
 import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -107,4 +109,9 @@ public class GoApplicationModule {
     return achievementManagerAndroid;
   }
 
+  @Provides
+  @Singleton
+  public FeedbackSender getFeedbackSender(AndroidFeedbackSender androidFeedbackSender) {
+    return androidFeedbackSender;
+  }
 }

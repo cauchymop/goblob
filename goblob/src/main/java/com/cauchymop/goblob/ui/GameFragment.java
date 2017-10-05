@@ -1,8 +1,5 @@
 package com.cauchymop.goblob.ui;
 
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -126,17 +123,5 @@ public class GameFragment extends GoBlobBaseFragment implements GameView {
   @Override
   public void setConfigurationViewListener(ConfigurationEventListener configurationEventListener) {
     gameConfigurationView.setConfigurationViewListener(configurationEventListener);
-  }
-
-  @Override
-  public void buzz() {
-    try {
-      Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-      Ringtone r = RingtoneManager.getRingtone(getContext().getApplicationContext(), notification);
-      r.play();
-    } catch (Exception e) {
-      System.err.println("Exception while buzzing");
-      e.printStackTrace();
-    }
   }
 }

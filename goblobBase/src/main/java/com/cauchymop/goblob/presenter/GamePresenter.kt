@@ -13,6 +13,7 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
                                         private val analytics: Analytics,
                                         private val gameRepository: GameRepository,
                                         private val achievementManager: AchievementManager,
+                                        private val feedbackSender: FeedbackSender,
                                         private val updater: GameViewUpdater) : GameRepository.GameRepositoryListener, ConfigurationEventListener, InGameView.InGameEventListener {
 
     private var goGameController: GoGameController? = null
@@ -63,9 +64,11 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
         // Nothing to do
     }
 
-    override fun gameChanged(gameData: PlayGameData.GameData) = with(goGameController) {
-        if (gameData.matchId == this?.matchId) {
-            updateFromGame(gameData)
+    override fun gameChanged(gameData: PlayGameData.GameData) {
+        goGameController?.run {
+            if (gameData.matchId == matchId) {
+                updateFromGame(gameData)
+            }
         }
     }
 
@@ -127,7 +130,7 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
             if (played) {
                 commitGameChanges()
             } else {
-                view?.buzz()
+                feedbackSender.invalidMove()
                 analytics.invalidMovePlayed(gameConfiguration)
             }
         }
