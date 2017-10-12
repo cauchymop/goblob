@@ -11,6 +11,4 @@ public interface GameView {
 
   void setInGameViewModel(InGameViewModel inGameViewModel);
   void setInGameActionListener(InGameView.InGameEventListener inGameEventListener);
-
-  void buzz();
 }
