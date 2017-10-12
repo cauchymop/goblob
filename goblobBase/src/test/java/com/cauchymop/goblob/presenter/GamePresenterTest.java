@@ -27,27 +27,28 @@ public class GamePresenterTest {
   @Mock private Analytics analytics;
   @Mock private GameRepository gameRepository;
   @Mock private AchievementManager achievementManager;
-
   @Mock private GameView view;
   @Mock private GameViewUpdater gameViewUpdater;
-  @Mock private FeedbackSender feedbackSender;
+  @Mock private ConfigurationViewEventProcessor configurationViewEventProcessor;
+  @Mock private InGameViewEventProcessor inGameViewEventProcessor;
 
   private GamePresenter gamePresenter;
 
+
   @Before
   public void setUp() throws Exception {
-    gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, feedbackSender, gameViewUpdater);
+    gamePresenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, configurationViewEventProcessor, inGameViewEventProcessor);
     reset(gameRepository);
   }
 
   @After
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, feedbackSender, gameViewUpdater, view);
+    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameViewUpdater, view);
   }
 
   @Test
   public void initialisation_registersAsGameRepositoryListener() {
-    GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, feedbackSender, gameViewUpdater);
+    GamePresenter presenter = new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, configurationViewEventProcessor, inGameViewEventProcessor);
 
     verify(gameRepository).addGameRepositoryListener(presenter);
   }
@@ -56,8 +57,8 @@ public class GamePresenterTest {
   public void setView_registersViewListenersAndUpdatesView() {
     gamePresenter.setView(view);
 
-    verify(view).setConfigurationViewListener(gamePresenter);
-    verify(view).setInGameActionListener(gamePresenter);
+    verify(view).setConfigurationViewListener(configurationViewEventProcessor);
+    verify(view).setInGameActionListener(inGameViewEventProcessor);
     verify(gameViewUpdater).update(null, view);
   }
 
@@ -106,63 +107,6 @@ public class GamePresenterTest {
 
     verify(gameViewUpdater).update(any(), eq(view));
   }
-
-//
-//  @Test
-//  public void clear() throws Exception {
-//  }
-//
-//  @Test
-//  public void onBlackPlayerNameChanged() throws Exception {
-//  }
-//
-//  @Test
-//  public void onWhitePlayerNameChanged() throws Exception {
-//  }
-//
-//  @Test
-//  public void onHandicapChanged() throws Exception {
-//  }
-//
-//  @Test
-//  public void onKomiChanged() throws Exception {
-//  }
-//
-//  @Test
-//  public void onBoardSizeChanged() throws Exception {
-//  }
-//
-//  @Test
-//  public void onSwapEvent() throws Exception {
-//  }
-//
-//  @Test
-//  public void onConfigurationValidationEvent() throws Exception {
-//  }
-//
-//  @Test
-//  public void onIntersectionSelected() throws Exception {
-//  }
-//
-//  @Test
-//  public void onPass() throws Exception {
-//  }
-//
-//  @Test
-//  public void onDone() throws Exception {
-//  }
-//
-//  @Test
-//  public void onUndo() throws Exception {
-//  }
-//
-//  @Test
-//  public void onRedo() throws Exception {
-//  }
-//
-//  @Test
-//  public void onResign() throws Exception {
-//  }
 
   private void setInitialGame(String matchId) {
     gamePresenter.gameSelected(createGameData().setMatchId(matchId).build());

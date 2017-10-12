@@ -77,8 +77,10 @@ public class GoGameController implements Serializable {
       checkForMatchEnd();
       analytics.movePlayed(getGameConfiguration(), move);
       return true;
+    } else {
+      analytics.invalidMovePlayed(getGameConfiguration());
+      return false;
     }
-    return false;
   }
 
   public GoPlayer getCurrentPlayer() {
