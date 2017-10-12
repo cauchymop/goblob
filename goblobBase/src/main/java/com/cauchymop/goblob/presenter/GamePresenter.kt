@@ -6,35 +6,50 @@ import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.view.GameView
-import com.cauchymop.goblob.view.InGameView
 import javax.inject.Inject
 
 class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
                                         private val analytics: Analytics,
                                         private val gameRepository: GameRepository,
                                         private val achievementManager: AchievementManager,
-                                        private val feedbackSender: FeedbackSender,
-                                        private val updater: GameViewUpdater) : GameRepository.GameRepositoryListener, ConfigurationEventListener, InGameView.InGameEventListener {
+                                        private val updater: GameViewUpdater,
+                                        private val configurationViewEventProcessor: ConfigurationViewEventProcessor,
+                                        private val inGameViewEventProcessor: InGameViewEventProcessor) : GameRepository.GameRepositoryListener {
+
+    inner class Helper : GamePresenterHelper {
+        override fun updateView() = updater.update(goGameController, view)
+
+        override fun commitGameChanges() = with(goGameController!!) {
+            val gameData = buildGameData()
+            gameRepository.commitGameChanges(gameData)
+            helper.updateView()
+        }
+    }
 
     private var goGameController: GoGameController? = null
+    private val helper: Helper by lazy { Helper() }
 
     var view: GameView? = null
         set(value) {
             value?.let {
                 field = value
-                it.setInGameActionListener(this)
-                it.setConfigurationViewListener(this)
-                updateView()
+                it.setInGameActionListener(inGameViewEventProcessor)
+                it.setConfigurationViewListener(configurationViewEventProcessor)
+                helper.updateView()
             }
         }
 
     init {
         gameRepository.addGameRepositoryListener(this)
+        inGameViewEventProcessor.helper = helper
+        inGameViewEventProcessor.goGameControllerProvider = { goGameController }
+        configurationViewEventProcessor.helper = helper
+        configurationViewEventProcessor.goGameControllerProvider = { goGameController }
     }
 
     private fun updateFromGame(gameData: PlayGameData.GameData?) = gameData?.let {
         goGameController = GoGameController(gameDatas, gameData, analytics)
-        updateView()
+        helper.updateView()
 
         updateAchievements()
     }
@@ -81,74 +96,9 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
         view = null
     }
 
-    override fun onBlackPlayerNameChanged(blackPlayerName: String) = with(goGameController!!) {
-        if (gameConfiguration.black.name != blackPlayerName) {
-            setBlackPlayerName(blackPlayerName)
-        }
-    }
-
-    override fun onWhitePlayerNameChanged(whitePlayerName: String) = with(goGameController!!) {
-        if (gameConfiguration.white.name != whitePlayerName) {
-            setWhitePlayerName(whitePlayerName)
-        }
-    }
-
-    override fun onHandicapChanged(handicap: Int) = with(goGameController!!) {
-        if (gameConfiguration.handicap != handicap) {
-            setHandicap(handicap)
-        }
-    }
-
-    override fun onKomiChanged(komi: Float) = with(goGameController!!) {
-        if (gameConfiguration.komi != komi) {
-            setKomi(komi)
-        }
-    }
-
-    override fun onBoardSizeChanged(boardSize: Int) = with(goGameController!!) {
-        if (gameConfiguration.boardSize != boardSize) {
-            setBoardSize(boardSize)
-        }
-    }
-
-    override fun onSwapEvent() {
-        goGameController!!.swapPlayers()
-        updateView()
-    }
-
-    private fun updateView() = updater.update(goGameController, view)
-
-    override fun onConfigurationValidationEvent() {
-        goGameController!!.validateConfiguration()
-        commitGameChanges()
-    }
-
-    override fun onIntersectionSelected(x: Int, y: Int) = with(goGameController!!) {
-        if (isLocalTurn) {
-            val played = playMoveOrToggleDeadStone(gameDatas.createMove(x, y))
-
-            if (played) {
-                commitGameChanges()
-            } else {
-                feedbackSender.invalidMove()
-                analytics.invalidMovePlayed(gameConfiguration)
-            }
-        }
-    }
-
-    override fun onPass() {
-        goGameController!!.pass()
-        commitGameChanges()
-    }
-
-    override fun onDone() {
-        goGameController!!.markingTurnDone()
-        commitGameChanges()
-    }
-
     fun onUndo() {
         if (goGameController!!.undo()) {
-            commitGameChanges()
+            helper.commitGameChanges()
             analytics.undo()
         }
     }
@@ -156,21 +106,16 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
     fun onRedo() {
         if (goGameController!!.redo()) {
             analytics.redo()
-            commitGameChanges()
+            helper.commitGameChanges()
         }
     }
 
     fun onResign() {
         goGameController!!.resign()
-        commitGameChanges()
+        helper.commitGameChanges()
         analytics.resign()
     }
 
-    private fun commitGameChanges() = with(goGameController!!) {
-        val gameData = buildGameData()
-        gameRepository.commitGameChanges(gameData)
-        updateView()
-    }
 
 //    private fun playMonteCarloMove() = with(goGameController!!) {
 //        val bestMove = MonteCarlo.getBestMove(game, 1000)
