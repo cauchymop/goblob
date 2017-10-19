@@ -14,7 +14,8 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
                                         private val achievementManager: AchievementManager,
                                         private val updater: GameViewUpdater,
                                         private val configurationViewEventProcessor: ConfigurationViewEventProcessor,
-                                        private val inGameViewEventProcessor: InGameViewEventProcessor) : GameRepository.GameRepositoryListener {
+                                        private val inGameViewEventProcessor: InGameViewEventProcessor,
+                                        private val goGameControllerFactory: GoGameControllerFactory) : GameRepository.GameRepositoryListener {
 
     inner class Helper : GamePresenterHelper {
         override fun updateView() = updater.update(goGameController, view)
@@ -48,7 +49,7 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
     }
 
     private fun updateFromGame(gameData: PlayGameData.GameData?) = gameData?.let {
-        goGameController = GoGameController(gameDatas, gameData, analytics)
+        goGameController = goGameControllerFactory.createGameController(gameDatas, gameData, analytics)
         helper.updateView()
 
         updateAchievements()

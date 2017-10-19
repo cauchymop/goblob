@@ -25,6 +25,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
@@ -33,8 +34,31 @@ import static com.google.android.gms.games.Games.Players;
 /**
  * Module to configure dependency injection.
  */
-@Module
+@Module(includes = GoApplicationModule.Bindings.class)
 public class GoApplicationModule {
+
+  @Module
+  public interface Bindings {
+    @Binds
+    @Singleton
+    Analytics getAnalytics(FirebaseAnalyticsSender analytics);
+
+    @Binds
+    @Singleton
+    GameRepository provideGameRepository(AndroidGameRepository androidGameRepository);
+
+    @Binds
+    @Singleton
+    GameMessageGenerator getGameMessageGenerator(GameMessageGeneratorAndroid gameMessageGeneratorAndroid);
+
+    @Binds
+    @Singleton
+    AchievementManager getAchievementManager(AchievementManagerAndroid achievementManagerAndroid);
+
+    @Binds
+    @Singleton
+    FeedbackSender getFeedbackSender(AndroidFeedbackSender androidFeedbackSender);
+  }
 
   private Application application;
 
@@ -69,12 +93,6 @@ public class GoApplicationModule {
 
   @Provides
   @Singleton
-  public GameRepository provideGameRepository(AndroidGameRepository androidGameRepository) {
-    return androidGameRepository;
-  }
-
-  @Provides
-  @Singleton
   public Context getApplicationContext() {
     return application;
   }
@@ -91,27 +109,4 @@ public class GoApplicationModule {
     return FirebaseAnalytics.getInstance(context);
   }
 
-  @Provides
-  @Singleton
-  public Analytics getAnalytics(FirebaseAnalyticsSender analytics) {
-    return analytics;
-  }
-
-  @Provides
-  @Singleton
-  public GameMessageGenerator getGameMessageGenerator(GameMessageGeneratorAndroid gameMessageGeneratorAndroid) {
-    return gameMessageGeneratorAndroid;
-  }
-
-  @Provides
-  @Singleton
-  public AchievementManager getAchievementManager(AchievementManagerAndroid achievementManagerAndroid) {
-    return achievementManagerAndroid;
-  }
-
-  @Provides
-  @Singleton
-  public FeedbackSender getFeedbackSender(AndroidFeedbackSender androidFeedbackSender) {
-    return androidFeedbackSender;
-  }
 }
