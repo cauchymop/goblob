@@ -46,22 +46,38 @@ class ConfigurationViewEventProcessorTest {
 
     @Test
     fun onHandicapChanged() {
+        configurationViewEventProcessor.onHandicapChanged(3)
+
+        verify(goGameController).setHandicap(3)
     }
 
     @Test
     fun onKomiChanged() {
+        configurationViewEventProcessor.onKomiChanged(6.5F)
+
+        verify(goGameController).setKomi(6.5F)
     }
 
     @Test
     fun onBoardSizeChanged() {
+        configurationViewEventProcessor.onBoardSizeChanged(19)
+
+        verify(goGameController).setBoardSize(19)
     }
 
     @Test
     fun onSwapEvent() {
+        configurationViewEventProcessor.onSwapEvent()
+
+        verify(goGameController).swapPlayers()
+        verify(gamePresenterHelper).updateView()
     }
 
     @Test
     fun onConfigurationValidationEvent() {
-    }
+        configurationViewEventProcessor.onConfigurationValidationEvent()
 
+        verify(goGameController).validateConfiguration()
+        verify(gamePresenterHelper).commitGameChanges()
+    }
 }
