@@ -26,24 +26,15 @@ import static org.mockito.Mockito.when;
 public class GamePresenterTest {
   private static final GameDatas GAME_DATAS = new GameDatas();
 
-  @Mock
-  private Analytics analytics;
-  @Mock
-  private GameRepository gameRepository;
-  @Mock
-  private AchievementManager achievementManager;
-  @Mock
-  private GameView view;
-  @Mock
-  private GameViewUpdater gameViewUpdater;
-  @Mock
-  private ConfigurationViewEventProcessor configurationViewEventProcessor;
-  @Mock
-  private InGameViewEventProcessor inGameViewEventProcessor;
-  @Mock
-  private GoGameControllerFactory goGameControllerFactory;
-  @Mock
-  private GoGameController goGameController;
+  @Mock private Analytics analytics;
+  @Mock private GameRepository gameRepository;
+  @Mock private AchievementManager achievementManager;
+  @Mock private GameView view;
+  @Mock private GameViewUpdater gameViewUpdater;
+  @Mock private ConfigurationViewEventProcessor configurationViewEventProcessor;
+  @Mock private InGameViewEventProcessor inGameViewEventProcessor;
+  @Mock private GoGameControllerFactory goGameControllerFactory;
+  @Mock private GoGameController goGameController;
 
   private GamePresenter gamePresenter;
 
@@ -172,5 +163,4 @@ public class GamePresenterTest {
   private GamePresenter createGamePresenter() {
     return new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, configurationViewEventProcessor, inGameViewEventProcessor, goGameControllerFactory);
   }
-
 }

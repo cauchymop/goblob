@@ -38,7 +38,7 @@ import static com.google.android.gms.games.Games.Players;
 public class GoApplicationModule {
 
   @Module
-  interface Bindings {
+  public interface Bindings {
     @Binds
     @Singleton
     Analytics getAnalytics(FirebaseAnalyticsSender analytics);
