@@ -1,13 +1,11 @@
 buildscript {
     repositories {
         jcenter()
-        maven {
-            url 'https://maven.google.com'
-        }
+        google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-rc2'
+        classpath 'com.android.tools.build:gradle:3.0.0'
         classpath 'com.google.gms:google-services:3.0.0'
     }
 }
@@ -21,17 +19,17 @@ allprojects {
     }
 
     ext {
-        android_compile_version = 26
+        android_compile_version = 27
         build_tools_version = '26.0.2'
         android_min_sdk_version = 14
 
         appcompat_library_version = '26.1.0'
-        gms_library_version = '11.4.2'
+        gms_library_version = '11.6.0'
 
         guava_version = '19.0'
-        dagger_version = '2.11'
-        espresso_version = '2.2.2'
-        butterknife_version = '8.4.0'
+        dagger_version = '2.13'
+        espresso_version = '3.0.1'
+        butterknife_version = '8.8.1'
 
         junit_version = '4.12'
         mockito_version = '2.8.9'
