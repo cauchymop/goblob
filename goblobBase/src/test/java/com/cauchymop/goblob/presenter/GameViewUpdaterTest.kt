@@ -1,36 +1,77 @@
 package com.cauchymop.goblob.presenter
 
-import com.cauchymop.goblob.model.GameDatas
+import com.cauchymop.goblob.model.GoGameController
+import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase
+import com.cauchymop.goblob.view.GameView
+import com.cauchymop.goblob.viewmodel.ConfigurationViewModel
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModels
+import com.cauchymop.goblob.viewmodel.InGameViewModel
 import com.cauchymop.goblob.viewmodel.InGameViewModels
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.BDDMockito.given
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class GameViewUpdaterTest {
-    private val CONFIGURATION_INITIAL_MESSAGE = "configuration initial message"
+    @Mock private lateinit var gameView: GameView
+    @Mock private lateinit var goGameController: GoGameController
+    @Mock private lateinit var configurationViewModels: ConfigurationViewModels
+    @Mock private lateinit var inGameViewModels: InGameViewModels
+    @Mock private lateinit var inGameViewModel: InGameViewModel
+    @Mock private lateinit var configurationViewModel: ConfigurationViewModel
 
-    @Mock private lateinit var gameMessageGenerator: GameMessageGenerator
-
-    private val GAME_DATAS = GameDatas()
-    private var configurationViewModels: ConfigurationViewModels? = null
-    private var inGameViewModels: InGameViewModels? = null
+    private lateinit var gameViewUpdater: GameViewUpdater
 
     @Before
     @Throws(Exception::class)
     fun setUp() {
-        configurationViewModels = ConfigurationViewModels(gameMessageGenerator)
-        inGameViewModels = InGameViewModels(GAME_DATAS, gameMessageGenerator)
-
-//        Mockito.`when`(gameMessageGenerator.configurationMessageInitial).thenReturn(CONFIGURATION_INITIAL_MESSAGE)
+        gameViewUpdater = GameViewUpdater(configurationViewModels, inGameViewModels)
     }
 
-    // TODO: All Test cases
     @Test
-    fun update() {
+    fun update_initial() {
+        testUpdateConfigurationViewModelForPhase(Phase.INITIAL)
     }
 
+    @Test
+    fun update_configuration() {
+        testUpdateConfigurationViewModelForPhase(Phase.CONFIGURATION)
+    }
+
+    @Test
+    fun update_ingame() {
+        testUpdateInGameViewModelForPhase(Phase.IN_GAME)
+    }
+
+    @Test
+    fun update_deadStoneMarking() {
+        testUpdateInGameViewModelForPhase(Phase.DEAD_STONE_MARKING)
+    }
+
+    @Test
+    fun update_finished() {
+        testUpdateInGameViewModelForPhase(Phase.FINISHED)
+    }
+
+    fun testUpdateConfigurationViewModelForPhase(phase: Phase) {
+        given(goGameController.phase).willReturn(phase)
+        given(configurationViewModels.from(goGameController)).willReturn(configurationViewModel)
+
+        gameViewUpdater.update(goGameController, gameView)
+
+        Mockito.verify(gameView).setConfigurationViewModel(configurationViewModel)
+    }
+
+    fun testUpdateInGameViewModelForPhase(phase: Phase) {
+        given(goGameController.phase).willReturn(phase)
+        given(inGameViewModels.from(goGameController)).willReturn(inGameViewModel)
+
+        gameViewUpdater.update(goGameController, gameView)
+
+        Mockito.verify(gameView).setInGameViewModel(inGameViewModel)
+    }
 }
