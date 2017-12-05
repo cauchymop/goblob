@@ -99,6 +99,7 @@ public class GamePresenterTest {
     gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
 
     verify(gameViewUpdater).update(any(), eq(view));
+    verify(achievementManager).updateAchievements(goGameController);
   }
 
   @Test
@@ -107,6 +108,7 @@ public class GamePresenterTest {
     gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
 
     verify(gameViewUpdater).update(goGameController, view);
+    verify(achievementManager).updateAchievements(goGameController);
   }
 
   @Test
@@ -157,7 +159,7 @@ public class GamePresenterTest {
   private void setInitialGame() {
     when(goGameController.getMatchId()).thenReturn("pizza");
     gamePresenter.gameSelected(createGameData().setMatchId("pizza").build());
-    reset(view, gameViewUpdater);
+    reset(view, gameViewUpdater, achievementManager);
   }
 
   private GamePresenter createGamePresenter() {
