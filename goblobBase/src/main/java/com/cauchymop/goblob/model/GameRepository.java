@@ -16,15 +16,12 @@ import dagger.Lazy;
 
 public abstract class GameRepository {
 
-
-  protected static final String GAME_DATA = "gameData";
-  protected static final String GAMES = "games";
   private static final String LOCAL_MATCH_ID = "local";
   private static final String PLAYER_ONE_ID = "player1";
   private static final String PLAYER_TWO_ID = "player2";
   protected final GameDatas gameDatas;
-  protected final Lazy<String> playerOneDefaultName;
-  protected final String playerTwoDefaultName;
+  private final Lazy<String> playerOneDefaultName;
+  private final String playerTwoDefaultName;
   private final Predicate<PlayGameData.GameData> isLocalTurnPredicate = new Predicate<PlayGameData.GameData>() {
     @Override
     public boolean apply(PlayGameData.GameData gameData) {
@@ -81,7 +78,7 @@ public abstract class GameRepository {
     }
   }
 
-  public abstract boolean publishRemoteGameState(PlayGameData.GameData gameData);
+  protected abstract boolean publishRemoteGameState(PlayGameData.GameData gameData);
 
   protected void removeFromCache(String matchId) {
     log("removeFromCache " + matchId);
@@ -155,7 +152,7 @@ public abstract class GameRepository {
     return localGame;
   }
 
-  public PlayGameData.GameData getCurrentGame() {
+  private PlayGameData.GameData getCurrentGame() {
     return gameCache.getGamesMap().get(getCurrentMatchId());
   }
 

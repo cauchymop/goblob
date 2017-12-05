@@ -32,7 +32,6 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchBuffer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -59,6 +58,8 @@ import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 @Singleton
 public class AndroidGameRepository extends GameRepository implements OnTurnBasedMatchUpdateReceivedListener {
 
+  private static final String GAME_DATA = "gameData";
+  private static final String GAMES = "games";
   private static final String TAG = AndroidGameRepository.class.getName();
   private static final int CACHE_CHANGED_MESSAGE = 1;
   private static final long CACHE_CHANGED_DELAY = 100;
@@ -169,44 +170,36 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
             Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
             new int[]{TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN});
     ResultCallback<TurnBasedMultiplayer.LoadMatchesResult> matchListResultCallBack =
-        new ResultCallback<TurnBasedMultiplayer.LoadMatchesResult>() {
-          @Override
-          public void onResult(@NonNull TurnBasedMultiplayer.LoadMatchesResult loadMatchesResult) {
-            Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId));
-            LoadMatchesResponse matches = loadMatchesResult.getMatches();
+        loadMatchesResult -> {
+          Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId));
+          LoadMatchesResponse matches = loadMatchesResult.getMatches();
 
-            ImmutableList<TurnBasedMatch> allMatches = ImmutableList.<TurnBasedMatch>builder()
-                .addAll(denullify(matches.getMyTurnMatches()))
-                .addAll(denullify(matches.getTheirTurnMatches()))
-                .addAll(denullify(matches.getCompletedMatches()))
-                .build();
+          ImmutableList<TurnBasedMatch> allMatches = ImmutableList.<TurnBasedMatch>builder()
+              .addAll(denullify(matches.getMyTurnMatches()))
+              .addAll(denullify(matches.getTheirTurnMatches()))
+              .addAll(denullify(matches.getCompletedMatches()))
+              .build();
 
-            Set<GameData> games = new HashSet<>();
-            for (TurnBasedMatch match : allMatches) {
-              updateAvatars(match);
-              GameData gameData = getGameData(match);
-              if (gameData != null) {
-                games.add(gameData);
-              }
+          Set<GameData> games = new HashSet<>();
+          for (TurnBasedMatch match : allMatches) {
+            updateAvatars(match);
+            GameData gameData = getGameData(match);
+            if (gameData != null) {
+              games.add(gameData);
             }
-            if (clearRemoteGamesIfAbsent(games)) {
-              forceCacheRefresh();
-            }
-            for (GameData game : games) {
-              saveToCache(game);
-            }
+          }
+          if (clearRemoteGamesIfAbsent(games)) {
+            forceCacheRefresh();
+          }
+          for (GameData game : games) {
+            saveToCache(game);
           }
         };
     matchListResult.setResultCallback(matchListResultCallBack);
   }
 
   private boolean clearRemoteGamesIfAbsent(final Set<GameData> games) {
-    return Iterables.removeIf(gameCache.getMutableGames().values(), new Predicate<GameData>() {
-      @Override
-      public boolean apply(GameData gameData) {
-        return gameDatas.isRemoteGame(gameData) && !games.contains(gameData);
-      }
-    });
+    return Iterables.removeIf(gameCache.getMutableGames().values(), gameData -> gameDatas.isRemoteGame(gameData) && !games.contains(gameData));
   }
 
   private void updateAvatars(TurnBasedMatch match) {
@@ -220,7 +213,7 @@ public class AndroidGameRepository extends GameRepository implements OnTurnBased
     return nullableIterable == null ? ImmutableList.of() : nullableIterable;
   }
 
-  public GameData getGameData(@NonNull TurnBasedMatch turnBasedMatch) {
+  private GameData getGameData(@NonNull TurnBasedMatch turnBasedMatch) {
     byte[] data = turnBasedMatch.getData();
     if (data == null) {
       // When a crash happens during game creation, the TurnBasedMatch contains a null game
