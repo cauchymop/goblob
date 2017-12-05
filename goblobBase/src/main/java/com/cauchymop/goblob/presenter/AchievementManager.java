@@ -1,16 +1,10 @@
 package com.cauchymop.goblob.presenter;
 
 
+import com.cauchymop.goblob.model.GoGameController;
+
+import org.jetbrains.annotations.NotNull;
+
 public interface AchievementManager {
-  void unlockAchievement9x9();
-
-  void unlockAchievement13x13();
-
-  void unlockAchievement19x19();
-
-  void unlockAchievementLocal();
-
-  void unlockAchievementRemote();
-
-  void unlockAchievementWinner();
+  void updateAchievements(@NotNull GoGameController goGameController);
 }

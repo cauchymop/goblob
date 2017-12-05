@@ -7,5 +7,5 @@ import com.cauchymop.goblob.proto.PlayGameData
 import javax.inject.Inject
 
 class GoGameControllerFactory @Inject constructor() {
-    fun createGameController(gameDatas: GameDatas, gameData: PlayGameData.GameData, analytics: Analytics) = GoGameController(gameDatas, gameData, analytics)
+    fun createGameController(gameDatas: GameDatas, gameData: PlayGameData.GameData, analytics: Analytics):GoGameController = GoGameController(gameDatas, gameData, analytics)
 }

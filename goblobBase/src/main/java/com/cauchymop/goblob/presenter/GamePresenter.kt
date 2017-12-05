@@ -50,30 +50,8 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
 
     private fun updateFromGame(gameData: PlayGameData.GameData?) = gameData?.let {
         goGameController = goGameControllerFactory.createGameController(gameDatas, gameData, analytics)
+        achievementManager.updateAchievements(goGameController!!)
         helper.updateView()
-
-        updateAchievements()
-    }
-
-    private fun updateAchievements() = with(goGameController!!) {
-        if (!isGameFinished) {
-            return
-        }
-        with(achievementManager) {
-            when (game.boardSize) {
-                9 -> unlockAchievement9x9()
-                13 -> unlockAchievement13x13()
-                19 -> unlockAchievement19x19()
-            }
-            if (isLocalGame) {
-                unlockAchievementLocal()
-            } else {
-                unlockAchievementRemote()
-                if (winner.isLocal) {
-                    unlockAchievementWinner()
-                }
-            }
-        }
     }
 
     override fun gameListChanged() {
