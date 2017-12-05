@@ -1,6 +1,5 @@
 package com.cauchymop.goblob.presenter
 
-import com.cauchymop.goblob.model.GameDatas
 import com.cauchymop.goblob.model.GoGameController
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase
 import com.cauchymop.goblob.view.GameView
@@ -24,8 +23,6 @@ class GameViewUpdaterTest {
     @Mock private lateinit var inGameViewModels: InGameViewModels
     @Mock private lateinit var inGameViewModel: InGameViewModel
     @Mock private lateinit var configurationViewModel: ConfigurationViewModel
-
-    private val GAME_DATAS = GameDatas()
 
     private lateinit var gameViewUpdater: GameViewUpdater
 
