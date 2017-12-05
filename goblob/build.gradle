@@ -19,6 +19,7 @@ tasks.withType(JavaCompile) {
 dependencies {
     implementation "com.google.firebase:firebase-crash:${gms_library_version}"
     implementation "com.android.support:appcompat-v7:${appcompat_library_version}"
+    implementation "com.android.support:support-v4:${appcompat_library_version}"
     implementation "com.google.android.gms:play-services-games:${gms_library_version}"
     implementation "com.google.firebase:firebase-core:${gms_library_version}"
     implementation "com.google.guava:guava:${guava_version}"
@@ -30,7 +31,6 @@ dependencies {
     annotationProcessor "com.google.dagger:dagger-compiler:${dagger_version}"
     api project(':BaseGameUtils')
     api project(':goblobBase')
-    androidTestCompile "com.android.support:appcompat-v7:${appcompat_library_version}"
     androidTestCompile 'com.android.support.test:runner:1.0.1'
     androidTestCompile 'com.android.support.test:rules:1.0.1'
     androidTestCompile("com.android.support.test.espresso:espresso-core:${espresso_version}")

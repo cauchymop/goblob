@@ -1,8 +1,9 @@
 apply plugin: 'com.android.library'
 
 dependencies {
-    implementation "com.android.support:appcompat-v7:${rootProject.ext.appcompat_library_version}"
-    implementation "com.google.android.gms:play-services-games:${rootProject.ext.gms_library_version}"
+    implementation "com.android.support:appcompat-v7:${appcompat_library_version}"
+    implementation "com.android.support:support-v4:${appcompat_library_version}"
+    implementation "com.google.android.gms:play-services-games:${gms_library_version}"
 }
 
 android {
