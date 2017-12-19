@@ -16,9 +16,9 @@ open class GameViewUpdater @Inject constructor(private val configurationViewMode
 
     private fun isConfigured(goGameController: GoGameController): Boolean = with(goGameController) {
         when (phase) {
-            INITIAL, CONFIGURATION -> return false
-            IN_GAME, DEAD_STONE_MARKING, FINISHED -> return true
-            else -> throw RuntimeException("Invalid phase for game: " + phase)
+            INITIAL, CONFIGURATION -> false
+            IN_GAME, DEAD_STONE_MARKING, FINISHED -> true
+            UNKNOWN, null -> throw IllegalArgumentException("Invalid phase for game: " + phase)
         }
     }
 
