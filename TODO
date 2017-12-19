@@ -1,5 +1,5 @@
 - In Progress
-   - TODO: file a bug against Chrome for password bypass
+   - TODO: NOT GOBLOB RELATED file a bug against Chrome for password bypass with Notifications and second account
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: test GameRepository.
    - TODO: convert GameRepository into kotlin (drop the previous attempt)
