@@ -1,4 +1,5 @@
 - In Progress
+   - TODO: file a bug against Chrome for password bypass
    - TODO: Tests (continue GamePresenterTest)
        see https://codecov.io/gh/cauchymop/goblob/pull/240/src/goblobBase/src/main/java/com/cauchymop/goblob/presenter/GamePresenter.kt
    - TODO: Configuration validation (empty komi or player names)
