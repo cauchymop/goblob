@@ -1,7 +1,8 @@
 - In Progress
    - TODO: file a bug against Chrome for password bypass
-   - TODO: Tests (continue GamePresenterTest)
-       see https://codecov.io/gh/cauchymop/goblob/pull/240/src/goblobBase/src/main/java/com/cauchymop/goblob/presenter/GamePresenter.kt
+   - TODO: in GameRepository: use injection instead of inheritance
+   - TODO: test GameRepository.
+   - TODO: convert GameRepository into kotlin (drop the previous attempt)
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first
    - TODO: When marking dead stones: If not changing anything only one player have a say (probalby fixed by previous point)
