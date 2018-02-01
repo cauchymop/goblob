@@ -37,6 +37,16 @@ class ConfigurationViewEventProcessorTest {
         verify(goGameController).setBlackPlayerName("blacky")
     }
 
+    @Test(expected = Exception::class)
+    fun onBlackPlayerNameChanged_withNoGameController_shouldThrow() {
+        val pizza:() -> GoGameController? = {null}
+        configurationViewEventProcessor.goGameControllerProvider = pizza
+
+        configurationViewEventProcessor.onBlackPlayerNameChanged("blacky")
+
+        verify(configurationViewEventProcessor).goGameControllerProvider
+    }
+
     @Test
     fun onWhitePlayerNameChanged() {
         configurationViewEventProcessor.onWhitePlayerNameChanged("whity")
