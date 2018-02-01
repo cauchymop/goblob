@@ -1,35 +1,31 @@
 package com.cauchymop.goblob.presenter
 
-import com.cauchymop.goblob.model.GoGameController
 import javax.inject.Inject
 
-class ConfigurationViewEventProcessor @Inject constructor() : ConfigurationEventListener {
-
-    lateinit var helper: GamePresenterHelper
-    lateinit var goGameControllerProvider: () -> GoGameController?
+class ConfigurationViewEventProcessor @Inject constructor() : GameEventProcessor(), ConfigurationEventListener {
 
     override fun onBlackPlayerNameChanged(blackPlayerName: String) =
-        goGameControllerProvider.invoke()!!.setBlackPlayerName(blackPlayerName)
+        goGameController.setBlackPlayerName(blackPlayerName)
 
     override fun onWhitePlayerNameChanged(whitePlayerName: String) =
-        goGameControllerProvider.invoke()!!.setWhitePlayerName(whitePlayerName)
+        goGameController.setWhitePlayerName(whitePlayerName)
 
     override fun onHandicapChanged(handicap: Int) =
-        goGameControllerProvider.invoke()!!.setHandicap(handicap)
+        goGameController.setHandicap(handicap)
 
     override fun onKomiChanged(komi: Float) =
-        goGameControllerProvider.invoke()!!.setKomi(komi)
+        goGameController.setKomi(komi)
 
     override fun onBoardSizeChanged(boardSize: Int) =
-        goGameControllerProvider.invoke()!!.setBoardSize(boardSize)
+        goGameController.setBoardSize(boardSize)
 
     override fun onSwapEvent() {
-        goGameControllerProvider.invoke()!!.swapPlayers()
+        goGameController.swapPlayers()
         helper.updateView()
     }
 
     override fun onConfigurationValidationEvent() {
-        goGameControllerProvider.invoke()!!.validateConfiguration()
+        goGameController.validateConfiguration()
         helper.commitGameChanges()
     }
 
