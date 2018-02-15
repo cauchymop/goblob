@@ -109,6 +109,17 @@ public class InGameViewAndroid extends LinearLayout implements InGameView {
   void onDone() {
     inGameEventListener.onDone();
   }
-  
 
+
+  public void onUndo() {
+    inGameEventListener.onUndo();
+  }
+
+  public void onRedo() {
+    inGameEventListener.onRedo();
+  }
+
+  public void onResign() {
+    inGameEventListener.onResign();
+  }
 }

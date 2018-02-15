@@ -1,5 +1,7 @@
 - In Progress
-   - TODO: Split GamePresenter into one that handles gameRepository changes and one that is wired for one and only one Game using a @GameScope
+   - TODO: Fix Presenters Split Bugs (many refresh missing)
+   - TODO: Continue testing the new presenters
+   - TODO: Introduce @GameScope
    - TODO: NOT GOBLOB RELATED file a bug against Chrome for password bypass with Notifications and second account
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: test GameRepository.
