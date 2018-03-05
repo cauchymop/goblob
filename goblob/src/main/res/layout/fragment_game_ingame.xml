@@ -14,8 +14,7 @@
   <include
       layout="@layout/boardview_container"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_weight="1"/>
+      android:layout_height="wrap_content"/>
 
   <include layout="@layout/message_area"
       android:layout_width="match_parent"

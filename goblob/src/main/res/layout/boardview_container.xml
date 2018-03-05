@@ -6,11 +6,11 @@
     android:layout_gravity="center"
     android:gravity="center"
     tools:showIn="@layout/fragment_game_ingame"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <com.cauchymop.goblob.ui.GoBoardViewAndroid
         android:id="@+id/go_board_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"/>
 </com.cauchymop.goblob.ui.ZoomableContainer>
