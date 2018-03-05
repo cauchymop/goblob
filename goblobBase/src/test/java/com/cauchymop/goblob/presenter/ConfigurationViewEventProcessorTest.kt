@@ -1,10 +1,13 @@
 package com.cauchymop.goblob.presenter
 
+import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
+import com.cauchymop.goblob.proto.PlayGameData
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.BDDMockito.given
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
@@ -13,21 +16,20 @@ import org.mockito.junit.MockitoJUnitRunner
 @RunWith(MockitoJUnitRunner::class)
 class ConfigurationViewEventProcessorTest {
 
-    @Mock private lateinit var gamePresenterHelper: GamePresenterHelper
+    @Mock private lateinit var gameRepository:GameRepository
+    @Mock private lateinit var gameViewUpdater:GameViewUpdater
     @Mock private lateinit var goGameController: GoGameController
 
     private lateinit var configurationViewEventProcessor: ConfigurationViewEventProcessor
 
     @Before
     fun setUp() {
-        configurationViewEventProcessor = ConfigurationViewEventProcessor()
-        configurationViewEventProcessor.helper = gamePresenterHelper
-        configurationViewEventProcessor.goGameControllerProvider = { goGameController }
+        configurationViewEventProcessor = ConfigurationViewEventProcessor(goGameController, gameViewUpdater, gameRepository)
     }
 
     @After
     fun tearDown() {
-        verifyNoMoreInteractions(gamePresenterHelper, goGameController)
+        verifyNoMoreInteractions(gameViewUpdater, goGameController, gameRepository)
     }
 
     @Test
@@ -35,16 +37,6 @@ class ConfigurationViewEventProcessorTest {
         configurationViewEventProcessor.onBlackPlayerNameChanged("blacky")
 
         verify(goGameController).setBlackPlayerName("blacky")
-    }
-
-    @Test(expected = Exception::class)
-    fun onBlackPlayerNameChanged_withNoGameController_shouldThrow() {
-        val pizza:() -> GoGameController? = {null}
-        configurationViewEventProcessor.goGameControllerProvider = pizza
-
-        configurationViewEventProcessor.onBlackPlayerNameChanged("blacky")
-
-        verify(configurationViewEventProcessor).goGameControllerProvider
     }
 
     @Test
@@ -80,14 +72,19 @@ class ConfigurationViewEventProcessorTest {
         configurationViewEventProcessor.onSwapEvent()
 
         verify(goGameController).swapPlayers()
-        verify(gamePresenterHelper).updateView()
+        verify(gameViewUpdater).update()
     }
 
     @Test
     fun onConfigurationValidationEvent() {
+        val gameData = PlayGameData.GameData.getDefaultInstance()
+        given(goGameController.buildGameData()).willReturn(gameData)
+
         configurationViewEventProcessor.onConfigurationValidationEvent()
 
+        verify(goGameController).buildGameData()
         verify(goGameController).validateConfiguration()
-        verify(gamePresenterHelper).commitGameChanges()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
     }
 }

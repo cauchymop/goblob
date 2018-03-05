@@ -16,8 +16,8 @@ class SingleGamePresenter(private val gameRepository: GameRepository,
     }
 
     override fun gameChanged(gameData: PlayGameData.GameData) {
-        goGameController.run {
-            if (gameData.matchId == matchId) {
+        goGameController.let {
+            if (gameData.matchId == it.matchId) {
                 gameUpdated()
             }
         }
