@@ -86,7 +86,42 @@ public class GamePresenterTest {
   }
 
   @Test
-  public void clear() throws Exception {
+  public void gameSelected_withNullGameData_noPreviousGame_doesNothing() throws Exception {
+
+    gamePresenter.gameSelected(null);
+
+  }
+
+  @Test
+  public void gameSelected_withNullGameData_andPreviousGame_clearsPreviousGame() throws Exception {
+    setInitialGame();
+
+    gamePresenter.gameSelected(null);
+
+    // From SingleGamePresenter.clear()
+    verify(gameRepository).removeGameChangeListener(any());
+
+  }
+
+  @Test
+  public void gameSelected_withPreviousGame_clearPreviousGame_andUpdatesView() throws Exception {
+    setInitialGame();
+
+    gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
+
+    verify(gameViewUpdater).setGoGameController(any());
+    verify(view).setConfigurationViewListener(any());
+    verify(view).setInGameActionListener(any());
+
+    verify(gameRepository).addGameChangeListener(any());
+    verify(achievementManager).updateAchievements(goGameController);
+    verify(gameViewUpdater).update();
+    // From SingleGamePresenter.clear()
+    verify(gameRepository).removeGameChangeListener(any());
+  }
+
+  @Test
+  public void clear_withNoGame() throws Exception {
     gamePresenter.clear();
 
     verify(gameRepository).removeGameSelectionListener(gamePresenter);
@@ -94,10 +129,22 @@ public class GamePresenterTest {
     verify(view).setInGameActionListener(null);
   }
 
-  private void setInitialGame() {
-    when(goGameController.getMatchId()).thenReturn("pizza");
-    gamePresenter.gameSelected(createGameData().setMatchId("pizza").build());
-    reset(view, gameViewUpdater, achievementManager);
+  @Test
+  public void clear_withGame() throws Exception {
+    setInitialGame();
+
+    gamePresenter.clear();
+
+    verify(gameRepository).removeGameSelectionListener(gamePresenter);
+    verify(view).setConfigurationViewListener(null);
+    verify(view).setInGameActionListener(null);
+    // From SingleGamePresenter.clear()
+    verify(gameRepository).removeGameChangeListener(any());
+  }
+
+  public void setInitialGame() {
+    gamePresenter.gameSelected(createGameData().build());
+    reset(gameRepository, achievementManager, gameViewUpdater, view);
   }
 
   private GamePresenter createGamePresenter() {
