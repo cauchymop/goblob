@@ -18,6 +18,9 @@ class SingleGamePresenter(private val gameRepository: GameRepository,
     override fun gameChanged(gameData: PlayGameData.GameData) {
         goGameController.let {
             if (gameData.matchId == it.matchId) {
+                if (gameData.gameConfiguration.gameType == PlayGameData.GameType.REMOTE) {
+                    it.setGameData(gameData)
+                }
                 gameUpdated()
             }
         }
