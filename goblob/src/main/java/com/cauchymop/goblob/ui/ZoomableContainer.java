@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.View;
 import android.widget.FrameLayout;
 
 /**
@@ -39,49 +38,45 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
 
   private void init(Context context) {
     final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(context, this);
-    this.setOnTouchListener(new View.OnTouchListener() {
-
-      @Override
-      public boolean onTouch(View view, MotionEvent motionEvent) {
+    this.setOnTouchListener((view, motionEvent) -> {
 //        Log.i(TAG, "onTouch " + motionEvent.getX() + "," + motionEvent.getY());
-        scaleDetector.onTouchEvent(motionEvent);
-        PointF centerPoint = getCenterPoint(motionEvent);
-        if (motionEvent.getPointerCount() != lastPointerCount) {
-          lastCoord = centerPoint;
-          isDrag = false;
-        }
-        lastPointerCount = motionEvent.getPointerCount();
-        if (lastPointerCount > 1) {
-          multiFinger = true;
-        }
-        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-          case MotionEvent.ACTION_DOWN:
+      scaleDetector.onTouchEvent(motionEvent);
+      PointF centerPoint = getCenterPoint(motionEvent);
+      if (motionEvent.getPointerCount() != lastPointerCount) {
+        lastCoord = centerPoint;
+        isDrag = false;
+      }
+      lastPointerCount = motionEvent.getPointerCount();
+      if (lastPointerCount > 1) {
+        multiFinger = true;
+      }
+      switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+        case MotionEvent.ACTION_DOWN:
 //            Log.i(TAG, "onTouchEvent ACTION_DOWN: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
-            break;
-          case MotionEvent.ACTION_MOVE:
-            if (isDrag || dist(centerPoint, lastCoord) > MIN_MOVE) {
-              isDrag = true;
-              float dx = centerPoint.x - lastCoord.x;
-              float dy = centerPoint.y - lastCoord.y;
+          break;
+        case MotionEvent.ACTION_MOVE:
+          if (isDrag || dist(centerPoint, lastCoord) > MIN_MOVE) {
+            isDrag = true;
+            float dx = centerPoint.x - lastCoord.x;
+            float dy = centerPoint.y - lastCoord.y;
 //              Log.i(TAG, String.format("onTouchEvent mov: tr=%f,%f d=%f,%f",
 //                  getChild().getTranslationX(), getChild().getTranslationY(), dx, dy));
-              translate(dx, dy);
-              lastCoord = centerPoint;
-            }
-            break;
-          case MotionEvent.ACTION_UP:
+            translate(dx, dy);
+            lastCoord = centerPoint;
+          }
+          break;
+        case MotionEvent.ACTION_UP:
 //            Log.i(TAG, "onTouchEvent ACTION_UP: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
-            if (!isDrag && !multiFinger) {
+          if (!isDrag && !multiFinger) {
 //              Log.i(TAG, "onTouchEvent click: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
-              fireClick(motionEvent);
-            }
-            multiFinger = false;
-            lastPointerCount = 0;
-            break;
-        }
-
-        return true;
+            fireClick(motionEvent);
+          }
+          multiFinger = false;
+          lastPointerCount = 0;
+          break;
       }
+
+      return true;
     });
   }
 

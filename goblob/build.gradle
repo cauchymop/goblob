@@ -10,6 +10,7 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'jacoco-android'
 
 tasks.withType(JavaCompile) {
@@ -67,6 +68,7 @@ android {
             applicationIdSuffix ".debug"
             testCoverageEnabled false
             minifyEnabled true
+            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules-debug.pro'
         }
@@ -74,6 +76,7 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled true
+            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules.pro'
         }

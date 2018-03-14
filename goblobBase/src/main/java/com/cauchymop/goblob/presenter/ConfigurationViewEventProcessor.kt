@@ -1,8 +1,12 @@
 package com.cauchymop.goblob.presenter
 
+import com.cauchymop.goblob.model.GameRepository
+import com.cauchymop.goblob.model.GoGameController
 import javax.inject.Inject
 
-class ConfigurationViewEventProcessor @Inject constructor() : GameEventProcessor(), ConfigurationEventListener {
+class ConfigurationViewEventProcessor @Inject constructor(goGameController: GoGameController,
+                                                          updater: GameViewUpdater,
+                                                          gameRepository: GameRepository) : GameEventProcessor(goGameController, updater, gameRepository), ConfigurationEventListener {
 
     override fun onBlackPlayerNameChanged(blackPlayerName: String) =
         goGameController.setBlackPlayerName(blackPlayerName)
@@ -21,12 +25,12 @@ class ConfigurationViewEventProcessor @Inject constructor() : GameEventProcessor
 
     override fun onSwapEvent() {
         goGameController.swapPlayers()
-        helper.updateView()
+        updateView()
     }
 
     override fun onConfigurationValidationEvent() {
         goGameController.validateConfiguration()
-        helper.commitGameChanges()
+        commitGameChanges()
     }
 
 }

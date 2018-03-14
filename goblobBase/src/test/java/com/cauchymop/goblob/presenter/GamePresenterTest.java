@@ -26,18 +26,28 @@ import static org.mockito.Mockito.when;
 public class GamePresenterTest {
   private static final GameDatas GAME_DATAS = new GameDatas();
 
-  @Mock private Analytics analytics;
-  @Mock private GameRepository gameRepository;
-  @Mock private AchievementManager achievementManager;
-  @Mock private GameView view;
-  @Mock private GameViewUpdater gameViewUpdater;
-  @Mock private ConfigurationViewEventProcessor configurationViewEventProcessor;
-  @Mock private InGameViewEventProcessor inGameViewEventProcessor;
-  @Mock private GoGameControllerFactory goGameControllerFactory;
-  @Mock private GoGameController goGameController;
+  @Mock
+  private Analytics analytics;
+  @Mock
+  private GameRepository gameRepository;
+  @Mock
+  private AchievementManager achievementManager;
+  @Mock
+  private GameView view;
+  @Mock
+  private GameViewUpdater gameViewUpdater;
+  @Mock
+  private ConfigurationViewEventProcessor configurationViewEventProcessor;
+  @Mock
+  private InGameViewEventProcessor inGameViewEventProcessor;
+  @Mock
+  private GoGameControllerFactory goGameControllerFactory;
+  @Mock
+  private GoGameController goGameController;
+  @Mock
+  private FeedbackSender feedbackSender;
 
   private GamePresenter gamePresenter;
-
 
   @Before
   public void setUp() throws Exception {
@@ -53,116 +63,97 @@ public class GamePresenterTest {
   }
 
   @Test
-  public void initialisation_registersAsGameRepositoryListener() {
-    GamePresenter presenter = createGamePresenter();
-
-    verify(gameRepository).addGameRepositoryListener(presenter);
-  }
-
-  @Test
-  public void setView_registersViewListenersAndUpdatesView() {
+  public void setView_registersAsGameRepositoryListener() {
     gamePresenter.setView(view);
 
-    verify(view).setConfigurationViewListener(configurationViewEventProcessor);
-    verify(view).setInGameActionListener(inGameViewEventProcessor);
-    verify(gameViewUpdater).update(null, view);
+    verify(gameViewUpdater).setView(view);
+    verify(gameRepository).addGameSelectionListener(gamePresenter);
   }
 
-  @Test
-  public void gameListChanged_doesNothing() throws Exception {
-    gamePresenter.gameListChanged();
-
-    // Does nothing.
-  }
-
-  @Test
-  public void gameChanged_withNoGameSelected_DoesNothing() throws Exception {
-
-    gamePresenter.gameChanged(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
-
-    // Does Nothing.
-  }
-
-  @Test
-  public void gameChanged_withDifferentMatchId_doesNothing() throws Exception {
-    gamePresenter.gameChanged(createGameData().setMatchId("pizza").build());
-
-    gamePresenter.gameChanged(createGameData().setMatchId("pipo").build());
-
-    // Does nothing.
-  }
-
-  @Test
-  public void gameChanged_withSameMatchId() throws Exception {
-    setInitialGame();
-
-    gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build());
-
-    verify(gameViewUpdater).update(any(), eq(view));
-    verify(achievementManager).updateAchievements(goGameController);
-  }
 
   @Test
   public void gameSelected_updatesView() throws Exception {
 
     gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
 
-    verify(gameViewUpdater).update(goGameController, view);
+    verify(gameViewUpdater).setGoGameController(any());
+    verify(view).setConfigurationViewListener(any());
+    verify(view).setInGameActionListener(any());
+
+    verify(gameRepository).addGameChangeListener(any());
     verify(achievementManager).updateAchievements(goGameController);
+    verify(gameViewUpdater).update();
   }
 
   @Test
-  public void clear() throws Exception {
+  public void gameSelected_withNullGameData_noPreviousGame_doesNothing() throws Exception {
+
+    gamePresenter.gameSelected(null);
+
+  }
+
+  @Test
+  public void gameSelected_withNullGameData_andPreviousGame_clearsPreviousGame() throws Exception {
+    setInitialGame();
+
+    gamePresenter.gameSelected(null);
+
+    // From SingleGamePresenter.clear()
+    verify(gameRepository).removeGameChangeListener(any());
+
+  }
+
+  @Test
+  public void gameSelected_withPreviousGame_clearPreviousGame_andUpdatesView() throws Exception {
+    setInitialGame();
+
+    gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
+
+    verify(gameViewUpdater).setGoGameController(any());
+    verify(view).setConfigurationViewListener(any());
+    verify(view).setInGameActionListener(any());
+
+    verify(gameRepository).addGameChangeListener(any());
+    verify(achievementManager).updateAchievements(goGameController);
+    verify(gameViewUpdater).update();
+    // From SingleGamePresenter.clear()
+    verify(gameRepository).removeGameChangeListener(any());
+  }
+
+  @Test
+  public void clear_withNoGame() throws Exception {
     gamePresenter.clear();
 
-    verify(gameRepository).removeGameRepositoryListener(gamePresenter);
+    verify(gameRepository).removeGameSelectionListener(gamePresenter);
+    verify(view).setConfigurationViewListener(null);
+    verify(view).setInGameActionListener(null);
   }
 
   @Test
-  public void onUndo() throws Exception {
-    when(goGameController.undo()).thenReturn(true);
+  public void clear_withGame() throws Exception {
     setInitialGame();
 
-    gamePresenter.onUndo();
+    gamePresenter.clear();
 
-    verify(goGameController).undo();
-    verify(gameRepository).commitGameChanges(any());
-    verify(gameViewUpdater).update(goGameController, view);
-    verify(analytics).undo();
+    verify(gameRepository).removeGameSelectionListener(gamePresenter);
+    verify(view).setConfigurationViewListener(null);
+    verify(view).setInGameActionListener(null);
+    // From SingleGamePresenter.clear()
+    verify(gameRepository).removeGameChangeListener(any());
   }
 
-  @Test
-  public void onRedo() throws Exception {
-    when(goGameController.redo()).thenReturn(true);
-    setInitialGame();
-
-    gamePresenter.onRedo();
-
-    verify(goGameController).redo();
-    verify(gameRepository).commitGameChanges(any());
-    verify(gameViewUpdater).update(goGameController, view);
-    verify(analytics).redo();
-  }
-
-  @Test
-  public void onResign() throws Exception {
-    setInitialGame();
-
-    gamePresenter.onResign();
-
-    verify(goGameController).resign();
-    verify(gameRepository).commitGameChanges(any());
-    verify(gameViewUpdater).update(goGameController, view);
-    verify(analytics).resign();
-  }
-
-  private void setInitialGame() {
-    when(goGameController.getMatchId()).thenReturn("pizza");
-    gamePresenter.gameSelected(createGameData().setMatchId("pizza").build());
-    reset(view, gameViewUpdater, achievementManager);
+  public void setInitialGame() {
+    gamePresenter.gameSelected(createGameData().build());
+    reset(gameRepository, achievementManager, gameViewUpdater, view);
   }
 
   private GamePresenter createGamePresenter() {
-    return new GamePresenter(GAME_DATAS, analytics, gameRepository, achievementManager, gameViewUpdater, configurationViewEventProcessor, inGameViewEventProcessor, goGameControllerFactory);
+    return new GamePresenter(GAME_DATAS,
+        analytics,
+        gameRepository,
+        achievementManager,
+        gameViewUpdater,
+        feedbackSender,
+        goGameControllerFactory);
   }
 }

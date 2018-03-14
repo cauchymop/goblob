@@ -2,7 +2,9 @@ package com.cauchymop.goblob.presenter
 
 import com.cauchymop.goblob.model.Analytics
 import com.cauchymop.goblob.model.GameDatas
+import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
+import com.cauchymop.goblob.proto.PlayGameData
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -16,24 +18,38 @@ import org.mockito.junit.MockitoJUnitRunner
 @RunWith(MockitoJUnitRunner::class)
 class InGameViewEventProcessorTest {
 
-    @Mock private lateinit var analytics: Analytics
-    @Mock private lateinit var feedbackSender: FeedbackSender
-    @Mock private lateinit var gamePresenterHelper: GamePresenterHelper
-    @Mock private lateinit var goGameController: GoGameController
+    @Mock
+    private lateinit var analytics: Analytics
+    @Mock
+    private lateinit var feedbackSender: FeedbackSender
+    @Mock
+    private lateinit var goGameController: GoGameController
+    @Mock
+    private lateinit var gameRepository: GameRepository
+    @Mock
+    private lateinit var gameViewUpdater: GameViewUpdater
 
     private lateinit var inGameViewEventProcessor: InGameViewEventProcessor
+
     private val gameDatas = GameDatas()
+    private val gameData = PlayGameData.GameData.getDefaultInstance()
 
     @Before
     fun setUp() {
-        inGameViewEventProcessor = InGameViewEventProcessor(gameDatas = gameDatas, feedbackSender = feedbackSender)
-        inGameViewEventProcessor.helper = gamePresenterHelper
-        inGameViewEventProcessor.goGameControllerProvider = { goGameController }
+        inGameViewEventProcessor = InGameViewEventProcessor(gameDatas = gameDatas,
+                feedbackSender = feedbackSender,
+                analytics = analytics,
+                goGameController = goGameController,
+                updater = gameViewUpdater,
+                gameRepository = gameRepository)
+
+
+        given(goGameController.buildGameData()).willReturn(gameData)
     }
 
     @After
     fun tearDown() {
-        verifyNoMoreInteractions(analytics, feedbackSender, gamePresenterHelper, goGameController)
+        verifyNoMoreInteractions(analytics, feedbackSender, goGameController)
     }
 
     @Test
@@ -45,7 +61,9 @@ class InGameViewEventProcessorTest {
 
         verify(goGameController).playMoveOrToggleDeadStone(move)
         verify(goGameController).isLocalTurn
-        verify(gamePresenterHelper).commitGameChanges()
+        verify(goGameController).buildGameData()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
     }
 
     @Test
@@ -74,7 +92,9 @@ class InGameViewEventProcessorTest {
         inGameViewEventProcessor.onPass()
 
         verify(goGameController).pass()
-        verify(gamePresenterHelper).commitGameChanges()
+        verify(goGameController).buildGameData()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
     }
 
     @Test
@@ -82,7 +102,46 @@ class InGameViewEventProcessorTest {
         inGameViewEventProcessor.onDone()
 
         verify(goGameController).markingTurnDone()
-        verify(gamePresenterHelper).commitGameChanges()
+        verify(goGameController).buildGameData()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
+    }
+
+    @Test
+    fun onUndo() {
+        given(goGameController.undo()).willReturn(true)
+
+        inGameViewEventProcessor.onUndo()
+
+        verify(analytics).undo()
+        verify(goGameController).undo()
+        verify(goGameController).buildGameData()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
+    }
+
+    @Test
+    fun onRedo() {
+        given(goGameController.redo()).willReturn(true)
+
+        inGameViewEventProcessor.onRedo()
+
+        verify(analytics).redo()
+        verify(goGameController).redo()
+        verify(goGameController).buildGameData()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
+    }
+
+    @Test
+    fun onResign() {
+        inGameViewEventProcessor.onResign()
+
+        verify(analytics).resign()
+        verify(goGameController).resign()
+        verify(goGameController).buildGameData()
+        verify(gameRepository).commitGameChanges(gameData)
+        verify(gameViewUpdater).update()
     }
 
 }

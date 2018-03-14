@@ -6,12 +6,18 @@ import com.cauchymop.goblob.view.GameView
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModels
 import com.cauchymop.goblob.viewmodel.InGameViewModels
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
-open class GameViewUpdater @Inject constructor(private val configurationViewModels: ConfigurationViewModels,
-                                          private val inGameViewModels: InGameViewModels) {
-    fun update(goGameController: GoGameController?, view: GameView?) = goGameController?.let {
-        if (isConfigured(it)) view?.setInGameViewModel(inGameViewModels.from(it))
-        else view?.setConfigurationViewModel(configurationViewModels.from(it))
+open class GameViewUpdater @Inject constructor(
+        private val configurationViewModels: ConfigurationViewModels,
+        private val inGameViewModels: InGameViewModels) {
+
+    var view: GameView by Delegates.notNull<GameView>()
+    var goGameController: GoGameController by Delegates.notNull<GoGameController>()
+
+    fun update() = goGameController.let {
+        if (isConfigured(it)) view.setInGameViewModel(inGameViewModels.from(it))
+        else view.setConfigurationViewModel(configurationViewModels.from(it))
     }
 
     private fun isConfigured(goGameController: GoGameController): Boolean = with(goGameController) {

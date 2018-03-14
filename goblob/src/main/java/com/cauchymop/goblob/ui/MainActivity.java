@@ -16,7 +16,10 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
+import com.cauchymop.goblob.model.GameListListener;
+import com.cauchymop.goblob.model.GameSelectionListener;
 import com.cauchymop.goblob.model.GoogleApiClientListener;
 import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.cauchymop.goblob.proto.PlayGameData;
@@ -42,7 +45,7 @@ import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 
 public class MainActivity extends AppCompatActivity
-    implements GoogleApiClientListener, AndroidGameRepository.GameRepositoryListener {
+    implements GoogleApiClientListener, GameListListener, GameChangeListener, GameSelectionListener {
 
   private static final int RC_REQUEST_ACHIEVEMENTS = 1;
   private static final int RC_SELECT_PLAYER = 2;
@@ -93,7 +96,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     googleApiClientManager.registerGoogleApiClientListener(this);
-    androidGameRepository.addGameRepositoryListener(this);
+    androidGameRepository.addGameListListener(this);
+    androidGameRepository.addGameChangeListener(this);
+    androidGameRepository.addGameSelectionListener(this);
   }
 
   @Override
@@ -118,7 +123,9 @@ public class MainActivity extends AppCompatActivity
     super.onDestroy();
     Log.d(TAG, "onDestroy");
     googleApiClientManager.unregisterGoogleApiClientListener(this);
-    androidGameRepository.removeGameRepositoryListener(this);
+    androidGameRepository.removeGameListListener(this);
+    androidGameRepository.removeGameChangeListener(this);
+    androidGameRepository.removeGameSelectionListener(this);
     unbinder.unbind();
   }
 
@@ -335,10 +342,6 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public void gameChanged(GameData gameData) {
-    if (Objects.equal(androidGameRepository.getCurrentMatchId(), gameData.getMatchId())) {
-      gameSelected(gameData);
-    }
-
     if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
       Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
       vibrator.vibrate(200);
@@ -364,7 +367,7 @@ public class MainActivity extends AppCompatActivity
 
   protected GameFragment getGameFragment() {
     if (gameFragment == null) {
-      gameFragment = GameFragment.newInstance();
+      gameFragment = GameFragment.Companion.newInstance();
     }
     return gameFragment;
   }

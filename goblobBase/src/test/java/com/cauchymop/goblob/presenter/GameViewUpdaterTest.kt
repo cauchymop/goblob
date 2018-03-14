@@ -30,6 +30,8 @@ class GameViewUpdaterTest {
     @Throws(Exception::class)
     fun setUp() {
         gameViewUpdater = GameViewUpdater(configurationViewModels, inGameViewModels)
+        gameViewUpdater.goGameController = goGameController
+        gameViewUpdater.view = gameView
     }
 
     @Test
@@ -61,25 +63,21 @@ class GameViewUpdaterTest {
     fun update_unknown_phase() {
         given(goGameController.phase).willReturn(Phase.UNKNOWN)
 
-        gameViewUpdater.update(goGameController, gameView)
+        gameViewUpdater.update()
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun update_null_phase() {
         given(goGameController.phase).willReturn(null)
 
-        gameViewUpdater.update(goGameController, gameView)
-    }
-
-    fun update_null_goGameController_doesNothing() {
-        gameViewUpdater.update(null, gameView)
+        gameViewUpdater.update()
     }
 
     fun testUpdateConfigurationViewModelForPhase(phase: Phase) {
         given(goGameController.phase).willReturn(phase)
         given(configurationViewModels.from(goGameController)).willReturn(configurationViewModel)
 
-        gameViewUpdater.update(goGameController, gameView)
+        gameViewUpdater.update()
 
         Mockito.verify(gameView).setConfigurationViewModel(configurationViewModel)
     }
@@ -88,7 +86,7 @@ class GameViewUpdaterTest {
         given(goGameController.phase).willReturn(phase)
         given(inGameViewModels.from(goGameController)).willReturn(inGameViewModel)
 
-        gameViewUpdater.update(goGameController, gameView)
+        gameViewUpdater.update()
 
         Mockito.verify(gameView).setInGameViewModel(inGameViewModel)
     }

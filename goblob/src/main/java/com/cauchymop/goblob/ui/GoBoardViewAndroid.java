@@ -81,12 +81,13 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   @Override
   protected void onSizeChanged(int w, int h, int oldw, int oldh) {
     super.onSizeChanged(w, h, oldw, oldh);
-    if (boardViewModel == null) {
-      return;
-    }
-    int boardSizeInPixels = Math.min(getWidth(), getHeight());
-    cellSizeInPixels = boardSizeInPixels / boardViewModel.getBoardSize();
-    linePaint.setStrokeWidth(cellSizeInPixels / 25);
+    updateSizes();
+  }
+
+  @Override
+  protected void onAttachedToWindow() {
+    super.onAttachedToWindow();
+    updateSizes();
   }
 
   @Override
@@ -100,10 +101,16 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
     return true;
   }
 
-  private void fireClicked(int x, int y) {
-    if (boardEventListener != null) {
-      boardEventListener.onIntersectionSelected(x, y);
-    }
+  public void setBoardEventListener(BoardEventListener boardEventListener) {
+    this.boardEventListener = boardEventListener;
+  }
+
+  @Override
+  public void setBoard(BoardViewModel boardViewModel) {
+    this.boardViewModel = boardViewModel;
+    updateSizes();
+    setClickable(boardViewModel.isInteractive());
+    invalidate();
   }
 
   @Override
@@ -113,7 +120,6 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
       return;
     }
 
-    int boardSizeInPixels = Math.min(canvas.getWidth(), canvas.getHeight());
     int startLineX = cellSizeInPixels / 2;
     int startLineY = cellSizeInPixels / 2;
     drawBoardLines(canvas, startLineX, startLineY);
@@ -125,6 +131,15 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     int minSize = Math.min(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
     setMeasuredDimension(minSize, minSize);
+  }
+
+  private void updateSizes() {
+    if (boardViewModel == null) {
+      return;
+    }
+    int boardSizeInPixels = Math.min(getWidth(), getHeight());
+    cellSizeInPixels = boardSizeInPixels / boardViewModel.getBoardSize();
+    linePaint.setStrokeWidth(cellSizeInPixels / 25);
   }
 
   private void drawBoardContent(Canvas canvas, int startLineX, int startLineY) {
@@ -211,14 +226,10 @@ public class GoBoardViewAndroid extends ZoomableView implements GoBoardView {
     return res;
   }
 
-  public void setBoardEventListener(BoardEventListener boardEventListener) {
-    this.boardEventListener = boardEventListener;
+  private void fireClicked(int x, int y) {
+    if (boardEventListener != null) {
+      boardEventListener.onIntersectionSelected(x, y);
+    }
   }
 
-  @Override
-  public void setBoard(BoardViewModel boardViewModel) {
-    this.boardViewModel = boardViewModel;
-    setClickable(boardViewModel.isInteractive());
-    invalidate();
-  }
 }

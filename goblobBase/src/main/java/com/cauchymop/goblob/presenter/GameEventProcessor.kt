@@ -1,14 +1,21 @@
 package com.cauchymop.goblob.presenter
 
+import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
-import kotlin.properties.Delegates
 
-abstract class GameEventProcessor {
+abstract class GameEventProcessor(protected val goGameController: GoGameController,
+                                  private val updater: GameViewUpdater,
+                                  private val gameRepository: GameRepository) {
 
-    var helper: GamePresenterHelper by Delegates.notNull<GamePresenterHelper>()
-    var goGameControllerProvider: () -> GoGameController? by Delegates.notNull<() -> GoGameController?>()
+    protected fun updateView() {
+        updater.update()
+    }
 
-    val goGameController
-        get() = goGameControllerProvider.invoke() ?: throw NullPointerException()
-
+    protected fun commitGameChanges() {
+        with(goGameController) {
+            val gameData = buildGameData()
+            gameRepository.commitGameChanges(gameData)
+            updateView()
+        }
+    }
 }
