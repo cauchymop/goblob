@@ -21,12 +21,15 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
     set(value) {
       view_ = value
       updater.view = value
-      gameRepository.addGameSelectionListener(this)
-      gameRepository.addGameChangeListener(this)
-      view.setConfigurationViewListener(ConfigurationViewEventProcessor(goGameController, updater, gameRepository))
-      view.setInGameActionListener(InGameViewEventProcessor(gameDatas, feedbackSender, analytics, goGameController, updater, gameRepository))
+      gameRepository.apply {
+        addGameSelectionListener(this@GamePresenter)
+        addGameChangeListener(this@GamePresenter)
+      }
+      view.apply {
+        setConfigurationViewListener(ConfigurationViewEventProcessor(goGameController, updater, gameRepository))
+        setInGameActionListener(InGameViewEventProcessor(gameDatas, feedbackSender, analytics, goGameController, updater, gameRepository))
+      }
       gameUpdated()
-
     }
 
   override fun gameSelected(gameData: PlayGameData.GameData?) {
