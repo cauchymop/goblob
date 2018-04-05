@@ -4,11 +4,12 @@ import com.cauchymop.goblob.model.GameChangeListener
 import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
 import com.cauchymop.goblob.proto.PlayGameData
+import javax.inject.Inject
 
-class SingleGamePresenter(private val gameRepository: GameRepository,
-                          private val achievementManager: AchievementManager,
-                          goGameController: GoGameController,
-                          updater: GameViewUpdater) : GameEventProcessor(goGameController, updater, gameRepository), GameChangeListener {
+class SingleGamePresenter @Inject constructor(private val gameRepository: GameRepository,
+                                              private val achievementManager: AchievementManager,
+                                              goGameController: GoGameController,
+                                              updater: GameViewUpdater) : GameEventProcessor(goGameController, updater, gameRepository), GameChangeListener {
 
     init {
         gameRepository.addGameChangeListener(this)

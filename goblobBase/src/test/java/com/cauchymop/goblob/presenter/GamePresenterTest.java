@@ -4,6 +4,7 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoGameController;
+import com.cauchymop.goblob.proto.PlayGameData;
 import com.cauchymop.goblob.view.GameView;
 
 import org.junit.After;
@@ -16,11 +17,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static com.cauchymop.goblob.model.TestDataHelperKt.createGameData;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GamePresenterTest {
@@ -41,17 +40,16 @@ public class GamePresenterTest {
   @Mock
   private InGameViewEventProcessor inGameViewEventProcessor;
   @Mock
-  private GoGameControllerFactory goGameControllerFactory;
-  @Mock
   private GoGameController goGameController;
   @Mock
   private FeedbackSender feedbackSender;
+  @Mock
+  private SingleGamePresenter singleGamePresenter;
 
   private GamePresenter gamePresenter;
 
   @Before
   public void setUp() throws Exception {
-    when(goGameControllerFactory.createGameController(eq(GAME_DATAS), any(), eq(analytics))).thenReturn(goGameController);
     gamePresenter = createGamePresenter();
     gamePresenter.setView(view);
     reset(view, gameViewUpdater, gameRepository);
@@ -59,7 +57,7 @@ public class GamePresenterTest {
 
   @After
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameViewUpdater, view /*goGameControllerFactory, goGameController*/);
+    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameViewUpdater, view, goGameController);
   }
 
   @Test
@@ -73,12 +71,14 @@ public class GamePresenterTest {
 
   @Test
   public void gameSelected_updatesView() throws Exception {
+    PlayGameData.GameData gameData = createGameData().setMatchId("pipo").setPhase(INITIAL).build();
 
-    gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
+    gamePresenter.gameSelected(gameData);
 
     verify(gameViewUpdater).setGoGameController(any());
     verify(view).setConfigurationViewListener(any());
     verify(view).setInGameActionListener(any());
+    verify(goGameController).setGameData(gameData);
 
     verify(gameRepository).addGameChangeListener(any());
     verify(achievementManager).updateAchievements(goGameController);
@@ -106,12 +106,14 @@ public class GamePresenterTest {
   @Test
   public void gameSelected_withPreviousGame_clearPreviousGame_andUpdatesView() throws Exception {
     setInitialGame();
+    PlayGameData.GameData selectedGameData = createGameData().setMatchId("pipo").setPhase(INITIAL).build();
 
-    gamePresenter.gameSelected(createGameData().setMatchId("pipo").setPhase(INITIAL).build());
+    gamePresenter.gameSelected(selectedGameData);
 
     verify(gameViewUpdater).setGoGameController(any());
     verify(view).setConfigurationViewListener(any());
     verify(view).setInGameActionListener(any());
+    verify(goGameController).setGameData(selectedGameData);
 
     verify(gameRepository).addGameChangeListener(any());
     verify(achievementManager).updateAchievements(goGameController);
@@ -144,16 +146,16 @@ public class GamePresenterTest {
 
   public void setInitialGame() {
     gamePresenter.gameSelected(createGameData().build());
-    reset(gameRepository, achievementManager, gameViewUpdater, view);
+    reset(gameRepository, achievementManager, gameViewUpdater, view, goGameController);
   }
 
   private GamePresenter createGamePresenter() {
     return new GamePresenter(GAME_DATAS,
         analytics,
         gameRepository,
-        achievementManager,
         gameViewUpdater,
         feedbackSender,
-        goGameControllerFactory);
+        goGameController,
+        singleGamePresenter);
   }
 }

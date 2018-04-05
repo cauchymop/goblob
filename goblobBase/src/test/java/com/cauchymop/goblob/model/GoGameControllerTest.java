@@ -31,13 +31,14 @@ public class GoGameControllerTest {
     PlayGameData.GoPlayer black = GAME_DATAS.createGamePlayer("pipo", "player1", true);
     PlayGameData.GoPlayer white = GAME_DATAS.createGamePlayer("bimbo", "player2", true);
     gameData = GAME_DATAS.createNewGameData("pizza", PlayGameData.GameType.LOCAL, black, white).toBuilder().setPhase(Phase.IN_GAME).build();
-    controller = new GoGameController(GAME_DATAS, gameData, analytics);
+    controller = new GoGameController(GAME_DATAS, analytics);
+    controller.setGameData(gameData);
   }
 
   @Test
   public void testNew_initGoGame() {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).build();
-    controller = new GoGameController(GAME_DATAS, gameData, analytics);
+    controller.setGameData(gameData);
 
     GoGame goGame = controller.getGame();
     assertThat(goGame.getMoveHistory())
@@ -49,7 +50,7 @@ public class GoGameControllerTest {
   @Test
   public void buildGameData_incrementsSequence() {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).setSequenceNumber(3).build();
-    controller = new GoGameController(GAME_DATAS, gameData, analytics);
+    controller.setGameData(gameData);
 
     GameData controllerGameData = controller.buildGameData();
 
