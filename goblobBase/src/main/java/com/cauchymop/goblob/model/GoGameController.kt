@@ -65,7 +65,7 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
   val isGameFinished: Boolean
     get() = gameData.phase == FINISHED
 
-  val phase: Phase
+  val phase: Phase?
     get() = gameData.phase
 
   val winner: GoPlayer

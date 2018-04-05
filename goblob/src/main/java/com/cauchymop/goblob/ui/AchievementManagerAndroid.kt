@@ -11,7 +11,9 @@ import com.google.android.gms.common.api.GoogleApiClient
 
 import com.google.android.gms.games.Games.Achievements
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 internal class AchievementManagerAndroid @Inject constructor(context: Context, private val googleApiClient: GoogleApiClient) : AchievementManager {
     private val resources: Resources = context.resources
 

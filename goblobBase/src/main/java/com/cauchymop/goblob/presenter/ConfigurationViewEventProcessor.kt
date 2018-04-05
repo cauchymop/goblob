@@ -3,7 +3,9 @@ package com.cauchymop.goblob.presenter
 import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ConfigurationViewEventProcessor @Inject constructor(goGameController: GoGameController,
                                                           updater: GameViewUpdater,
                                                           gameRepository: GameRepository) : GameEventProcessor(goGameController, updater, gameRepository), ConfigurationEventListener {

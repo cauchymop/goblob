@@ -1,5 +1,5 @@
 - In Progress
-   - TODO: Continue Domino effect now that GoGameController is Injectable: Start with SingleGamePresenter that can become injectable and injected in GamePresenter (and possibly nerged back to one Presenter)
+   - TODO: Update/Fix GamePresenterTest now SingleGamePresenter is dead and make all tests pass again
    - TODO: Add tests for InGameViewModels
    - TODO: Introduce @GameScope
    - TODO: NOT GOBLOB RELATED file a bug against Chrome for password bypass with Notifications and second account

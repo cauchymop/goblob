@@ -4,7 +4,9 @@ import android.content.Context
 import android.media.RingtoneManager
 import com.cauchymop.goblob.presenter.FeedbackSender
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AndroidFeedbackSender @Inject constructor(val context: Context) :FeedbackSender {
     override fun invalidMove() {
         try {
