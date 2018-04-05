@@ -9,11 +9,13 @@ import com.google.common.base.Preconditions
 import com.google.common.collect.Sets
 import java.io.Serializable
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.properties.Delegates
 
 /**
  * Class to handle interactions between the players and the [GoGame].
  */
+@Singleton
 class GoGameController @Inject constructor(@field:Transient internal var gameDatas: GameDatas, private val analytics: Analytics) : Serializable {
 
   var game: GoGame? = null
