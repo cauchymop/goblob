@@ -16,45 +16,60 @@ import kotlin.properties.Delegates
  * Class to handle interactions between the players and the [GoGame].
  */
 @Singleton
-class GoGameController @Inject constructor(@field:Transient internal var gameDatas: GameDatas, private val analytics: Analytics) : Serializable {
+class GoGameController @Inject constructor(
+    @field:Transient private var gameDatas: GameDatas,
+    private val analytics: Analytics) : Serializable {
 
   var game: GoGame? = null
     private set
 
-  var gameData: GameData.Builder by Delegates.notNull()
-   private set
+  private var gameDataBuilder: GameData.Builder by Delegates.notNull()
 
   private var initialGameData: GameData by Delegates.notNull()
+
+  var gameData: GameData
+    get() = gameDataBuilder.apply { sequenceNumber++ }.build()
+    set(value) {
+      this.initialGameData = value
+      this.gameDataBuilder = Preconditions.checkNotNull(value).toBuilder()
+      // The GoGame settings can change during the configuration, so we postpone its creation.
+      if (value.phase != CONFIGURATION) {
+        createGoGame()
+        for (move in this.gameDataBuilder.moveList) {
+          game!!.play(getPos(move))
+        }
+      }
+    }
 
   val score: Score
     get() = matchEndStatus.score
 
   val currentPlayer: GoPlayer
-    get() = gameDatas.getCurrentPlayer(gameData)
+    get() = gameDatas.getCurrentPlayer(gameDataBuilder)
 
   val opponent: GoPlayer
-    get() = gameDatas.getGoPlayer(gameData, opponentColor)
+    get() = gameDatas.getGoPlayer(gameDataBuilder, opponentColor)
 
   val currentColor: Color
-    get() = gameDatas.getCurrentColor(gameData)
+    get() = gameDatas.getCurrentColor(gameDataBuilder)
 
   val gameConfiguration: GameConfiguration
-    get() = gameData.gameConfiguration
+    get() = gameDataBuilder.gameConfiguration
 
   val isLocalTurn: Boolean
-    get() = gameDatas.isLocalTurn(gameData)
+    get() = gameDatas.isLocalTurn(gameDataBuilder)
 
   val deadStones: List<PlayGameData.Position>
     get() = matchEndStatus.deadStoneList
 
   val isLocalGame: Boolean
-    get() = gameDatas.isLocalGame(gameData)
+    get() = gameDatas.isLocalGame(gameDataBuilder)
 
   private val opponentColor: Color
     get() = GoBoard.getOpponent(currentColor)
 
   private val matchEndStatus: MatchEndStatus
-    get() = gameData.matchEndStatus
+    get() = gameDataBuilder.matchEndStatus
 
   private val whitePlayer: GoPlayer
     get() = gameConfiguration.white
@@ -63,33 +78,20 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
     get() = gameConfiguration.black
 
   val isGameFinished: Boolean
-    get() = gameData.phase == FINISHED
+    get() = gameDataBuilder.phase == FINISHED
 
   val phase: Phase?
-    get() = gameData.phase
+    get() = gameDataBuilder.phase
 
   val winner: GoPlayer
-    get() = gameDatas.getGoPlayer(gameData, gameData.matchEndStatus.score.winner)
+    get() = gameDatas.getGoPlayer(gameDataBuilder, gameDataBuilder.matchEndStatus.score.winner)
 
   val matchId: String
-    get() = gameData.matchId
-
-
-  fun setGameData(gameData: GameData) {
-    this.initialGameData = gameData
-    this.gameData = Preconditions.checkNotNull(gameData).toBuilder()
-    // The GoGame settings can change during the configuration, so we postpone its creation.
-    if (gameData.phase != CONFIGURATION) {
-      createGoGame()
-      for (move in this.gameData.moveList) {
-        game!!.play(getPos(move))
-      }
-    }
-  }
+    get() = gameDataBuilder.matchId
 
   fun undo(): Boolean {
     if (canUndo()) {
-      gameData.addRedo(0, removeLastMove())
+      gameDataBuilder.addRedo(0, removeLastMove())
       game!!.undo()
       return true
     }
@@ -98,7 +100,7 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
 
   fun redo(): Boolean {
     if (canRedo()) {
-      playMove(gameData.getRedo(0))
+      playMove(gameDataBuilder.getRedo(0))
       return true
     }
     return false
@@ -109,30 +111,25 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
         game, blackPlayer, whitePlayer, matchEndStatus)
   }
 
-  fun buildGameData(): GameData {
-    gameData.sequenceNumber = gameData.sequenceNumber + 1
-    return gameData.build()
-  }
-
   fun markingTurnDone() {
     if (isLocalGame || matchEndStatus.lastModifier != currentColor) {
-      gameData.phase = FINISHED
+      gameDataBuilder.phase = FINISHED
       analytics.gameFinished(gameConfiguration, score)
     }
-    gameData.turn = opponentColor
+    gameDataBuilder.turn = opponentColor
   }
 
   fun canUndo(): Boolean {
-    return isLocalGame && gameData.phase == IN_GAME && !gameData.moveList.isEmpty()
+    return isLocalGame && gameDataBuilder.phase == IN_GAME && !gameDataBuilder.moveList.isEmpty()
   }
 
   fun canRedo(): Boolean {
-    return isLocalGame && gameData.phase == IN_GAME && !gameData.redoList.isEmpty()
+    return isLocalGame && gameDataBuilder.phase == IN_GAME && !gameDataBuilder.redoList.isEmpty()
   }
 
   fun resign() {
-    gameData.phase = FINISHED
-    gameData.matchEndStatusBuilder.scoreBuilder.apply {
+    gameDataBuilder.phase = FINISHED
+    gameDataBuilder.matchEndStatusBuilder.scoreBuilder.apply {
       winner = opponentColor
       resigned = true
     }
@@ -150,46 +147,46 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
   fun validateConfiguration() {
 
     if (isConfigurationAgreed()) {
-      gameData.phase = IN_GAME
+      gameDataBuilder.phase = IN_GAME
       createGoGame()
     } else {
-      gameData.phase = CONFIGURATION
+      gameDataBuilder.phase = CONFIGURATION
     }
-    gameData.turn = computeConfigurationNextTurn()
-    analytics.configurationChanged(gameData)
+    gameDataBuilder.turn = computeConfigurationNextTurn()
+    analytics.configurationChanged(gameDataBuilder)
   }
 
   fun getPlayerForColor(player: Color): GoPlayer {
-    return gameDatas.getGoPlayer(gameData, player)
+    return gameDatas.getGoPlayer(gameDataBuilder, player)
   }
 
   fun setBlackPlayerName(blackPlayerName: String) {
-    gameData.gameConfigurationBuilder.blackBuilder.name = blackPlayerName
+    gameDataBuilder.gameConfigurationBuilder.blackBuilder.name = blackPlayerName
   }
 
   fun setWhitePlayerName(whitePlayerName: String) {
-    gameData.gameConfigurationBuilder.whiteBuilder.name = whitePlayerName
+    gameDataBuilder.gameConfigurationBuilder.whiteBuilder.name = whitePlayerName
   }
 
   fun setBoardSize(boardSize: Int) {
-    gameData.gameConfigurationBuilder.boardSize = boardSize
+    gameDataBuilder.gameConfigurationBuilder.boardSize = boardSize
   }
 
   fun setKomi(komi: Float) {
-    gameData.gameConfigurationBuilder.komi = komi
+    gameDataBuilder.gameConfigurationBuilder.komi = komi
   }
 
   fun setHandicap(handicap: Int) {
-    gameData.gameConfigurationBuilder.handicap = handicap
+    gameDataBuilder.gameConfigurationBuilder.handicap = handicap
   }
 
   fun swapPlayers() {
     val gameConfiguration = gameConfiguration
     val black = gameConfiguration.black
     val white = gameConfiguration.white
-    gameData.gameConfigurationBuilder.black = white
-    gameData.gameConfigurationBuilder.white = black
-    gameData.turn = opponentColor
+    gameDataBuilder.gameConfigurationBuilder.black = white
+    gameDataBuilder.gameConfigurationBuilder.white = black
+    gameDataBuilder.turn = opponentColor
   }
 
   fun pass(): Boolean {
@@ -201,10 +198,10 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
   }
 
   private fun playMove(move: Move): Boolean {
-    if (gameData.phase == IN_GAME && game!!.play(getPos(move))) {
+    if (gameDataBuilder.phase == IN_GAME && game!!.play(getPos(move))) {
       updateRedoForMove(move)
-      gameData.addMove(move)
-      gameData.turn = opponentColor
+      gameDataBuilder.addMove(move)
+      gameDataBuilder.turn = opponentColor
       checkForMatchEnd()
       analytics.movePlayed(gameConfiguration, move)
       return true
@@ -215,9 +212,9 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
   }
 
   private fun removeLastMove(): Move {
-    val lastIndex = gameData.moveCount - 1
-    val lastMove = gameData.getMove(lastIndex)
-    gameData.removeMove(lastIndex)
+    val lastIndex = gameDataBuilder.moveCount - 1
+    val lastMove = gameDataBuilder.getMove(lastIndex)
+    gameDataBuilder.removeMove(lastIndex)
     return lastMove
   }
 
@@ -226,13 +223,13 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
       return false
     }
     val index = matchEndStatus.deadStoneList.indexOf(position)
-    val matchEndStatus = gameData.matchEndStatusBuilder
+    val matchEndStatus = gameDataBuilder.matchEndStatusBuilder
     if (index == -1) {
       matchEndStatus.addDeadStone(position)
     } else {
       matchEndStatus.removeDeadStone(index)
     }
-    matchEndStatus.lastModifier = gameData.turn
+    matchEndStatus.lastModifier = gameDataBuilder.turn
     matchEndStatus.score = calculateScore()
     analytics.deadStoneToggled(gameConfiguration)
     return true
@@ -255,21 +252,21 @@ class GoGameController @Inject constructor(@field:Transient internal var gameDat
   }
 
   private fun updateRedoForMove(move: Move) {
-    if (gameData.redoCount == 0) {
+    if (gameDataBuilder.redoCount == 0) {
       return
     }
-    if (move == gameData.getRedo(0)) {
-      gameData.removeRedo(0)
+    if (move == gameDataBuilder.getRedo(0)) {
+      gameDataBuilder.removeRedo(0)
     } else {
-      gameData.clearRedo()
+      gameDataBuilder.clearRedo()
     }
   }
 
   private fun checkForMatchEnd() {
     if (game!!.isGameEnd) {
-      gameData.phase = DEAD_STONE_MARKING
+      gameDataBuilder.phase = DEAD_STONE_MARKING
       val lastModifier = GoBoard.getOpponent(game!!.currentColor)
-      gameData.matchEndStatusBuilder
+      gameDataBuilder.matchEndStatusBuilder
           .setLastModifier(lastModifier).score = calculateScore()
     }
   }

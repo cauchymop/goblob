@@ -78,11 +78,11 @@ class ConfigurationViewEventProcessorTest {
     @Test
     fun onConfigurationValidationEvent() {
         val gameData = PlayGameData.GameData.getDefaultInstance()
-        given(goGameController.buildGameData()).willReturn(gameData)
+        given(goGameController.gameData).willReturn(gameData)
 
         configurationViewEventProcessor.onConfigurationValidationEvent()
 
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(goGameController).validateConfiguration()
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()

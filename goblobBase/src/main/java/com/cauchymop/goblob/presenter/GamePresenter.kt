@@ -7,12 +7,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
-                                        private val analytics: Analytics,
-                                        private val gameRepository: GameRepository,
+class GamePresenter @Inject constructor(private val gameRepository: GameRepository,
                                         private val achievementManager: AchievementManager,
                                         private val updater: GameViewUpdater,
-                                        private val feedbackSender: FeedbackSender,
+                                        private val configurationViewEventProcessor: ConfigurationViewEventProcessor,
+                                        private val inGameViewEventProcessor: InGameViewEventProcessor,
                                         goGameController: GoGameController) : GameEventProcessor(goGameController, updater, gameRepository), GameSelectionListener, GameChangeListener {
 
   private var view_: GameView? = null
@@ -26,15 +25,15 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
         addGameChangeListener(this@GamePresenter)
       }
       view.apply {
-        setConfigurationViewListener(ConfigurationViewEventProcessor(goGameController, updater, gameRepository))
-        setInGameActionListener(InGameViewEventProcessor(gameDatas, feedbackSender, analytics, goGameController, updater, gameRepository))
+        setConfigurationViewListener(configurationViewEventProcessor)
+        setInGameActionListener(inGameViewEventProcessor)
       }
       gameUpdated()
     }
 
   override fun gameSelected(gameData: PlayGameData.GameData?) {
     if (gameData != null) {
-      goGameController.setGameData(gameData)
+      goGameController.gameData = gameData
       updater.update()
     }
   }
@@ -43,7 +42,7 @@ class GamePresenter @Inject constructor(private val gameDatas: GameDatas,
     goGameController.let {
       if (gameData.matchId == it.matchId) {
         if (gameData.gameConfiguration.gameType == PlayGameData.GameType.REMOTE) {
-          it.setGameData(gameData)
+          it.gameData = gameData
         }
         gameUpdated()
       }

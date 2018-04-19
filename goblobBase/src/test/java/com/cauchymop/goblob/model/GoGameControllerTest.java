@@ -52,7 +52,7 @@ public class GoGameControllerTest {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).setSequenceNumber(3).build();
     controller.setGameData(gameData);
 
-    GameData controllerGameData = controller.buildGameData();
+    GameData controllerGameData = controller.getGameData();
 
     assertThat(controllerGameData.getSequenceNumber()).isEqualTo(4);
   }
@@ -63,7 +63,7 @@ public class GoGameControllerTest {
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createMove(1, 1));
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createPassMove());
 
-    GameData controllerGameData = controller.buildGameData();
+    GameData controllerGameData = controller.getGameData();
 
     assertThat(controllerGameData.getMoveList()).containsExactly(
         GAME_DATAS.createMove(0, 0),
@@ -90,9 +90,9 @@ public class GoGameControllerTest {
     PlayGameData.Move move = GAME_DATAS.createMove(0, 0);
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
     assertThat(controller.undo()).isTrue();
-    assertThat(controller.buildGameData().getMoveCount()).isZero();
+    assertThat(controller.getGameData().getMoveCount()).isZero();
     assertThat(controller.redo()).isTrue();
-    assertThat(controller.buildGameData().getMoveList())
+    assertThat(controller.getGameData().getMoveList())
         .isEqualTo(ImmutableList.of(move));
   }
 
@@ -140,11 +140,11 @@ public class GoGameControllerTest {
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
     assertThat(controller.playMoveOrToggleDeadStone(pass)).isTrue();
     assertThat(controller.playMoveOrToggleDeadStone(pass)).isTrue();
-    assertThat(controller.buildGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
+    assertThat(controller.getGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
-    assertThat(controller.buildGameData().getMatchEndStatus().getDeadStoneList()).isEqualTo(ImmutableList.of(GAME_DATAS.createPosition(1, 1)));
+    assertThat(controller.getGameData().getMatchEndStatus().getDeadStoneList()).isEqualTo(ImmutableList.of(GAME_DATAS.createPosition(1, 1)));
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
-    assertThat(controller.buildGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
+    assertThat(controller.getGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
   }
 
   @Test

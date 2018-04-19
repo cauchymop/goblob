@@ -1,23 +1,16 @@
 package com.cauchymop.goblob.presenter
 
 import com.cauchymop.goblob.model.*
-import com.cauchymop.goblob.proto.PlayGameData
+import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL
 import com.cauchymop.goblob.view.GameView
-
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
-
-import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL
-import com.cauchymop.goblob.view.InGameView
-import org.mockito.ArgumentMatchers.any
 import org.mockito.BDDMockito
-import org.mockito.Mockito.reset
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.Mock
+import org.mockito.Mockito.*
+import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class GamePresenterTest {
@@ -53,111 +46,52 @@ class GamePresenterTest {
   private lateinit var gamePresenter: GamePresenter
 
   @Before
-  @Throws(Exception::class)
   fun setUp() {
     gamePresenter = createGamePresenter()
-    gamePresenter!!.view = view!!
-    reset<Any>(view, gameViewUpdater, gameRepository)
+    gamePresenter.view = view
+    reset<Any>(view, gameViewUpdater, gameRepository, achievementManager, goGameController)
   }
 
   @After
-  @Throws(Exception::class)
   fun tearDown() {
+    verify(goGameController, atLeast(0)).matchId
     verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameViewUpdater, view, goGameController)
   }
 
   @Test
-  fun setView_registersAsGameRepositoryListener() {
-    gamePresenter!!.view = view!!
+  fun setView() {
+    gamePresenter.view = view
 
-    verify<GameViewUpdater>(gameViewUpdater).view = view
-    verify<GameRepository>(gameRepository).addGameSelectionListener(gamePresenter!!)
+    verify(gameViewUpdater).view = view
+    verify(gameRepository).addGameSelectionListener(gamePresenter)
+    verify(gameRepository).addGameChangeListener(gamePresenter)
+    verify(view).setConfigurationViewListener(configurationViewEventProcessor)
+    verify(view).setInGameActionListener(inGameViewEventProcessor)
+    // from gameUpdated
+    verify(achievementManager).updateAchievements(goGameController)
+    verify(gameViewUpdater).update()
   }
 
 
   @Test
-  @Throws(Exception::class)
-  fun gameSelected_updatesView() {
+  fun gameSelected_withGameData() {
     val gameData = createGameData().setMatchId("pipo").setPhase(INITIAL).build()
 
-    gamePresenter!!.gameSelected(gameData)
+    gamePresenter.gameSelected(gameData)
 
-    //    verify(gameViewUpdater).setGoGameController(any());
-    verify<GameView>(view).setConfigurationViewListener(any<ConfigurationEventListener>())
-    verify<GameView>(view).setInGameActionListener(any<InGameView.InGameEventListener>())
-    verify<GoGameController>(goGameController).setGameData(gameData)
-
-    verify<GameRepository>(gameRepository).addGameChangeListener(any<GameChangeListener>())
-    verify<AchievementManager>(achievementManager).updateAchievements(goGameController!!)
-    verify<GameViewUpdater>(gameViewUpdater).update()
+    verify(goGameController).gameData = gameData
+    verify(gameViewUpdater).update()
   }
 
   @Test
-  @Throws(Exception::class)
-  fun gameSelected_withNullGameData_noPreviousGame_doesNothing() {
+  fun gameSelected_withNoGameData_doesNothing() {
 
-    gamePresenter!!.gameSelected(null)
-
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun gameSelected_withNullGameData_andPreviousGame_clearsPreviousGame() {
-    setInitialGame()
-
-    gamePresenter!!.gameSelected(null)
-
-    // From SingleGamePresenter.clear()
-    verify<GameRepository>(gameRepository).removeGameChangeListener(any<GameChangeListener>())
+    gamePresenter.gameSelected(null)
 
   }
 
-  @Test
-  @Throws(Exception::class)
-  fun gameSelected_withPreviousGame_clearPreviousGame_andUpdatesView() {
-    setInitialGame()
-    val selectedGameData = createGameData().setMatchId("pipo").setPhase(INITIAL).build()
-
-    gamePresenter!!.gameSelected(selectedGameData)
-
-    //    verify(gameViewUpdater).setGoGameController(any());
-    verify<GameView>(view).setConfigurationViewListener(any<ConfigurationEventListener>())
-    verify<GameView>(view).setInGameActionListener(any<InGameView.InGameEventListener>())
-    verify<GoGameController>(goGameController).setGameData(selectedGameData)
-
-    verify<GameRepository>(gameRepository).addGameChangeListener(any<GameChangeListener>())
-    verify<AchievementManager>(achievementManager).updateAchievements(goGameController!!)
-    verify<GameViewUpdater>(gameViewUpdater).update()
-    // From SingleGamePresenter.clear()
-    verify<GameRepository>(gameRepository).removeGameChangeListener(any<GameChangeListener>())
-  }
 
   @Test
-  @Throws(Exception::class)
-  fun clear_withNoGame() {
-    gamePresenter!!.clear()
-
-    verify<GameRepository>(gameRepository).removeGameSelectionListener(gamePresenter!!)
-    verify<GameView>(view).setConfigurationViewListener(null)
-    verify<GameView>(view).setInGameActionListener(null)
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun clear_withGame() {
-    setInitialGame()
-
-    gamePresenter!!.clear()
-
-    verify<GameRepository>(gameRepository).removeGameSelectionListener(gamePresenter!!)
-    verify<GameView>(view).setConfigurationViewListener(null)
-    verify<GameView>(view).setInGameActionListener(null)
-    // From SingleGamePresenter.clear()
-    verify<GameRepository>(gameRepository).removeGameChangeListener(any<GameChangeListener>())
-  }
-
-  @Test
-  @Throws(Exception::class)
   fun gameChanged_withDifferentMatchId_doesNothing() {
     setInitialGame("pizza")
 
@@ -167,7 +101,16 @@ class GamePresenterTest {
   }
 
   @Test
-  @Throws(Exception::class)
+  fun clear() {
+    gamePresenter.clear()
+
+    verify(gameRepository).removeGameChangeListener(gamePresenter)
+    verify(gameRepository).removeGameSelectionListener(gamePresenter)
+    verify(view).setConfigurationViewListener(null)
+    verify(view).setInGameActionListener(null)
+  }
+
+  @Test
   fun gameChanged_withSameMatchId() {
     setInitialGame("pizza")
 
@@ -177,29 +120,21 @@ class GamePresenterTest {
     verify(achievementManager).updateAchievements(goGameController)
   }
 
-  @Test
-  fun clear() {
-    gamePresenter.clear()
-
-    verify(gameRepository).removeGameChangeListener(gamePresenter)
-  }
-
   private fun setInitialGame(matchId: String) {
     BDDMockito.given(goGameController.matchId).willReturn(matchId)
   }
 
   fun setInitialGame() {
-    gamePresenter!!.gameSelected(createGameData().build())
+    gamePresenter.gameSelected(createGameData().build())
     reset<Any>(gameRepository, achievementManager, gameViewUpdater, view, goGameController)
   }
 
   private fun createGamePresenter(): GamePresenter {
-    return GamePresenter(GAME_DATAS,
-        analytics,
-        gameRepository,
+    return GamePresenter(gameRepository,
         achievementManager,
         gameViewUpdater,
-        feedbackSender,
+        configurationViewEventProcessor,
+        inGameViewEventProcessor,
         goGameController)
   }
 

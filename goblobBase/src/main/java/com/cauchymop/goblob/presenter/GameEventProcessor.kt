@@ -13,7 +13,6 @@ abstract class GameEventProcessor(protected val goGameController: GoGameControll
 
     protected fun commitGameChanges() {
         with(goGameController) {
-            val gameData = buildGameData()
             gameRepository.commitGameChanges(gameData)
             updateView()
         }
