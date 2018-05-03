@@ -6,7 +6,7 @@ import com.google.common.testing.SerializableTester;
 import org.junit.Test;
 
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Tests for {@link GoGame}.

@@ -5,7 +5,7 @@ import com.cauchymop.goblob.proto.PlayGameData.GameType;
 
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Tests for {@link GameDatas}.

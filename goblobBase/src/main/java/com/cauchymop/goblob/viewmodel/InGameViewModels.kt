@@ -14,6 +14,7 @@ import javax.inject.Singleton
 class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMessageGenerator: GameMessageGenerator) {
 
   fun from(goGameController: GoGameController) = with(goGameController) {
+    require(phase!! >= PlayGameData.GameData.Phase.IN_GAME) { "Trying to create InGameViewModel with Invalid Phase ($phase)" }
     InGameViewModel(
         boardViewModel = getBoardViewModel(goGameController),
         currentPlayerViewModel = PlayerViewModel(currentPlayer.name, currentColor),

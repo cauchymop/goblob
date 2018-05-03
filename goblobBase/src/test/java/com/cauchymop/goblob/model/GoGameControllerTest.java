@@ -8,10 +8,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Tests for {@link GoGameController}.
@@ -90,7 +90,7 @@ public class GoGameControllerTest {
     PlayGameData.Move move = GAME_DATAS.createMove(0, 0);
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
     assertThat(controller.undo()).isTrue();
-    assertThat(controller.getGameData().getMoveCount()).isZero();
+    assertThat(controller.getGameData().getMoveList()).isEmpty();
     assertThat(controller.redo()).isTrue();
     assertThat(controller.getGameData().getMoveList())
         .isEqualTo(ImmutableList.of(move));
