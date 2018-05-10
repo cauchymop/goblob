@@ -8,10 +8,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Tests for {@link GoGameController}.
@@ -31,13 +31,14 @@ public class GoGameControllerTest {
     PlayGameData.GoPlayer black = GAME_DATAS.createGamePlayer("pipo", "player1", true);
     PlayGameData.GoPlayer white = GAME_DATAS.createGamePlayer("bimbo", "player2", true);
     gameData = GAME_DATAS.createNewGameData("pizza", PlayGameData.GameType.LOCAL, black, white).toBuilder().setPhase(Phase.IN_GAME).build();
-    controller = new GoGameController(GAME_DATAS, gameData, analytics);
+    controller = new GoGameController(GAME_DATAS, analytics);
+    controller.setGameData(gameData);
   }
 
   @Test
   public void testNew_initGoGame() {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).build();
-    controller = new GoGameController(GAME_DATAS, gameData, analytics);
+    controller.setGameData(gameData);
 
     GoGame goGame = controller.getGame();
     assertThat(goGame.getMoveHistory())
@@ -49,9 +50,9 @@ public class GoGameControllerTest {
   @Test
   public void buildGameData_incrementsSequence() {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).setSequenceNumber(3).build();
-    controller = new GoGameController(GAME_DATAS, gameData, analytics);
+    controller.setGameData(gameData);
 
-    GameData controllerGameData = controller.buildGameData();
+    GameData controllerGameData = controller.getGameData();
 
     assertThat(controllerGameData.getSequenceNumber()).isEqualTo(4);
   }
@@ -62,7 +63,7 @@ public class GoGameControllerTest {
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createMove(1, 1));
     controller.playMoveOrToggleDeadStone(GAME_DATAS.createPassMove());
 
-    GameData controllerGameData = controller.buildGameData();
+    GameData controllerGameData = controller.getGameData();
 
     assertThat(controllerGameData.getMoveList()).containsExactly(
         GAME_DATAS.createMove(0, 0),
@@ -89,9 +90,9 @@ public class GoGameControllerTest {
     PlayGameData.Move move = GAME_DATAS.createMove(0, 0);
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
     assertThat(controller.undo()).isTrue();
-    assertThat(controller.buildGameData().getMoveCount()).isZero();
+    assertThat(controller.getGameData().getMoveList()).isEmpty();
     assertThat(controller.redo()).isTrue();
-    assertThat(controller.buildGameData().getMoveList())
+    assertThat(controller.getGameData().getMoveList())
         .isEqualTo(ImmutableList.of(move));
   }
 
@@ -139,11 +140,11 @@ public class GoGameControllerTest {
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
     assertThat(controller.playMoveOrToggleDeadStone(pass)).isTrue();
     assertThat(controller.playMoveOrToggleDeadStone(pass)).isTrue();
-    assertThat(controller.buildGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
+    assertThat(controller.getGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
-    assertThat(controller.buildGameData().getMatchEndStatus().getDeadStoneList()).isEqualTo(ImmutableList.of(GAME_DATAS.createPosition(1, 1)));
+    assertThat(controller.getGameData().getMatchEndStatus().getDeadStoneList()).isEqualTo(ImmutableList.of(GAME_DATAS.createPosition(1, 1)));
     assertThat(controller.playMoveOrToggleDeadStone(move)).isTrue();
-    assertThat(controller.buildGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
+    assertThat(controller.getGameData().getMatchEndStatus().getDeadStoneList()).isEmpty();
   }
 
   @Test

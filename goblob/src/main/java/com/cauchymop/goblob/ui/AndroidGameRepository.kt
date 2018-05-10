@@ -203,6 +203,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
         return gameData
     }
 
+    @Suppress("DEPRECATION")
     private fun handleBackwardCompatibility(turnBasedMatch: TurnBasedMatch,
                                             initialGameData: GameData): GameData {
         val gameData = initialGameData.toBuilder()

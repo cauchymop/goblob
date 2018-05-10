@@ -6,7 +6,9 @@ import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoGameController
 import com.cauchymop.goblob.view.InGameView
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class InGameViewEventProcessor @Inject constructor(private val gameDatas: GameDatas,
                                                    private val feedbackSender: FeedbackSender,
                                                    private val analytics: Analytics,

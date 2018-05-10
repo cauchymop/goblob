@@ -28,10 +28,11 @@ dependencies {
     compile "com.google.dagger:dagger:${dagger_version}"
     compile 'com.google.protobuf:protobuf-java:3.4.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testCompile "com.google.guava:guava-testlib:${guava_version}"
     testCompile "junit:junit:${junit_version}"
     testCompile "org.mockito:mockito-core:${mockito_version}"
-    testCompile "org.easytesting:fest-assert:${fest_version}"
+    testCompile "com.google.truth:truth:0.40"
 }
 
 compileJava {

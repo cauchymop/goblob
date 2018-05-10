@@ -44,7 +44,7 @@ class InGameViewEventProcessorTest {
                 gameRepository = gameRepository)
 
 
-        given(goGameController.buildGameData()).willReturn(gameData)
+        given(goGameController.gameData).willReturn(gameData)
     }
 
     @After
@@ -61,7 +61,7 @@ class InGameViewEventProcessorTest {
 
         verify(goGameController).playMoveOrToggleDeadStone(move)
         verify(goGameController).isLocalTurn
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }
@@ -92,7 +92,7 @@ class InGameViewEventProcessorTest {
         inGameViewEventProcessor.onPass()
 
         verify(goGameController).pass()
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }
@@ -102,7 +102,7 @@ class InGameViewEventProcessorTest {
         inGameViewEventProcessor.onDone()
 
         verify(goGameController).markingTurnDone()
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }
@@ -115,7 +115,7 @@ class InGameViewEventProcessorTest {
 
         verify(analytics).undo()
         verify(goGameController).undo()
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }
@@ -128,7 +128,7 @@ class InGameViewEventProcessorTest {
 
         verify(analytics).redo()
         verify(goGameController).redo()
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }
@@ -139,7 +139,7 @@ class InGameViewEventProcessorTest {
 
         verify(analytics).resign()
         verify(goGameController).resign()
-        verify(goGameController).buildGameData()
+        verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }

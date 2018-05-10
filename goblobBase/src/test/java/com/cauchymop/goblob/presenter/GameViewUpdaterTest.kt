@@ -29,8 +29,8 @@ class GameViewUpdaterTest {
     @Before
     @Throws(Exception::class)
     fun setUp() {
-        gameViewUpdater = GameViewUpdater(configurationViewModels, inGameViewModels)
-        gameViewUpdater.goGameController = goGameController
+        gameViewUpdater = GameViewUpdater(configurationViewModels, inGameViewModels, goGameController)
+//        gameViewUpdater.goGameController = goGameController
         gameViewUpdater.view = gameView
     }
 

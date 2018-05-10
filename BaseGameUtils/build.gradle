@@ -8,6 +8,5 @@ dependencies {
 
 android {
     compileSdkVersion rootProject.ext.android_compile_version
-    buildToolsVersion rootProject.ext.build_tools_version
 }
 
