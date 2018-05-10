@@ -18,12 +18,12 @@ class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMes
     InGameViewModel(
         boardViewModel = getBoardViewModel(goGameController),
         currentPlayerViewModel = PlayerViewModel(currentPlayer.name, currentColor),
+        message = getInGameMessage(goGameController),
         isPassActionAvailable = isLocalTurn && phase == PlayGameData.GameData.Phase.IN_GAME,
         isDoneActionAvailable = isLocalTurn && goGameController.phase == PlayGameData.GameData.Phase.DEAD_STONE_MARKING,
-        message = getInGameMessage(goGameController),
+        isResignActionAvailable = isLocalTurn,
         isUndoActionAvailable = canUndo(),
-        isRedoActionAvailable = canRedo(),
-        isResignActionAvailable = isLocalTurn)
+        isRedoActionAvailable = canRedo())
   }
 
   private fun getBoardViewModel(goGameController: GoGameController) = with(goGameController.game!!) {

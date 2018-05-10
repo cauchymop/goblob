@@ -1,5 +1,6 @@
 - In Progress
    - TODO: Continues tests for InGameViewModels and add tests for ConfigurationViewModels
+   - TODO: Upgrade more stuff (Firebase, JetPack ...)
    - TODO: Introduce @GameScope
    - TODO: NOT GOBLOB RELATED file a bug against Chrome for password bypass with Notifications and second account
    - TODO: in GameRepository: use injection instead of inheritance
