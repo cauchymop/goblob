@@ -26,7 +26,7 @@ open class GameViewUpdater @Inject constructor(
         when (phase) {
             INITIAL, CONFIGURATION -> false
             IN_GAME, DEAD_STONE_MARKING, FINISHED -> true
-            UNKNOWN, null -> throw IllegalArgumentException("Invalid phase for game: " + phase)
+            UNKNOWN -> throw IllegalArgumentException("Invalid phase for game: " + phase)
         }
     }
 
