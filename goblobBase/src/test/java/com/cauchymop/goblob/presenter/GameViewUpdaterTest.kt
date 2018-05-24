@@ -66,13 +66,6 @@ class GameViewUpdaterTest {
         gameViewUpdater.update()
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun update_null_phase() {
-        given(goGameController.phase).willReturn(null)
-
-        gameViewUpdater.update()
-    }
-
     fun testUpdateConfigurationViewModelForPhase(phase: Phase) {
         given(goGameController.phase).willReturn(phase)
         given(configurationViewModels.from(goGameController)).willReturn(configurationViewModel)
