@@ -1,11 +1,11 @@
 package com.cauchymop.goblob.viewmodel
 
-import com.cauchymop.goblob.model.Analytics
-import com.cauchymop.goblob.model.GameDatas
-import com.cauchymop.goblob.model.GoGameController
-import com.cauchymop.goblob.model.createGameData
+import com.cauchymop.goblob.model.*
 import com.cauchymop.goblob.presenter.GameMessageGenerator
 import com.cauchymop.goblob.proto.PlayGameData
+import com.cauchymop.goblob.proto.PlayGameData.*
+import com.cauchymop.goblob.proto.PlayGameData.Color.BLACK
+import com.cauchymop.goblob.proto.PlayGameData.Color.WHITE
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.*
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
@@ -13,10 +13,13 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Answers
+import org.mockito.ArgumentMatchers
 import org.mockito.BDDMockito.*
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import kotlin.test.assertFailsWith
+
+private val GAMEDATAS: GameDatas = GameDatas()
 
 @RunWith(MockitoJUnitRunner::class)
 class InGameViewModelsTest {
@@ -28,11 +31,14 @@ class InGameViewModelsTest {
 
   private lateinit var inGameViewModels: InGameViewModels
 
+  private lateinit var goGame: GoGame
+
   @Before
   fun setUp() {
     val gameDatas = GameDatas()
     inGameViewModels = InGameViewModels(gameDatas, gameMessageGenerator)
     goGameController = GoGameController(gameDatas, mock(Analytics::class.java));
+    goGame = GoGame(9, 0)
   }
 
   @After
@@ -47,24 +53,195 @@ class InGameViewModelsTest {
   }
 
   @Test
-  fun from_boardViewModel_mappedSuccessfully() {
-    // TODO
+  fun from_boardViewModel_boardSize_mappedSuccessfully() {
+    goGameController.gameData = createGameData().apply { gameConfigurationBuilder.boardSize = 17 }.build()
+
+    val actual = inGameViewModels.from(goGameController)
+
+    assertThat(actual.boardViewModel.boardSize).isEqualTo(17)
   }
+
+  @Test
+  fun from_boardViewModel_stones_mappedSuccessfully() {
+    val mockController = getMockGoGameController()
+    val mockGoGame = spy(goGame)
+    given(mockGoGame.board).willReturn(GoBoard(9).apply {
+      fill(boardString =
+          ".........\n" +
+          ".........\n" +
+          "....●....\n" +
+          ".........\n" +
+          "......○..\n" +
+          ".........\n" +
+          ".........\n" +
+          ".........\n" +
+          ".........\n")
+    })
+    given(mockController.game).willReturn(mockGoGame)
+
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.boardViewModel.getColor(4, 2)).isEqualTo(BLACK)
+    assertThat(actual.boardViewModel.getColor(6, 4)).isEqualTo(WHITE)
+    assertThat(actual.boardViewModel.getColor(3, 3)).isNull()
+  }
+
+  @Test
+  fun from_boardViewModel_territories_mappedSuccessfully() {
+    val mockController = getMockGoGameController()
+    given(mockController.score).willReturn(Score.newBuilder()
+        .setWinner(WHITE)
+        .addBlackTerritory(GAMEDATAS.createPosition(1,2))
+        .addWhiteTerritory(GAMEDATAS.createPosition(3,4))
+        .build())
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.boardViewModel.getTerritory(1, 2)).isEqualTo(BLACK)
+    assertThat(actual.boardViewModel.getTerritory(3, 4)).isEqualTo(WHITE)
+    assertThat(actual.boardViewModel.getTerritory(3, 3)).isNull()
+  }
+
+  @Test
+  fun from_boardViewModel_deadStones_mappedSuccessfully() {
+    val mockController = getMockGoGameController()
+    given(mockController.deadStones).willReturn(listOf(GAMEDATAS.createPosition(1,2), GAMEDATAS.createPosition(5,6)))
+    val mockGoGame = spy(goGame)
+    given(mockGoGame.board).willReturn(GoBoard(9).apply {
+      fill(boardString =
+          ".........\n" +
+          ".........\n" +
+          ".●.......\n" +
+          ".........\n" +
+          "...○.....\n" +
+          ".........\n" +
+          ".....○...\n" +
+          ".........\n" +
+          ".........\n")
+    })
+    given(mockController.game).willReturn(mockGoGame)
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.boardViewModel.getTerritory(1, 2)).isEqualTo(WHITE)
+    assertThat(actual.boardViewModel.getTerritory(3, 4)).isNull()
+    assertThat(actual.boardViewModel.getTerritory(5, 6)).isEqualTo(BLACK)
+    assertThat(actual.boardViewModel.getTerritory(3, 3)).isNull()
+  }
+
+  @Test
+  fun from_boardViewModel_lastMove_mappedSuccessfully() {
+    val mockController = getMockGoGameController()
+    val mockGoGame = spy(goGame)
+    given(mockGoGame.lastMove).willReturn(goGame.getPos(3,4))
+    given(mockController.game).willReturn(mockGoGame)
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.boardViewModel.isLastMove(3,4)).isTrue()
+    assertThat(actual.boardViewModel.isLastMove(4,5)).isFalse()
+  }
+
+  @Test
+  fun from_boardViewModel_isInteractive() {
+    val mockController = getMockGoGameController()
+    given(mockController.isLocalTurn).willReturn(true)
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.boardViewModel.isInteractive).isTrue()
+  }
+
+  @Test
+  fun from_boardViewModel_isNotInteractive() {
+    val mockController = getMockGoGameController()
+    given(mockController.isLocalTurn).willReturn(false)
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.boardViewModel.isInteractive).isFalse()
+  }
+
 
   @Test
   fun from_currentPlayerViewModel_mappedSuccessfully() {
     val mockContoller = getMockGoGameController()
-    given(mockContoller.currentPlayer).willReturn(PlayGameData.GoPlayer.newBuilder().setName("🍕").setId("id").build())
-    given(mockContoller.currentColor).willReturn(PlayGameData.Color.WHITE)
+    given(mockContoller.currentPlayer).willReturn(getPlayer(name = "🍕"))
+    given(mockContoller.currentColor).willReturn(WHITE)
 
     val actual = inGameViewModels.from(mockContoller)
 
-    assertThat(actual.currentPlayerViewModel).isEqualTo(PlayerViewModel("🍕", PlayGameData.Color.WHITE))
+    assertThat(actual.currentPlayerViewModel).isEqualTo(PlayerViewModel("🍕", WHITE))
   }
 
   @Test
-  fun from_message_mappedSuccessfully() {
-    // TODO
+  fun from_message_gameFinished_resigned() {
+    val mockContoller = getMockGoGameController()
+    given(mockContoller.isGameFinished).willReturn(true)
+    given(mockContoller.getPlayerForColor(WHITE)).willReturn(getPlayer(name = "The Winner"))
+    given(mockContoller.score).willReturn(Score.newBuilder()
+        .setWinner(WHITE)
+        .setResigned(true)
+        .build())
+    given(gameMessageGenerator.getGameResignedMessage(anyString())).willReturn("resigned")
+
+    val actual = inGameViewModels.from(mockContoller)
+
+    assertThat(actual.message).isEqualTo("resigned")
+    verify(gameMessageGenerator).getGameResignedMessage("The Winner")
+  }
+
+  @Test
+  fun from_message_gameFinished_won() {
+    val mockContoller = getMockGoGameController()
+    given(mockContoller.isGameFinished).willReturn(true)
+    given(mockContoller.getPlayerForColor(WHITE)).willReturn(getPlayer(name = "The Winner"))
+    given(mockContoller.score).willReturn(Score.newBuilder()
+        .setWinner(WHITE)
+        .setResigned(false)
+        .setWonBy(3.5f)
+        .build())
+    given(gameMessageGenerator.getEndOfGameMessage(anyString(), anyFloat())).willReturn("Olivier won (easily) against Jérôme")
+
+    val actual = inGameViewModels.from(mockContoller)
+
+    assertThat(actual.message).isEqualTo("Olivier won (easily) against Jérôme")
+    verify(gameMessageGenerator).getEndOfGameMessage("The Winner", 3.5f)
+  }
+
+  @Test
+  fun from_message_deadStoneMarkingPhase() {
+    goGameController.gameData = createGameData().setPhase(DEAD_STONE_MARKING).build()
+    given(gameMessageGenerator.stoneMarkingMessage).willReturn("Stone marking time!")
+
+    val actual = inGameViewModels.from(goGameController)
+
+    assertThat(actual.message).isEqualTo("Stone marking time!")
+  }
+
+  @Test
+  fun from_message_opponentPassed() {
+    val mockController = getMockGoGameController()
+    val mockGoGame = spy(goGame)
+    given(mockGoGame.isLastMovePass).willReturn(true)
+    given(mockController.game).willReturn(mockGoGame)
+    given(mockController.opponent).willReturn(getPlayer(name = "The Loser"))
+    given(gameMessageGenerator.getOpponentPassedMessage(anyString())).willReturn("Opponent passed")
+
+    val actual = inGameViewModels.from(mockController)
+
+    assertThat(actual.message).isEqualTo("Opponent passed")
+    verify(gameMessageGenerator).getOpponentPassedMessage("The Loser")
+  }
+
+  @Test
+  fun from_message_noMessage() {
+    val mockContoller = getMockGoGameController()
+
+    val actual = inGameViewModels.from(mockContoller)
+
+    assertThat(actual.message).isEqualTo("")
   }
 
   @Test
@@ -129,20 +306,20 @@ class InGameViewModelsTest {
 
   @Test
   fun from_isUndoActionAvailable_matches_GoGameControllerCanUndo() {
-    checkActionMatchesForAllControllerValues({it.canUndo()}, {it.isUndoActionAvailable})
+    checkActionMatchesForAllControllerValues({ it.canUndo() }, { it.isUndoActionAvailable })
   }
 
   @Test
   fun from_isRedoActionAvailable_matches_GoGameControllerCanRedo() {
-    checkActionMatchesForAllControllerValues({it.canRedo()}, {it.isRedoActionAvailable})
+    checkActionMatchesForAllControllerValues({ it.canRedo() }, { it.isRedoActionAvailable })
   }
 
-  private fun checkActionMatchesForAllControllerValues(actionToMock:(GoGameController) -> (Boolean), actionToAssert:(InGameViewModel) -> (Boolean)) {
+  private fun checkActionMatchesForAllControllerValues(actionToMock: (GoGameController) -> (Boolean), actionToAssert: (InGameViewModel) -> (Boolean)) {
     checkActionMatchesForControllerValue(actionToMock, actionToAssert, true)
     checkActionMatchesForControllerValue(actionToMock, actionToAssert, false)
   }
 
-  private fun checkActionMatchesForControllerValue(actionToMock:(GoGameController) -> (Boolean), actionToAssert:(InGameViewModel) -> (Boolean), value:Boolean) {
+  private fun checkActionMatchesForControllerValue(actionToMock: (GoGameController) -> (Boolean), actionToAssert: (InGameViewModel) -> (Boolean), value: Boolean) {
     val mockController = getMockGoGameController()
     given(actionToMock.invoke(mockController)).willReturn(value)
 
@@ -151,7 +328,7 @@ class InGameViewModelsTest {
     assertThat(actionToAssert.invoke(actual)).isEqualTo(value)
   }
 
-  private fun checkIsActionAvailable(phase: PlayGameData.GameData.Phase, isLocalTurn: Boolean, expectedValue: Boolean, actionToAssert:(InGameViewModel) -> (Boolean)) {
+  private fun checkIsActionAvailable(phase: PlayGameData.GameData.Phase, isLocalTurn: Boolean, expectedValue: Boolean, actionToAssert: (InGameViewModel) -> (Boolean)) {
     val mockController = getMockGoGameController()
     given(mockController.phase).willReturn(phase)
     given(mockController.isLocalTurn).willReturn(isLocalTurn)
@@ -166,4 +343,6 @@ class InGameViewModelsTest {
     val mockContoller = spy(goGameController)
     return mockContoller
   }
+
+  private fun getPlayer(name: String) = GoPlayer.newBuilder().setName(name).setId("id").build()
 }

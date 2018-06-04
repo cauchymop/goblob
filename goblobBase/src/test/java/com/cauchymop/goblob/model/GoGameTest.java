@@ -145,7 +145,7 @@ public class GoGameTest {
   @Test
   public void testHandicap9() {
     GoGame goGame = new GoGame(9, 9);
-    assertThat(TextBoard.toString(goGame.getBoard())).isEqualTo(
+    assertThat(TextBoard.INSTANCE.toString(goGame.getBoard())).isEqualTo(
         ".........\n" +
         ".........\n" +
         "..●.●.●..\n" +
