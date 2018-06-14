@@ -1,6 +1,9 @@
 package com.cauchymop.goblob.presenter
 
 import com.cauchymop.goblob.model.*
+import com.cauchymop.goblob.proto.PlayGameData
+import com.cauchymop.goblob.proto.PlayGameData.*
+import com.cauchymop.goblob.proto.PlayGameData.GameData.*
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase.INITIAL
 import com.cauchymop.goblob.view.GameView
 import org.junit.After
@@ -75,7 +78,7 @@ class GamePresenterTest {
 
   @Test
   fun gameSelected_withGameData() {
-    val gameData = createGameData().setMatchId("pipo").setPhase(INITIAL).build()
+    val gameData = createGameData(Phase.IN_GAME).setMatchId("pipo").setPhase(INITIAL).build()
 
     gamePresenter.gameSelected(gameData)
 
@@ -95,7 +98,7 @@ class GamePresenterTest {
   fun gameChanged_withDifferentMatchId_doesNothing() {
     setInitialGame("pizza")
 
-    gamePresenter.gameChanged(createGameData().setMatchId("pipo").build())
+    gamePresenter.gameChanged(createGameData(Phase.IN_GAME).setMatchId("pipo").build())
 
     // Does nothing.
   }
@@ -114,7 +117,7 @@ class GamePresenterTest {
   fun gameChanged_withSameMatchId() {
     setInitialGame("pizza")
 
-    gamePresenter.gameChanged(createGameData().setMatchId("pizza").setPhase(INITIAL).build())
+    gamePresenter.gameChanged(createGameData(Phase.IN_GAME).setMatchId("pizza").setPhase(INITIAL).build())
 
     verify(gameViewUpdater).update()
     verify(achievementManager).updateAchievements(goGameController)
@@ -125,7 +128,7 @@ class GamePresenterTest {
   }
 
   fun setInitialGame() {
-    gamePresenter.gameSelected(createGameData().build())
+    gamePresenter.gameSelected(createGameData(Phase.IN_GAME).build())
     reset<Any>(gameRepository, achievementManager, gameViewUpdater, view, goGameController)
   }
 
