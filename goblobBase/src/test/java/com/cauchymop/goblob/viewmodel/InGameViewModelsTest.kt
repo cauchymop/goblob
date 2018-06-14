@@ -13,7 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Answers
-import org.mockito.ArgumentMatchers
 import org.mockito.BDDMockito.*
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
@@ -35,9 +34,8 @@ class InGameViewModelsTest {
 
   @Before
   fun setUp() {
-    val gameDatas = GameDatas()
-    inGameViewModels = InGameViewModels(gameDatas, gameMessageGenerator)
-    goGameController = GoGameController(gameDatas, mock(Analytics::class.java));
+    inGameViewModels = InGameViewModels(GAMEDATAS, gameMessageGenerator)
+    goGameController = GoGameController(GAMEDATAS, mock(Analytics::class.java));
     goGame = GoGame(9, 0)
   }
 
@@ -47,14 +45,14 @@ class InGameViewModelsTest {
 
   @Test
   fun from_gameInConfigurationState_throws() {
-    goGameController.gameData = createGameData().setPhase(CONFIGURATION).build()
+    goGameController.gameData = createGameData(IN_GAME).setPhase(CONFIGURATION).build()
 
     assertFailsWith<IllegalArgumentException> { inGameViewModels.from(goGameController) }
   }
 
   @Test
   fun from_boardViewModel_boardSize_mappedSuccessfully() {
-    goGameController.gameData = createGameData().apply { gameConfigurationBuilder.boardSize = 17 }.build()
+    goGameController.gameData = createGameData(IN_GAME).apply { gameConfigurationBuilder.boardSize = 17 }.build()
 
     val actual = inGameViewModels.from(goGameController)
 
@@ -212,7 +210,7 @@ class InGameViewModelsTest {
 
   @Test
   fun from_message_deadStoneMarkingPhase() {
-    goGameController.gameData = createGameData().setPhase(DEAD_STONE_MARKING).build()
+    goGameController.gameData = createGameData(IN_GAME).setPhase(DEAD_STONE_MARKING).build()
     given(gameMessageGenerator.stoneMarkingMessage).willReturn("Stone marking time!")
 
     val actual = inGameViewModels.from(goGameController)
@@ -339,7 +337,7 @@ class InGameViewModelsTest {
   }
 
   private fun getMockGoGameController(): GoGameController {
-    goGameController.gameData = createGameData().build()
+    goGameController.gameData = createGameData(IN_GAME).build()
     val mockContoller = spy(goGameController)
     return mockContoller
   }

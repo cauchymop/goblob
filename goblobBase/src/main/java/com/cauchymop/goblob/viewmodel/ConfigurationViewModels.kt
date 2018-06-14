@@ -7,7 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ConfigurationViewModels @Inject constructor(val gameMessageGenerator: GameMessageGenerator) {
+class ConfigurationViewModels @Inject constructor(private val gameMessageGenerator: GameMessageGenerator) {
 
     fun from(goGameController: GoGameController) = with(goGameController.gameConfiguration) {
         ConfigurationViewModel(
