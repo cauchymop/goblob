@@ -40,11 +40,9 @@ public class GoGameControllerTest {
     gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).build();
     controller.setGameData(gameData);
 
-    GoGame goGame = controller.getGame();
-    assertThat(goGame.getMoveHistory())
-        .containsExactly(goGame.getPos(2, 3), goGame.getPos(4, 5));
-    assertThat(goGame.getBoardSize())
-        .isEqualTo(gameData.getGameConfiguration().getBoardSize());
+    assertThat(controller.getColor(2,3)).isEqualTo(PlayGameData.Color.BLACK);
+    assertThat(controller.getColor(4,5)).isEqualTo(PlayGameData.Color.WHITE);
+    assertThat(controller.getBoardSize()).isEqualTo(gameData.getGameConfiguration().getBoardSize());
   }
 
   @Test

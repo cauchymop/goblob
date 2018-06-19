@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import kotlin.Pair;
+
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
@@ -118,6 +120,10 @@ public class GoGame implements Serializable {
 
   public int getPos(int x, int y) {
     return y * getBoardSize() + x;
+  }
+
+  public Pair<Integer, Integer> getLastMoveXY() {
+    return new Pair<>(getLastMove()/getBoardSize(), getLastMove()%getBoardSize());
   }
 
   public boolean isGameEnd() {

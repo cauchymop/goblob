@@ -29,6 +29,7 @@ dependencies {
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation "com.google.dagger:dagger:${dagger_version}"
     implementation "com.google.firebase:firebase-analytics:${gms_library_version}"
+    implementation 'com.android.support:multidex:1.0.3'
     kapt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     kapt "com.google.dagger:dagger-compiler:${dagger_version}"
     api project(':BaseGameUtils')
@@ -68,7 +69,7 @@ android {
             applicationIdSuffix ".debug"
             testCoverageEnabled false
             minifyEnabled true
-            useProguard true
+            multiDexEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules-debug.pro'
         }
@@ -76,7 +77,6 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled true
-            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules.pro'
         }

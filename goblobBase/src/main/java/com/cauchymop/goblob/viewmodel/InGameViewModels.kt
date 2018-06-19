@@ -26,19 +26,10 @@ class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMes
         isRedoActionAvailable = canRedo())
   }
 
-  private fun getBoardViewModel(goGameController: GoGameController) = with(goGameController.game!!) {
-    var lastMoveX = -1
-    var lastMoveY = -1
-    val stones = Array(boardSize) { arrayOfNulls<Color>(boardSize) }
-    for (x in 0 until boardSize) {
-      for (y in 0 until boardSize) {
-        stones[y][x] = board.getColor(x, y)
-        if (getPos(x, y) == lastMove) {
-          lastMoveX = x
-          lastMoveY = y
-        }
-      }
-    }
+  private fun getBoardViewModel(goGameController: GoGameController): BoardViewModel {
+    val boardSize = goGameController.boardSize
+    val (lastMoveX, lastMoveY) = goGameController.lastMove
+    val stones = squareArray(boardSize) { x, y -> goGameController.getColor(x, y) }
 
     val territories = Array(boardSize) { arrayOfNulls<Color>(boardSize) }
     goGameController.score.blackTerritoryList.forEach { territories[it.y][it.x] = BLACK }
@@ -50,7 +41,7 @@ class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMes
       territories[y][x] = gameDatas.getOppositeColor(stones[y][x])
     }
 
-    BoardViewModel(
+    return BoardViewModel(
         boardSize = boardSize,
         stones = stones,
         territories = territories,
@@ -74,4 +65,10 @@ class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMes
       else -> getEndOfGameMessage(winnerName, goGameController.score.wonBy)
     }
   }
+
 }
+
+private inline fun <reified T> squareArray(size: Int, f: (Int, Int) -> T?):Array<Array<T?>> {
+  return Array(size) { y -> Array(size) { x -> f(x, y) } }
+}
+

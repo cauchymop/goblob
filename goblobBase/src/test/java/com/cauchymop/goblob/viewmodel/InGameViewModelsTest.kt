@@ -30,13 +30,10 @@ class InGameViewModelsTest {
 
   private lateinit var inGameViewModels: InGameViewModels
 
-  private lateinit var goGame: GoGame
-
   @Before
   fun setUp() {
     inGameViewModels = InGameViewModels(GAMEDATAS, gameMessageGenerator)
     goGameController = GoGameController(GAMEDATAS, mock(Analytics::class.java));
-    goGame = GoGame(9, 0)
   }
 
   @After
@@ -62,35 +59,14 @@ class InGameViewModelsTest {
   @Test
   fun from_boardViewModel_stones_mappedSuccessfully() {
     val mockController = getMockGoGameController()
-    val mockGoGame = spy(goGame)
-    given(mockGoGame.board).willReturn(GoBoard(9).apply {
-      fill(boardString =
-          ".........\n" +
-          ".........\n" +
-          "....●....\n" +
-          ".........\n" +
-          "......○..\n" +
-          ".........\n" +
-          ".........\n" +
-          ".........\n" +
-          ".........\n")
-    })
-    given(mockController.game).willReturn(mockGoGame)
-
+    given(mockController.getColor(4, 2)).willReturn(BLACK)
+    given(mockController.getColor(6, 4)).willReturn(WHITE)
 
     val actual = inGameViewModels.from(mockController)
 
     assertThat(actual.boardViewModel.getColor(4, 2)).isEqualTo(BLACK)
     assertThat(actual.boardViewModel.getColor(6, 4)).isEqualTo(WHITE)
     assertThat(actual.boardViewModel.getColor(3, 3)).isNull()
-  }
-
-  @Test
-  fun from_boardViewModel_noGame_throws() {
-    val mockController = getMockGoGameController()
-    given(mockController.game).willReturn(null)
-
-    assertFailsWith<KotlinNullPointerException> { inGameViewModels.from(mockController) }
   }
 
   @Test
@@ -113,20 +89,9 @@ class InGameViewModelsTest {
   fun from_boardViewModel_deadStones_mappedSuccessfully() {
     val mockController = getMockGoGameController()
     given(mockController.deadStones).willReturn(listOf(GAMEDATAS.createPosition(1,2), GAMEDATAS.createPosition(5,6)))
-    val mockGoGame = spy(goGame)
-    given(mockGoGame.board).willReturn(GoBoard(9).apply {
-      fill(boardString =
-          ".........\n" +
-          ".........\n" +
-          ".●.......\n" +
-          ".........\n" +
-          "...○.....\n" +
-          ".........\n" +
-          ".....○...\n" +
-          ".........\n" +
-          ".........\n")
-    })
-    given(mockController.game).willReturn(mockGoGame)
+    given(mockController.getColor(1, 2)).willReturn(BLACK)
+    given(mockController.getColor(3, 4)).willReturn(WHITE)
+    given(mockController.getColor(5, 6)).willReturn(WHITE)
 
     val actual = inGameViewModels.from(mockController)
 
@@ -139,9 +104,7 @@ class InGameViewModelsTest {
   @Test
   fun from_boardViewModel_lastMove_mappedSuccessfully() {
     val mockController = getMockGoGameController()
-    val mockGoGame = spy(goGame)
-    given(mockGoGame.lastMove).willReturn(goGame.getPos(3,4))
-    given(mockController.game).willReturn(mockGoGame)
+    given(mockController.lastMove).willReturn(Pair(3,4))
 
     val actual = inGameViewModels.from(mockController)
 

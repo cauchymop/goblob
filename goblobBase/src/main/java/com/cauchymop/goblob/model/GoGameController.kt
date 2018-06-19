@@ -20,8 +20,13 @@ class GoGameController @Inject constructor(
     @field:Transient private var gameDatas: GameDatas,
     private val analytics: Analytics) : Serializable {
 
-  var game: GoGame? = null
-    private set
+  private var game: GoGame? = null
+
+  val boardSize: Int
+    get() = game!!.boardSize
+
+  val lastMove: Pair<Int, Int>
+    get() = game!!.lastMoveXY
 
   private var gameDataBuilder: GameData.Builder by Delegates.notNull()
 
@@ -274,14 +279,12 @@ class GoGameController @Inject constructor(
     }
   }
 
-  private fun getPos(move: Move): Int {
-    when (move.type) {
-      PlayGameData.Move.MoveType.MOVE -> {
-        val position = move.position
-        return game!!.getPos(position.x, position.y)
-      }
-      PlayGameData.Move.MoveType.PASS -> return game!!.passValue
-      else -> throw RuntimeException("Invalid Move")
-    }
+  private fun getPos(move: Move) = when (move.type) {
+    PlayGameData.Move.MoveType.MOVE -> with(move.position) { game!!.getPos(x, y) }
+    PlayGameData.Move.MoveType.PASS -> game!!.passValue
+    else -> throw RuntimeException("Invalid Move")
   }
+
+  fun getColor(x: Int, y: Int): Color? = game?.getColor(x, y)
+
 }
