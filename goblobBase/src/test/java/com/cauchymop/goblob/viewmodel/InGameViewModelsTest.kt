@@ -86,6 +86,14 @@ class InGameViewModelsTest {
   }
 
   @Test
+  fun from_boardViewModel_noGame_throws() {
+    val mockController = getMockGoGameController()
+    given(mockController.game).willReturn(null)
+
+    assertFailsWith<KotlinNullPointerException> { inGameViewModels.from(mockController) }
+  }
+
+  @Test
   fun from_boardViewModel_territories_mappedSuccessfully() {
     val mockController = getMockGoGameController()
     given(mockController.score).willReturn(Score.newBuilder()
@@ -221,9 +229,7 @@ class InGameViewModelsTest {
   @Test
   fun from_message_opponentPassed() {
     val mockController = getMockGoGameController()
-    val mockGoGame = spy(goGame)
-    given(mockGoGame.isLastMovePass).willReturn(true)
-    given(mockController.game).willReturn(mockGoGame)
+    given(mockController.isLastMovePass).willReturn(true)
     given(mockController.opponent).willReturn(getPlayer(name = "The Loser"))
     given(gameMessageGenerator.getOpponentPassedMessage(anyString())).willReturn("Opponent passed")
 
