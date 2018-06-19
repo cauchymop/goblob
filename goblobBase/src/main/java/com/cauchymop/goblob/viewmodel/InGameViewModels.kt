@@ -30,8 +30,8 @@ class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMes
     var lastMoveX = -1
     var lastMoveY = -1
     val stones = Array(boardSize) { arrayOfNulls<Color>(boardSize) }
-    for (x in 0..boardSize - 1) {
-      for (y in 0..boardSize - 1) {
+    for (x in 0 until boardSize) {
+      for (y in 0 until boardSize) {
         stones[y][x] = board.getColor(x, y)
         if (getPos(x, y) == lastMove) {
           lastMoveX = x
@@ -63,7 +63,7 @@ class InGameViewModels @Inject constructor(val gameDatas: GameDatas, val gameMes
     when {
       isGameFinished -> getWinnerMessage(this, getPlayerForColor(score.winner).name)
       phase == PlayGameData.GameData.Phase.DEAD_STONE_MARKING -> gameMessageGenerator.stoneMarkingMessage
-      game!!.isLastMovePass -> gameMessageGenerator.getOpponentPassedMessage(opponent.name)
+      isLastMovePass -> gameMessageGenerator.getOpponentPassedMessage(opponent.name)
       else -> ""
     }
   }

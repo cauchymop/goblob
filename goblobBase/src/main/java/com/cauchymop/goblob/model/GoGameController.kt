@@ -80,6 +80,9 @@ class GoGameController @Inject constructor(
   val isGameFinished: Boolean
     get() = gameDataBuilder.phase == FINISHED
 
+  val isLastMovePass: Boolean
+    get() = game?.isLastMovePass ?: false
+
   val phase: Phase
     get() = gameDataBuilder.phase
 

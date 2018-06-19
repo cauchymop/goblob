@@ -86,6 +86,14 @@ class InGameViewModelsTest {
   }
 
   @Test
+  fun from_boardViewModel_noGame_throws() {
+    val mockController = getMockGoGameController()
+    given(mockController.game).willReturn(null)
+
+    assertFailsWith<KotlinNullPointerException> { inGameViewModels.from(mockController) }
+  }
+
+  @Test
   fun from_boardViewModel_territories_mappedSuccessfully() {
     val mockController = getMockGoGameController()
     given(mockController.score).willReturn(Score.newBuilder()
