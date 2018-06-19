@@ -229,9 +229,7 @@ class InGameViewModelsTest {
   @Test
   fun from_message_opponentPassed() {
     val mockController = getMockGoGameController()
-    val mockGoGame = spy(goGame)
-    given(mockGoGame.isLastMovePass).willReturn(true)
-    given(mockController.game).willReturn(mockGoGame)
+    given(mockController.isLastMovePass).willReturn(true)
     given(mockController.opponent).willReturn(getPlayer(name = "The Loser"))
     given(gameMessageGenerator.getOpponentPassedMessage(anyString())).willReturn("Opponent passed")
 
