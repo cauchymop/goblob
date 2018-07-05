@@ -1,5 +1,5 @@
 - In Progress
-   - TODO: Fix last move
+   - TODO: Update GoGameController Tests
    - TODO: Upgrade more stuff (Firebase, JetPack ...)
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: test GameRepository.

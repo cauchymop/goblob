@@ -123,7 +123,7 @@ public class GoGame implements Serializable {
   }
 
   public Pair<Integer, Integer> getLastMoveXY() {
-    return new Pair<>(getLastMove()/getBoardSize(), getLastMove()%getBoardSize());
+    return new Pair<>(getLastMove() % getBoardSize(), getLastMove() / getBoardSize());
   }
 
   public boolean isGameEnd() {
