@@ -1,8 +1,6 @@
 - In Progress
-   - TODO: Understand Proguard Error
+   - TODO: Fix last move
    - TODO: Upgrade more stuff (Firebase, JetPack ...)
-   - TODO: Introduce @GameScope
-   - TODO: NOT GOBLOB RELATED file a bug against Chrome for password bypass with Notifications and second account
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: test GameRepository.
    - TODO: convert GameRepository into kotlin (drop the previous attempt)
