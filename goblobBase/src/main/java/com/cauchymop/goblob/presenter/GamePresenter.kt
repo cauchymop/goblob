@@ -61,12 +61,4 @@ class GamePresenter @Inject constructor(private val gameRepository: GameReposito
     view.setInGameActionListener(null)
   }
 
-//  private fun playMonteCarloMove() = with(goGameController!!) {
-//    val bestMove = MonteCarlo.getBestMove(game, 1000)
-//    val boardSize = gameConfiguration.boardSize
-//    val x = bestMove % boardSize
-//    val y = bestMove / boardSize
-//    playMoveOrToggleDeadStone(gameDatas.createMove(x, y))
-//  }
-
 }

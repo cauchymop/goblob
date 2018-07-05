@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import kotlin.Pair;
+
 import static com.cauchymop.goblob.proto.PlayGameData.Color;
 
 /**
@@ -120,6 +122,10 @@ public class GoGame implements Serializable {
     return y * getBoardSize() + x;
   }
 
+  public Pair<Integer, Integer> getLastMoveXY() {
+    return new Pair<>(getLastMove() % getBoardSize(), getLastMove() / getBoardSize());
+  }
+
   public boolean isGameEnd() {
     if (moveHistory.size() < 2) {
       return false;
@@ -183,14 +189,5 @@ public class GoGame implements Serializable {
     return board;
   }
 
-  public Set<Integer> getNonEyeFillingMoves() {
-    Set<Integer> moves = Sets.newHashSet();
-    for (int pos = 0 ; pos < boardSize*boardSize ; pos++) {
-      if (board.getColor(pos) == null && !board.isEyeFilling(pos, currentColor)) {
-        moves.add(pos);
-      }
-    }
-    return moves;
-  }
 }
 

@@ -64,6 +64,11 @@ jacocoTestReport {
     reports {
         xml.enabled true
     }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: 'com/cauchymop/goblob/proto/**')
+        })
+    }
 }
 
 /**

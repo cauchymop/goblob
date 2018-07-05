@@ -21,7 +21,7 @@ internal class AchievementManagerAndroid @Inject constructor(context: Context, p
         if (!isGameFinished) {
             return
         }
-        when (game!!.boardSize) {
+        when (boardSize) {
             9 -> unlockAchievement9x9()
             13 -> unlockAchievement13x13()
             19 -> unlockAchievement19x19()
