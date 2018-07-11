@@ -28,7 +28,7 @@ public class FirebaseAnalyticsSender implements Analytics {
   }
 
   @Override
-  public void configurationChanged(PlayGameData.GameDataOrBuilder game) {
+  public void configurationChanged(PlayGameData.GameData game) {
     PlayGameData.GameType gameType = game.getGameConfiguration().getGameType();
     if (gameType == PlayGameData.GameType.REMOTE) {
       Bundle bundle = getGameConfigurationBundle(game.getGameConfiguration());

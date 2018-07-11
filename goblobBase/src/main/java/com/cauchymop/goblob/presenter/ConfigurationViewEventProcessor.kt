@@ -31,7 +31,7 @@ class ConfigurationViewEventProcessor @Inject constructor(goGameController: GoGa
     }
 
     override fun onConfigurationValidationEvent() {
-        goGameController.validateConfiguration()
+        goGameController.commitConfiguration()
         commitGameChanges()
     }
 

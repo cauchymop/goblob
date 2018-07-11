@@ -83,7 +83,7 @@ class ConfigurationViewEventProcessorTest {
         configurationViewEventProcessor.onConfigurationValidationEvent()
 
         verify(goGameController).gameData
-        verify(goGameController).validateConfiguration()
+        verify(goGameController).commitConfiguration()
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()
     }

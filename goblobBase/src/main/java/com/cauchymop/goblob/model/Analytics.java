@@ -2,14 +2,13 @@ package com.cauchymop.goblob.model;
 
 import com.cauchymop.goblob.proto.PlayGameData.GameConfiguration;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
-import com.cauchymop.goblob.proto.PlayGameData.GameDataOrBuilder;
 import com.cauchymop.goblob.proto.PlayGameData.Move;
 import com.cauchymop.goblob.proto.PlayGameData.Score;
 
 public interface Analytics {
   void gameCreated(GameData localGame);
 
-  void configurationChanged(GameDataOrBuilder gameData);
+  void configurationChanged(GameData gameData);
 
   void undo();
 
