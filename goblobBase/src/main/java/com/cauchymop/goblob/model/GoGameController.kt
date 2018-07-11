@@ -152,8 +152,7 @@ class GoGameController @Inject constructor(
     }
   }
 
-  fun validateConfiguration() {
-
+  fun commitConfiguration() {
     if (isConfigurationAgreed()) {
       gameDataBuilder.phase = IN_GAME
       createGoGame()
@@ -161,7 +160,7 @@ class GoGameController @Inject constructor(
       gameDataBuilder.phase = CONFIGURATION
     }
     gameDataBuilder.turn = computeConfigurationNextTurn()
-    analytics.configurationChanged(gameDataBuilder)
+    analytics.configurationChanged(gameDataBuilder.build())
   }
 
   fun getPlayerForColor(player: Color): GoPlayer {
