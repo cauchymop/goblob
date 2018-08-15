@@ -26,13 +26,13 @@ repositories {
 dependencies {
     compile "com.google.guava:guava:${guava_version}"
     compile "com.google.dagger:dagger:${dagger_version}"
-    compile 'com.google.protobuf:protobuf-java:3.4.0'
+    compile 'com.google.protobuf:protobuf-java:3.6.1'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testCompile "com.google.guava:guava-testlib:${guava_version}"
     testCompile "junit:junit:${junit_version}"
     testCompile "org.mockito:mockito-core:${mockito_version}"
-    testCompile "com.google.truth:truth:0.40"
+    testCompile "com.google.truth:truth:0.42"
 }
 
 compileJava {
@@ -49,7 +49,7 @@ test {
 protobuf {
     protoc {
         // Download from repositories
-        artifact = 'com.google.protobuf:protoc:3.0.0'
+        artifact = 'com.google.protobuf:protoc:3.6.1'
     }
     generatedFilesBaseDir = "$projectDir/generated"
 }

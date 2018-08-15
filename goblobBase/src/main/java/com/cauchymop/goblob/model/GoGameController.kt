@@ -20,13 +20,13 @@ class GoGameController @Inject constructor(
     @field:Transient private var gameDatas: GameDatas,
     private val analytics: Analytics) : Serializable {
 
-  private var game: GoGame? = null
+  private var game: GoGame by Delegates.notNull()
 
   val boardSize: Int
-    get() = game!!.boardSize
+    get() = game.boardSize
 
   val lastMove: Pair<Int, Int>
-    get() = game!!.lastMoveXY
+    get() = game.lastMoveXY
 
   private var gameDataBuilder: GameData.Builder by Delegates.notNull()
 
@@ -41,7 +41,7 @@ class GoGameController @Inject constructor(
       if (value.phase != CONFIGURATION) {
         createGoGame()
         for (move in this.gameDataBuilder.moveList) {
-          game!!.play(getPos(move))
+          game.play(getPos(move))
         }
       }
     }
@@ -86,7 +86,7 @@ class GoGameController @Inject constructor(
     get() = gameDataBuilder.phase == FINISHED
 
   val isLastMovePass: Boolean
-    get() = game?.isLastMovePass ?: false
+    get() = game.isLastMovePass
 
   val phase: Phase
     get() = gameDataBuilder.phase
@@ -100,7 +100,7 @@ class GoGameController @Inject constructor(
   fun undo(): Boolean {
     if (canUndo()) {
       gameDataBuilder.addRedo(0, removeLastMove())
-      game!!.undo()
+      game.undo()
       return true
     }
     return false
@@ -144,12 +144,10 @@ class GoGameController @Inject constructor(
     analytics.gameFinished(gameConfiguration, score)
   }
 
-  fun playMoveOrToggleDeadStone(move: Move): Boolean {
-    when (phase) {
-      IN_GAME -> return playMove(move)
-      DEAD_STONE_MARKING -> return toggleDeadStone(move.position)
-      else -> throw RuntimeException("Invalid mode")
-    }
+  fun playMoveOrToggleDeadStone(move: Move): Boolean = when (phase) {
+    IN_GAME -> playMove(move)
+    DEAD_STONE_MARKING -> toggleDeadStone(move.position)
+    else -> throw IllegalArgumentException("Invalid mode")
   }
 
   fun commitConfiguration() {
@@ -205,7 +203,7 @@ class GoGameController @Inject constructor(
   }
 
   private fun playMove(move: Move): Boolean {
-    if (gameDataBuilder.phase == IN_GAME && game!!.play(getPos(move))) {
+    if (gameDataBuilder.phase == IN_GAME && game.play(getPos(move))) {
       updateRedoForMove(move)
       gameDataBuilder.addMove(move)
       gameDataBuilder.turn = opponentColor
@@ -226,7 +224,7 @@ class GoGameController @Inject constructor(
   }
 
   private fun toggleDeadStone(position: Position): Boolean {
-    if (game!!.getColor(position.x, position.y) == null) {
+    if (game.getColor(position.x, position.y) == null) {
       return false
     }
     val index = matchEndStatus.deadStoneList.indexOf(position)
@@ -253,7 +251,7 @@ class GoGameController @Inject constructor(
   }
 
   private fun calculateScore(): Score {
-    val scoreGenerator = ScoreGenerator(game!!.board,
+    val scoreGenerator = ScoreGenerator(game.board,
         Sets.newHashSet(deadStones), gameConfiguration.komi)
     return scoreGenerator.score
   }
@@ -270,20 +268,20 @@ class GoGameController @Inject constructor(
   }
 
   private fun checkForMatchEnd() {
-    if (game!!.isGameEnd) {
+    if (game.isGameEnd) {
       gameDataBuilder.phase = DEAD_STONE_MARKING
-      val lastModifier = GoBoard.getOpponent(game!!.currentColor)
+      val lastModifier = GoBoard.getOpponent(game.currentColor)
       gameDataBuilder.matchEndStatusBuilder
           .setLastModifier(lastModifier).score = calculateScore()
     }
   }
 
   private fun getPos(move: Move) = when (move.type) {
-    PlayGameData.Move.MoveType.MOVE -> with(move.position) { game!!.getPos(x, y) }
-    PlayGameData.Move.MoveType.PASS -> game!!.passValue
-    else -> throw RuntimeException("Invalid Move")
+    PlayGameData.Move.MoveType.MOVE -> with(move.position) { game.getPos(x, y) }
+    PlayGameData.Move.MoveType.PASS -> game.passValue
+    null -> throw RuntimeException("Invalid Move: Should not happen as protobuf enums can't be null!")
   }
 
-  fun getColor(x: Int, y: Int): Color? = game?.getColor(x, y)
+  fun getColor(x: Int, y: Int): Color? = game.getColor(x, y)
 
 }
