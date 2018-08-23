@@ -36,7 +36,7 @@ class InGameViewEventProcessor @Inject constructor(private val gameDatas: GameDa
     }
 
     override fun onDone() {
-        goGameController.markingTurnDone()
+        goGameController.deadStoneMarkingDone()
         commitGameChanges()
     }
 

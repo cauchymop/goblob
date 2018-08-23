@@ -81,10 +81,10 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 
     public override fun publishRemoteGameState(gameData: GameData): Boolean {
         if (googleApiClient.isConnected) {
-            Log.d(TAG, "publishRemoteGameState: " + gameData)
+            Log.d(TAG, "publishRemoteGameState: $gameData")
             val turnParticipantId = gameDatas.getCurrentPlayer(gameData).id
             val gameDataBytes = gameData.toByteArray()
-            Log.d(TAG, "takeTurn " + turnParticipantId)
+            Log.d(TAG, "takeTurn $turnParticipantId")
             TurnBasedMultiplayer.takeTurn(googleApiClient, gameData.matchId, gameDataBytes, turnParticipantId)
             if (gameData.phase == Phase.FINISHED) {
                 TurnBasedMultiplayer.finishMatch(googleApiClient, gameData.matchId)
@@ -108,7 +108,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
         try {
             TextFormat.merge(gameDataString, gameDataBuilder)
         } catch (e: TextFormat.ParseException) {
-            Log.e(TAG, "Error parsing local GameData: " + e.message)
+            Log.e(TAG, "Error parsing local GameData: ${e.message}")
         }
 
         val localGame = gameDataBuilder.build()
@@ -220,7 +220,9 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
             val blackPlayer = goPlayers[gameConfiguration.blackId]
             val whitePlayer = goPlayers[gameConfiguration.whiteId]
 
-            gameData.gameConfigurationBuilder.setBlack(blackPlayer).white = whitePlayer
+            gameData.gameConfigurationBuilder
+                .setBlack(blackPlayer)
+                .setWhite(whitePlayer)
         }
 
         // No match Id

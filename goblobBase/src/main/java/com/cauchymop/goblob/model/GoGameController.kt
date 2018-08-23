@@ -119,7 +119,7 @@ class GoGameController @Inject constructor(
         game, blackPlayer, whitePlayer, matchEndStatus)
   }
 
-  fun markingTurnDone() {
+  fun deadStoneMarkingDone() {
     if (isLocalGame || matchEndStatus.lastModifier != currentColor) {
       gameDataBuilder.phase = FINISHED
       analytics.gameFinished(gameConfiguration, score)
@@ -153,11 +153,12 @@ class GoGameController @Inject constructor(
   fun commitConfiguration() {
     if (isConfigurationAgreed()) {
       gameDataBuilder.phase = IN_GAME
+      gameDataBuilder.turn = gameDatas.computeInGameTurn(gameConfiguration, 0)
       createGoGame()
     } else {
       gameDataBuilder.phase = CONFIGURATION
+      gameDataBuilder.turn = gameDatas.getOpponentColor(gameConfiguration)
     }
-    gameDataBuilder.turn = computeConfigurationNextTurn()
     analytics.configurationChanged(gameDataBuilder.build())
   }
 
@@ -244,12 +245,6 @@ class GoGameController @Inject constructor(
       initialGameData.gameConfiguration.gameType == LOCAL ||
           (initialGameData.phase == CONFIGURATION && initialGameData.gameConfiguration == gameConfiguration)
 
-  private fun computeConfigurationNextTurn(): PlayGameData.Color = when (phase) {
-    CONFIGURATION -> gameDatas.getOpponentColor(gameConfiguration)
-    IN_GAME -> gameDatas.computeInGameTurn(gameConfiguration, 0)
-    else -> throw IllegalArgumentException("Invalid phase: $phase")
-  }
-
   private fun calculateScore(): Score {
     val scoreGenerator = ScoreGenerator(game.board,
         Sets.newHashSet(deadStones), gameConfiguration.komi)
@@ -279,9 +274,9 @@ class GoGameController @Inject constructor(
   private fun getPos(move: Move) = when (move.type) {
     PlayGameData.Move.MoveType.MOVE -> with(move.position) { game.getPos(x, y) }
     PlayGameData.Move.MoveType.PASS -> game.passValue
-    null -> throw RuntimeException("Invalid Move: Should not happen as protobuf enums can't be null!")
   }
 
   fun getColor(x: Int, y: Int): Color? = game.getColor(x, y)
 
 }
+

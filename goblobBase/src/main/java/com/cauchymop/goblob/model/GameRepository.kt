@@ -30,10 +30,10 @@ abstract class GameRepository(
     private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
 
     val myTurnGames: Iterable<GameData>
-        get() = filter<GameData>(gameCache.games.values, isLocalTurnPredicate)
+        get() = filter<GameData>(gameCache.gamesMap.values, isLocalTurnPredicate)
 
     val theirTurnGames: Iterable<GameData>
-        get() = filter<GameData>(gameCache.games.values, not<GameData>(isLocalTurnPredicate))
+        get() = filter<GameData>(gameCache.gamesMap.values, not<GameData>(isLocalTurnPredicate))
 
     private val currentGame: GameData?
         get() = gameCache.gamesMap[currentMatchId]
