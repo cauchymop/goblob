@@ -58,7 +58,6 @@ sourceSets {
     main.java.srcDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
 }
 
-compileKotlin.dependsOn ':goblobBase:generateProto'
 
 jacocoTestReport {
     reports {
@@ -86,3 +85,15 @@ idea {
         sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
     }
 }
+
+task annotateNotNull() << {
+    ant.replaceregexp(match:'^(package .*)', replace:'\\1\nimport org.jetbrains.annotations.NotNull;\n', byline:true) {
+        fileset(dir: 'generated/main/java/com/cauchymop/goblob/proto/', includes: 'PlayGameData.java')
+    }
+    ant.replaceregexp(match:'(public .*(String|cauchymop).* get)', replace:'@NotNull \\1', byline:true) {
+        fileset(dir: 'generated/main/java/com/cauchymop/goblob/proto/', includes: 'PlayGameData.java')
+    }
+}
+
+compileKotlin.dependsOn = [annotateNotNull]
+annotateNotNull.dependsOn ':goblobBase:generateProto'

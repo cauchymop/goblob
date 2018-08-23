@@ -32,6 +32,6 @@ allprojects {
         mockito_version = '2.8.9'
         fest_version = '1.2'
 
-        kotlin_version = '1.2.60'
+        kotlin_version = '1.2.61'
     }
 }

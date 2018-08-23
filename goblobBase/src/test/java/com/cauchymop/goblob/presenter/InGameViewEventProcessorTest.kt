@@ -101,7 +101,7 @@ class InGameViewEventProcessorTest {
     fun onDone() {
         inGameViewEventProcessor.onDone()
 
-        verify(goGameController).markingTurnDone()
+        verify(goGameController).deadStoneMarkingDone()
         verify(goGameController).gameData
         verify(gameRepository).commitGameChanges(gameData)
         verify(gameViewUpdater).update()

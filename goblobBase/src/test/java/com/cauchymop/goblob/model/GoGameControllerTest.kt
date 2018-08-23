@@ -297,7 +297,6 @@ class GoGameControllerTest {
     assertThat(gameConfiguration.handicap).isEqualTo(12)
   }
 
-
   @Test
   fun pass() {
     assertThat(controller.isLastMovePass).isFalse()
@@ -307,12 +306,23 @@ class GoGameControllerTest {
     assertThat(controller.isLastMovePass).isTrue()
   }
 
+  @Test
+  fun deadStoneMarkingDone_localGame_endsGame() {
+    assertThat(controller.gameData.turn).isEqualTo(PlayGameData.Color.BLACK)
+
+    controller.deadStoneMarkingDone()
+
+    assertThat(controller.phase).isEqualTo(Phase.FINISHED)
+    verify(analytics).gameFinished(controller.gameData.gameConfiguration, controller.score)
+    assertThat(controller.gameData.turn).isEqualTo(PlayGameData.Color.WHITE)
+  }
+
   companion object {
 
-    private val MATCH_ID = "pizza"
+    private const val MATCH_ID = "pizza"
     private val GAME_DATAS = GameDatas()
     private val WHITE_PLAYER = GAME_DATAS.createGamePlayer("bimbo", "player2", true)
     private val BLACK_PLAYER = GAME_DATAS.createGamePlayer("pipo", "player1", true)
-    private val ANOTHER_PLAYER_NAME = "myname"
+    private const val ANOTHER_PLAYER_NAME = "myname"
   }
 }
