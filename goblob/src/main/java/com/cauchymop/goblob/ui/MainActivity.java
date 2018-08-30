@@ -91,14 +91,14 @@ public class MainActivity extends AppCompatActivity
 
     setUpToolbar();
 
-    if (savedInstanceState != null) {
-      androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
-    }
-
-    googleApiClientManager.registerGoogleApiClientListener(this);
     androidGameRepository.addGameListListener(this);
     androidGameRepository.addGameChangeListener(this);
     androidGameRepository.addGameSelectionListener(this);
+    googleApiClientManager.registerGoogleApiClientListener(this);
+
+    if (savedInstanceState != null) {
+      androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
+    }
   }
 
   @Override
@@ -223,14 +223,15 @@ public class MainActivity extends AppCompatActivity
     updateFromConnectionStatus();
     TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, androidGameRepository);
 
+    androidGameRepository.refreshRemoteGameListFromServer();
+    androidGameRepository.publishUnpublishedGames();
+
     // Retrieve the TurnBasedMatch from the connectionHint in order to select it
     if (bundle != null) {
       TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
       androidGameRepository.selectGame(turnBasedMatch.getMatchId());
     }
 
-    androidGameRepository.refreshRemoteGameListFromServer();
-    androidGameRepository.publishUnpublishedGames();
   }
 
   @Override

@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Message
 import android.util.Log
 import com.cauchymop.goblob.model.Analytics
 import com.cauchymop.goblob.model.AvatarManager
@@ -25,7 +23,6 @@ import com.google.android.gms.games.multiplayer.turnbased.*
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import com.google.common.collect.Iterables
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.TextFormat
 import dagger.Lazy
@@ -52,26 +49,17 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
             @Named("PlayerOneDefaultName") playerOneDefaultName: Lazy<String>,
             @Named("PlayerTwoDefaultName") playerTwoDefaultName: String) : GameRepository(analytics, playerOneDefaultName, playerTwoDefaultName, gameDatas, gameCache = loadGameCache(prefs)), OnTurnBasedMatchUpdateReceivedListener {
 
-  private val cacheRefreshHandler = CacheRefreshHandler(this)
-
   init {
     loadLegacyLocalGame()
     fireGameListChanged()
   }
 
   override fun forceCacheRefresh() {
-    requestCacheRefresh(true)
+    Log.d(TAG, "forceCacheRefresh")
+    persistCache()
+    fireGameListChanged()
   }
 
-  override fun requestCacheRefresh(immediate: Boolean) {
-    log("CacheRefreshHandler forceCacheRefresh()")
-    cacheRefreshHandler.removeMessages(CACHE_CHANGED_MESSAGE)
-    if (immediate) {
-      cacheRefreshHandler.handleMessage(cacheRefreshHandler.obtainMessage(CACHE_CHANGED_MESSAGE))
-    } else {
-      cacheRefreshHandler.sendEmptyMessageDelayed(CACHE_CHANGED_MESSAGE, CACHE_CHANGED_DELAY)
-    }
-  }
 
   private fun persistCache() {
     val editor = prefs.edit()
@@ -112,7 +100,9 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     }
 
     val localGame = gameDataBuilder.build()
-    saveToCache(localGame)
+    if (saveToCache(localGame)) {
+      forceCacheRefresh()
+    }
     prefs.edit().remove(GAME_DATA).apply()
   }
 
@@ -141,18 +131,23 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
           games.add(gameData)
         }
       }
-      if (clearRemoteGamesIfAbsent(games)) {
+      var changed = clearRemoteGamesIfAbsent(games)
+
+      for (game in games) {
+        changed = changed || saveToCache(game)
+      }
+      if (changed) {
         forceCacheRefresh()
       }
-      for (game in games) {
-        saveToCache(game)
-      }
+      loadMatchesResult.release()
     }
     matchListResult.setResultCallback(matchListResultCallBack)
   }
 
   private fun clearRemoteGamesIfAbsent(games: Set<GameData>): Boolean {
-    return Iterables.removeIf(gameCache.mutableGames.values) { gameData -> gameDatas.isRemoteGame(gameData) && !games.contains(gameData) }
+    val keysToRemove = gameCache.gamesMap.filter { gameDatas.isRemoteGame(it.value) && !games.contains(it.value) }.map { it.key }
+    keysToRemove.forEach { gameCache.removeGames(it) }
+    return keysToRemove.isNotEmpty()
   }
 
   private fun updateAvatars(match: TurnBasedMatch) {
@@ -299,7 +294,9 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     Log.d(TAG, "onTurnBasedMatchReceived")
     val gameData = getGameData(turnBasedMatch)
     if (gameData != null) {
-      saveToCache(gameData)
+      if (saveToCache(gameData)) {
+        forceCacheRefresh()
+      }
     }
   }
 
@@ -358,14 +355,6 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     }
   }
 
-  private class CacheRefreshHandler(private val androidGameRepository: AndroidGameRepository) : Handler() {
-
-    override fun handleMessage(msg: Message) {
-      Log.d(TAG, "CacheRefreshHandler handleMessage")
-      androidGameRepository.persistCache()
-      androidGameRepository.fireGameListChanged()
-    }
-  }
 }
 
 private fun loadGameCache(sharedPreferences: SharedPreferences): GameList.Builder {
