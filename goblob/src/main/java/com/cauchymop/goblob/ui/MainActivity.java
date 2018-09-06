@@ -309,6 +309,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void displayFragment(GoBlobBaseFragment fragment) {
+    Log.d(TAG, "displayFragment " + fragment.getClass().getSimpleName());
     setWaitingScreenVisible(false);
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 

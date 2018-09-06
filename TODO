@@ -1,6 +1,7 @@
 - In Progress
-   - TODO: Understand why Travis sent an error about latest Merge
    - TODO: Fix refresh bug when opening app to accept a New Game (New Remote Game Invitation Received)
+       ===> It seems that MainActivity.gameSelected is not called! Maybe the listener has changed
+       ===> Add more logs in AndroidGameRepository.refreshRemoteGameListFromServer to see if our boolean works
    - TODO: Continue Testing changes to GameRepository and publish them
    - TODO: Final Testing and publish app!!!
 

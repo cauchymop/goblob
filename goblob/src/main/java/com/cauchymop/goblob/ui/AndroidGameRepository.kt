@@ -123,6 +123,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
           .addAll(denullify(matches.getCompletedMatches()))
           .build()
 
+      val selectedIsNew = gameCache.containsGames(currentMatchId)
       val games = HashSet<GameData>()
       for (match in allMatches) {
         updateAvatars(match)
@@ -138,6 +139,9 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       }
       if (changed) {
         forceCacheRefresh()
+      }
+      if (selectedIsNew) {
+        fireGameSelected(gameCache.gamesMap[currentMatchId])
       }
       loadMatchesResult.release()
     }
