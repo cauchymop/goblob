@@ -230,10 +230,8 @@ public class MainActivity extends AppCompatActivity
       Log.d(TAG, " ==> We have an invite! " + turnBasedMatch);
       androidGameRepository.setInvitationMatchId(turnBasedMatch.getMatchId());
     }
-    // TODO Comment
     androidGameRepository.refreshRemoteGameListFromServer();
     androidGameRepository.publishUnpublishedGames();
-
   }
 
   @Override
