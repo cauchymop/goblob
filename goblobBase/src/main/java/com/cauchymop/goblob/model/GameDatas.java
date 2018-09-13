@@ -21,7 +21,6 @@ import static com.cauchymop.goblob.proto.PlayGameData.Move;
 @Singleton
 public class GameDatas {
 
-  public static final String NEW_GAME_MATCH_ID = "new game";
   public static final int VERSION = 3;  // Adding sequence_number.
 
   private static final float DEFAULT_KOMI = 7.5f;

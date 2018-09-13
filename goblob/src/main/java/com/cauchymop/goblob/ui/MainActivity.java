@@ -40,6 +40,7 @@ import butterknife.ButterKnife;
 import butterknife.OnItemSelected;
 import butterknife.Unbinder;
 
+import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 import static com.google.android.gms.games.Games.Achievements;
 import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
@@ -91,14 +92,14 @@ public class MainActivity extends AppCompatActivity
 
     setUpToolbar();
 
-    if (savedInstanceState != null) {
-      androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
-    }
-
-    googleApiClientManager.registerGoogleApiClientListener(this);
     androidGameRepository.addGameListListener(this);
     androidGameRepository.addGameChangeListener(this);
     androidGameRepository.addGameSelectionListener(this);
+    googleApiClientManager.registerGoogleApiClientListener(this);
+
+    if (savedInstanceState != null) {
+      androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
+    }
   }
 
   @Override
@@ -226,9 +227,9 @@ public class MainActivity extends AppCompatActivity
     // Retrieve the TurnBasedMatch from the connectionHint in order to select it
     if (bundle != null) {
       TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-      androidGameRepository.selectGame(turnBasedMatch.getMatchId());
+      Log.d(TAG, " ==> We have an invite! " + turnBasedMatch);
+      androidGameRepository.setInvitationMatchId(turnBasedMatch.getMatchId());
     }
-
     androidGameRepository.refreshRemoteGameListFromServer();
     androidGameRepository.publishUnpublishedGames();
   }
@@ -308,6 +309,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void displayFragment(GoBlobBaseFragment fragment) {
+    Log.d(TAG, "displayFragment " + fragment.getClass().getSimpleName());
     setWaitingScreenVisible(false);
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
@@ -352,6 +354,7 @@ public class MainActivity extends AppCompatActivity
   public void gameSelected(GameData gameData) {
     Log.d(TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
     if (gameData == null) {
+      selectMenuItem(NO_MATCH_ID);
       displayFragment(new PlayerChoiceFragment());
       return;
     }
@@ -385,18 +388,16 @@ public class MainActivity extends AppCompatActivity
   /**
    * Selects the given match (or the first one) and return its index.
    */
-  private int selectMenuItem(@Nullable String matchId) {
+  private void selectMenuItem(@NonNull String matchId) {
     Log.d(TAG, "selectMenuItem matchId = " + matchId);
     for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
         matchSpinner.setSelection(index);
-        return index;
       }
     }
-    Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; selecting first", matchId));
-    matchSpinner.setSelection(0);
-    return 0;
+
+    Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; we do nothing (it's probably loading...)", matchId));
   }
 
   public void setWaitingScreenVisible(boolean visible) {
