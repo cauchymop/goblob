@@ -1,15 +1,11 @@
 - In Progress
-   - TODO: Fix refresh bug when opening app to accept a New Game (New Remote Game Invitation Received)
-       ===> It seems that MainActivity.gameSelected is not called! Maybe the listener has changed
-       ===> Add more logs in AndroidGameRepository.refreshRemoteGameListFromServer to see if our boolean works
-   - TODO: Continue Testing changes to GameRepository and publish them
+   - TODO: Fix App Icon
    - TODO: Final Testing and publish app!!!
+   - TODO: Check bug on Marking Dead Stones if first player approve without marking any stone (right now the next player does not have his say/turn as nothing has changed)
 
    - TODO: Write GameRepository Tests
    - TODO: Upgrade more stuff (Firebase, JetPack ...)
    - TODO: in GameRepository: use injection instead of inheritance
-   - TODO: test GameRepository.
-   - TODO: convert GameRepository into kotlin (drop the previous attempt)
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first
    - TODO: When marking dead stones: If not changing anything only one player have a say (probalby fixed by previous point)

@@ -5,10 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import com.cauchymop.goblob.model.Analytics
-import com.cauchymop.goblob.model.AvatarManager
-import com.cauchymop.goblob.model.GameDatas
-import com.cauchymop.goblob.model.GameRepository
+import com.cauchymop.goblob.model.*
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase
@@ -107,7 +104,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   }
 
   fun refreshRemoteGameListFromServer() {
-    Log.d(TAG, "refreshRemoteGameListFromServer")
+    Log.d(TAG, "refreshRemoteGameListFromServer -  currentMatchId = $currentMatchId")
     val requestId = System.currentTimeMillis()
 
     val matchListResult = TurnBasedMultiplayer.loadMatchesByStatus(googleApiClient,
@@ -123,7 +120,6 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
           .addAll(denullify(matches.getCompletedMatches()))
           .build()
 
-      val selectedIsNew = gameCache.containsGames(currentMatchId)
       val games = HashSet<GameData>()
       for (match in allMatches) {
         updateAvatars(match)
@@ -132,26 +128,38 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
           games.add(gameData)
         }
       }
-      var changed = clearRemoteGamesIfAbsent(games)
 
+      val removedMatchIds = clearRemoteGamesIfAbsent(games)
+      val selectedIsGone = removedMatchIds.contains(currentMatchId)
+      var changed = removedMatchIds.isNotEmpty()
       for (game in games) {
         changed = changed || saveToCache(game)
       }
       if (changed) {
         forceCacheRefresh()
       }
-      if (selectedIsNew) {
-        fireGameSelected(gameCache.gamesMap[currentMatchId])
+
+      // Select invitation if one has arrived
+      invitationMatchId?.let {
+        invitationMatchId = null
+        selectGame(it)
       }
+
+      Log.d(TAG, " ===> (in refreshRemoteGameListFromServer) changed is $changed and selectedIsGone is $selectedIsGone")
+      if (selectedIsGone) {
+        // selected game was removed, we select new game instead
+        selectGame(NO_MATCH_ID)
+      }
+
       loadMatchesResult.release()
     }
     matchListResult.setResultCallback(matchListResultCallBack)
   }
 
-  private fun clearRemoteGamesIfAbsent(games: Set<GameData>): Boolean {
+  private fun clearRemoteGamesIfAbsent(games: Set<GameData>): List<String> {
     val keysToRemove = gameCache.gamesMap.filter { gameDatas.isRemoteGame(it.value) && !games.contains(it.value) }.map { it.key }
     keysToRemove.forEach { gameCache.removeGames(it) }
-    return keysToRemove.isNotEmpty()
+    return keysToRemove
   }
 
   private fun updateAvatars(match: TurnBasedMatch) {

@@ -11,6 +11,8 @@ import com.google.common.collect.Lists
 import dagger.Lazy
 import javax.inject.Named
 
+const val NO_MATCH_ID = "No Selected MatchId"
+
 private const val LOCAL_MATCH_ID = "local"
 private const val PLAYER_ONE_ID = "player1"
 private const val PLAYER_TWO_ID = "player2"
@@ -23,8 +25,11 @@ abstract class GameRepository(
     protected val gameCache: PlayGameData.GameList.Builder) {
 
   private val isLocalTurnPredicate = Predicate<GameData> { gameData -> gameDatas.isLocalTurn(gameData) }
-  var currentMatchId: String? = null
+
+  var currentMatchId: String = NO_MATCH_ID
     private set
+  var invitationMatchId: String? = null
+
   private val gameListlisteners = Lists.newArrayList<GameListListener>()
   private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
   private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
@@ -86,7 +91,7 @@ abstract class GameRepository(
       return
     }
     currentMatchId = matchId
-    if (matchId == GameDatas.NEW_GAME_MATCH_ID) {
+    if (matchId == NO_MATCH_ID) {
       fireGameSelected(null)
     } else {
       fireGameSelected(gameCache.gamesMap[matchId])
