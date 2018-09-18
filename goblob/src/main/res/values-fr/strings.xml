@@ -42,5 +42,5 @@
     <string name="white_label">Blanc</string>
     <string name="you_label">Vous</string>
     <string name="about">À propos</string>
-    <string name="about_text"><![CDATA[<h1>Jeu de Go</h1>par CauchyMop<br>(Jérôme Abela & Olivier Bonal)<br><div>Icone par <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> sous license CC BY 3.0</div>]]></string>
+    <string name="about_text"><![CDATA[<h1>Jeu de Go</h1>par CauchyMop<br>(Jérôme Abela & Olivier Bonal)<br><div>Icone par <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> sous license CC&nbsp;BY&nbsp;3.0</div>]]></string>
 </resources>

@@ -5,13 +5,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.cauchymop.goblob.ui.AboutActivity">
+  <android.support.v7.widget.Toolbar
+      android:id="@+id/app_toolbar"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:minHeight="?attr/actionBarSize"
+      android:background="@color/primary_middle"/>
   <TextView
       android:id="@+id/about_text"
       android:layout_height="0dp"
       android:layout_width="0dp"
+      android:layout_margin="@dimen/default_gap"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/app_toolbar"
       app:layout_constraintBottom_toBottomOf="parent"
       android:gravity="center"
       android:textSize="24sp"
