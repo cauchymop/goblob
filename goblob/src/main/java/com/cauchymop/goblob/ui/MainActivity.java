@@ -177,6 +177,8 @@ public class MainActivity extends AppCompatActivity
       googleApiClient.connect();
     } else if (id == R.id.menu_check_matches) {
       checkMatches();
+    } else if (id == R.id.menu_about) {
+      startActivity(new Intent(this, AboutActivity.class));
     }
     return false;
   }

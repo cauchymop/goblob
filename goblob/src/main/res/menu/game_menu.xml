@@ -45,6 +45,12 @@
       app:showAsAction="never"
       android:visible="false"
       android:title="@string/resign"/>
+  <item
+      android:id="@+id/menu_about"
+      android:orderInCategory="100"
+      app:showAsAction="never"
+      android:visible="true"
+      android:title="@string/about"/>
 
 
 </menu>
