@@ -2,12 +2,13 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.StringRes;
-import android.support.v4.content.ContextCompat;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.proto.PlayGameData.GameData;
+
+import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 
 /**
  * {@link MatchMenuItem} for a Google Play games turn based match.

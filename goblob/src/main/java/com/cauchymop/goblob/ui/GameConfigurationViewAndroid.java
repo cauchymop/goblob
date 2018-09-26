@@ -2,8 +2,6 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Context;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
@@ -21,6 +19,8 @@ import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.view.GameConfigurationView;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;

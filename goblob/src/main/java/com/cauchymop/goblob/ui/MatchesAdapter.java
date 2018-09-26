@@ -2,7 +2,6 @@ package com.cauchymop.goblob.ui;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,8 @@ import com.cauchymop.goblob.R;
 import com.google.common.base.Strings;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 /**
  * Adapter displaying MatchMenuItem from the actionbar navigation spinner.
