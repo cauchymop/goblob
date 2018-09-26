@@ -6,7 +6,7 @@
                 android:orientation="vertical"
                 tools:context=".ui.MainActivity">
 
-  <android.support.v7.widget.Toolbar
+  <androidx.appcompat.widget.Toolbar
       android:id="@+id/app_toolbar"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -21,7 +21,7 @@
     <!--android:popupBackground="?attr/colorPrimary"-->
     <!--android:dropDownSelector="?attr/colorPrimaryDark"-->
 
-  </android.support.v7.widget.Toolbar>
+  </androidx.appcompat.widget.Toolbar>
 
   <FrameLayout
       android:id="@+id/current_fragment"

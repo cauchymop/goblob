@@ -1,7 +1,6 @@
 package com.cauchymop.goblob.analytics;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.proto.PlayGameData;
@@ -12,6 +11,8 @@ import com.cauchymop.goblob.proto.PlayGameData.Score;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Inject;
+
+import androidx.annotation.NonNull;
 
 public class FirebaseAnalyticsSender implements Analytics {
   private final FirebaseAnalytics firebaseAnalytics;

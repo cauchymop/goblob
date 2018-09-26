@@ -1,10 +1,10 @@
 package com.cauchymop.goblob.ui
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import com.cauchymop.goblob.R
 import kotlinx.android.synthetic.main.activity_about.*
 

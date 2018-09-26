@@ -1,8 +1,8 @@
 package com.cauchymop.goblob.ui;
 
-import android.support.v4.app.Fragment;
-
 import com.cauchymop.goblob.injection.GoApplicationComponent;
+
+import androidx.fragment.app.Fragment;
 
 /**
  * Base Fragment implementing common behaviour.
