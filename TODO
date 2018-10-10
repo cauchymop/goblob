@@ -1,5 +1,4 @@
 - In Progress
-   - TODO: Final Testing and publish app!!!
    - TODO: Check bug on Marking Dead Stones if first player approve without marking any stone (right now the next player does not have his say/turn as nothing has changed)
 
    - TODO: Write GameRepository Tests
