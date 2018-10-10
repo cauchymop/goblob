@@ -27,7 +27,8 @@ dependencies {
     implementation "com.google.firebase:firebase-core:${firebase_core_version}"
     implementation "com.google.firebase:firebase-analytics:${firebase_core_version}"
     implementation "com.crashlytics.sdk.android:crashlytics:${crashlytics_version}"
-    implementation "com.google.android.gms:play-services-games:${gms_library_version}"
+    implementation "com.google.android.gms:play-services-games:${play_services_games_version}"
+    implementation "com.google.android.gms:play-services-auth:${play_services_auth_version}"
     implementation "com.google.guava:guava:${guava_version}"
     implementation "com.jakewharton:butterknife:${butterknife_version}"
     implementation 'javax.annotation:javax.annotation-api:1.2'
@@ -35,7 +36,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     kapt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     kapt "com.google.dagger:dagger-compiler:${dagger_version}"
-    api project(':BaseGameUtils')
     api project(':goblobBase')
     androidTestImplementation 'androidx.test:runner:1.1.0-beta01'
     androidTestImplementation 'androidx.test:rules:1.1.0-beta01'

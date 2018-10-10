@@ -31,7 +31,8 @@ allprojects {
         android_min_sdk_version = 19
 
         appcompat_library_version = '1.0.0'
-        gms_library_version = '16.0.0'
+        play_services_games_version = '16.0.0'
+        play_services_auth_version = '16.0.1'
         firebase_core_version = '16.0.4'
 
         guava_version = '25.1-android' // Upgrade Proguard config when guava version changes
