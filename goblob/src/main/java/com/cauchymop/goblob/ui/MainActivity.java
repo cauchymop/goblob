@@ -14,20 +14,22 @@ import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameListListener;
 import com.cauchymop.goblob.model.GameSelectionListener;
+import com.cauchymop.goblob.model.GoogleAccountManager;
 import com.cauchymop.goblob.proto.PlayGameData;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.TurnBasedMultiplayerClient;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -68,6 +70,11 @@ public class MainActivity extends AppCompatActivity
   GameDatas gameDatas;
   @Inject
   AndroidGameRepository androidGameRepository;
+  @Inject
+  GoogleAccountManager googleAccountManager;
+  @Inject
+  Provider<TurnBasedMultiplayerClient> turnBasedClientProvider;
+
   private Unbinder unbinder;
   private GameFragment gameFragment;
 
@@ -138,7 +145,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
-    boolean signedIn = isSignedIn();
+    boolean signedIn = googleAccountManager.getSignedIn();
     menu.setGroupVisible(R.id.group_signedIn, signedIn);
     menu.setGroupVisible(R.id.group_signedOut, !signedIn);
     return super.onPrepareOptionsMenu(menu);
@@ -148,7 +155,7 @@ public class MainActivity extends AppCompatActivity
   public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
     if (id == R.id.menu_achievements) {
-      Games.getAchievementsClient(this, getSignedInAccount()).getAchievementsIntent()
+      Games.getAchievementsClient(this, googleAccountManager.getSignedInAccount()).getAchievementsIntent()
           .addOnCompleteListener(intentTask -> startActivityForResult(intentTask.getResult(), RC_REQUEST_ACHIEVEMENTS));
       return true;
     } else if (id == R.id.menu_signout) {
@@ -207,7 +214,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void updateFromConnectionStatus() {
-    Log.d(TAG, "updateFromConnectionStatus isSignedIn = " + isSignedIn());
+    Log.d(TAG, "updateFromConnectionStatus isSignedIn = " + googleAccountManager.getSignedIn());
     invalidateOptionsMenu();
 
     // When initial connection fails, there is no fragment yet.
@@ -277,7 +284,7 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void checkMatches() {
-    Games.getTurnBasedMultiplayerClient(this, getSignedInAccount()).getInboxIntent().addOnCompleteListener(task -> startActivityForResult( task.getResult(), RC_CHECK_MATCHES));
+    turnBasedClientProvider.get().getInboxIntent().addOnCompleteListener(task -> startActivityForResult( task.getResult(), RC_CHECK_MATCHES));
 
   }
 
@@ -288,7 +295,7 @@ public class MainActivity extends AppCompatActivity
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
-      Games.getTurnBasedMultiplayerClient(this, getSignedInAccount()).getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
+      Games.getTurnBasedMultiplayerClient(this, googleAccountManager.getSignedInAccount()).getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
           task -> startActivityForResult(task.getResult(), RC_SELECT_PLAYER)
       );
     }
@@ -360,14 +367,6 @@ public class MainActivity extends AppCompatActivity
 
   public void setWaitingScreenVisible(boolean visible) {
     waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
-  }
-
-  public boolean isSignedIn() {
-    return getSignedInAccount() != null;
-  }
-
-  private GoogleSignInAccount getSignedInAccount() {
-    return GoogleSignIn.getLastSignedInAccount(this);
   }
 
 }

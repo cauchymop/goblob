@@ -1,5 +1,5 @@
 - In Progress
-   - TODO: Continue de-deprecating PlayGames (Bruno is dead!)
+   - TODO: Continue de-deprecating PlayGames (Bruno is dead!) - Starting with AndroidGameRepository
 
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance

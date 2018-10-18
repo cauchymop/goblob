@@ -10,7 +10,6 @@ import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
-import com.cauchymop.goblob.model.GoogleApiClientManager;
 import com.cauchymop.goblob.presenter.AchievementManager;
 import com.cauchymop.goblob.presenter.FeedbackSender;
 import com.cauchymop.goblob.presenter.GameMessageGenerator;
@@ -18,8 +17,12 @@ import com.cauchymop.goblob.ui.AchievementManagerAndroid;
 import com.cauchymop.goblob.ui.AndroidFeedbackSender;
 import com.cauchymop.goblob.ui.AndroidGameRepository;
 import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.games.Games;
 import com.google.android.gms.games.Player;
+import com.google.android.gms.games.TurnBasedMultiplayerClient;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Named;
@@ -67,9 +70,13 @@ public class GoApplicationModule {
   }
 
   @Provides
-  @Singleton
-  public GoogleApiClient provideGoogleApiClient(GoogleApiClientManager googleApiClientManager) {
-    return googleApiClientManager.get();
+  public GoogleSignInAccount getSignedInAccount(Context context) {
+    return GoogleSignIn.getLastSignedInAccount(context);
+  }
+
+  @Provides
+  public TurnBasedMultiplayerClient getTurnBasedMultiplayerClient(Context context, GoogleSignInAccount account) {
+    return Games.getTurnBasedMultiplayerClient(context, account);
   }
 
   @Provides
