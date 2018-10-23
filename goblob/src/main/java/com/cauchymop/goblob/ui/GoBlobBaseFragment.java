@@ -7,17 +7,12 @@ import androidx.fragment.app.Fragment;
 /**
  * Base Fragment implementing common behaviour.
  */
-public class GoBlobBaseFragment extends Fragment {
+public abstract class GoBlobBaseFragment extends Fragment {
   protected MainActivity getGoBlobActivity() {
     return ((MainActivity)getActivity());
   }
 
-  public void updateFromConnectionStatus() {
-  }
-
-  protected boolean isSignedIn() {
-    return getGoBlobActivity().isSignedIn();
-  }
+  public void updateFromConnectionStatus(boolean isSignInComplete) {}
 
   protected GoApplicationComponent getComponent() {
     return ((GoApplication)getActivity().getApplication()).getComponent();

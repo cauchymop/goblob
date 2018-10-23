@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameListListener;
@@ -22,6 +23,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.TurnBasedMultiplayerClient;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -46,7 +48,7 @@ import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
 public class MainActivity extends AppCompatActivity
-    implements GameListListener, GameChangeListener, GameSelectionListener {
+    implements GameListListener, GameChangeListener, GameSelectionListener, AccountStateListener {
 
   private static final int RC_REQUEST_ACHIEVEMENTS = 1;
   private static final int RC_SELECT_PLAYER = 2;
@@ -74,9 +76,12 @@ public class MainActivity extends AppCompatActivity
   GoogleAccountManager googleAccountManager;
   @Inject
   Provider<TurnBasedMultiplayerClient> turnBasedClientProvider;
+  @Inject
+  Provider<PlayersClient> playersClientProvider;
 
   private Unbinder unbinder;
   private GameFragment gameFragment;
+  private GoogleSignInClient signInClient;
 
 
   @Override
@@ -94,6 +99,7 @@ public class MainActivity extends AppCompatActivity
     androidGameRepository.addGameListListener(this);
     androidGameRepository.addGameChangeListener(this);
     androidGameRepository.addGameSelectionListener(this);
+    googleAccountManager.addAccountStateListener(this);
 
     if (savedInstanceState != null) {
       androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
@@ -145,7 +151,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
-    boolean signedIn = googleAccountManager.getSignedIn();
+    boolean signedIn = googleAccountManager.getSignInComplete();
     menu.setGroupVisible(R.id.group_signedIn, signedIn);
     menu.setGroupVisible(R.id.group_signedOut, !signedIn);
     return super.onPrepareOptionsMenu(menu);
@@ -191,7 +197,7 @@ public class MainActivity extends AppCompatActivity
       case RC_SIGN_IN:
         GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(intent);
         if (result.isSuccess()) {
-          // The signed in account is stored in the result.
+          googleAccountManager.onSignInSuccess();
         } else {
           String message = result.getStatus().getStatusMessage();
           if (message == null || message.isEmpty()) {
@@ -200,7 +206,6 @@ public class MainActivity extends AppCompatActivity
           new AlertDialog.Builder(this).setMessage(message)
               .setNeutralButton(android.R.string.ok, null).show();
         }
-        updateFromConnectionStatus();
         break;
       default:
         Log.e(TAG, "onActivityResult unexpected requestCode " + requestCode);
@@ -213,14 +218,14 @@ public class MainActivity extends AppCompatActivity
     super.onSaveInstanceState(outState);
   }
 
-  public void updateFromConnectionStatus() {
-    Log.d(TAG, "updateFromConnectionStatus isSignedIn = " + googleAccountManager.getSignedIn());
+  public void updateUiFromConnectionStatus(boolean isSignInComplete) {
+    Log.d(TAG, "updateUiFromConnectionStatus isSignedIn = " + isSignInComplete);
     invalidateOptionsMenu();
 
     // When initial connection fails, there is no fragment yet.
     GoBlobBaseFragment currentFragment = getCurrentFragment();
     if (currentFragment != null) {
-      currentFragment.updateFromConnectionStatus();
+      currentFragment.updateFromConnectionStatus(isSignInComplete);
     }
   }
 
@@ -243,27 +248,24 @@ public class MainActivity extends AppCompatActivity
   }
 
   private void signIn() {
-    GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
-        GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+    signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
     signInClient.silentSignIn().addOnCompleteListener(this,
         task -> {
           if (task.isSuccessful()) {
             // The signed in account is stored in the task's result.
+            googleAccountManager.onSignInSuccess();
           } else {
             // Player will need to sign-in explicitly using via UI
             Intent intent = signInClient.getSignInIntent();
             startActivityForResult(intent, RC_SIGN_IN);
           }
-          updateFromConnectionStatus();
         });
   }
 
   private void signOut() {
     Log.d(TAG, "signOut");
-    GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
-        GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
     signInClient.signOut().addOnCompleteListener(this,
-        task -> updateFromConnectionStatus());
+        task -> updateUiFromConnectionStatus(false));
   }
 
   private GoBlobBaseFragment getCurrentFragment() {
@@ -369,4 +371,8 @@ public class MainActivity extends AppCompatActivity
     waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
   }
 
+  @Override
+  public void accountStateChanged(boolean isSignInComplete) {
+    updateUiFromConnectionStatus(isSignInComplete);
+  }
 }

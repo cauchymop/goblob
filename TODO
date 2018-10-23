@@ -1,5 +1,7 @@
 - In Progress
-   - TODO: Continue de-deprecating PlayGames (Bruno is dead!) - Starting with AndroidGameRepository
+   - TODO: Fix Dagger Issue: Understand why does not work with @NotNull in module methods but works with @Named("Not Null")
+   - TODO: Continue de-deprecating PlayGames (Bruno is dead!)
+   - TODO: Fix/generify startActivityForResult
 
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance

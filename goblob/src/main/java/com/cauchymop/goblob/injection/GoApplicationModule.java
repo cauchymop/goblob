@@ -10,6 +10,7 @@ import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
+import com.cauchymop.goblob.model.GoogleAccountManager;
 import com.cauchymop.goblob.presenter.AchievementManager;
 import com.cauchymop.goblob.presenter.FeedbackSender;
 import com.cauchymop.goblob.presenter.GameMessageGenerator;
@@ -19,20 +20,22 @@ import com.cauchymop.goblob.ui.AndroidGameRepository;
 import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.games.AchievementsClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.Player;
+import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.TurnBasedMultiplayerClient;
+import com.google.common.base.Preconditions;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
-
-import static com.google.android.gms.games.Games.Players;
 
 /**
  * Module to configure dependency injection.
@@ -70,21 +73,38 @@ public class GoApplicationModule {
   }
 
   @Provides
+  @Nullable
   public GoogleSignInAccount getSignedInAccount(Context context) {
     return GoogleSignIn.getLastSignedInAccount(context);
   }
 
   @Provides
-  public TurnBasedMultiplayerClient getTurnBasedMultiplayerClient(Context context, GoogleSignInAccount account) {
+  @NonNull
+  public GoogleSignInAccount getNotNullableSignedInAccount(@Nullable GoogleSignInAccount googleSignInAccount) {
+    return Preconditions.checkNotNull(googleSignInAccount);
+  }
+
+  @Provides
+  public TurnBasedMultiplayerClient getTurnBasedMultiplayerClient(Context context, @NonNull GoogleSignInAccount account) {
     return Games.getTurnBasedMultiplayerClient(context, account);
   }
 
   @Provides
+  public PlayersClient getPlayerClient(Context context, @NonNull GoogleSignInAccount account) {
+    return Games.getPlayersClient(context, account);
+  }
+
+  @Provides
+  public AchievementsClient getAchievementsClient(Context context, @NonNull GoogleSignInAccount account) {
+    return Games.getAchievementsClient(context, account);
+  }
+
+  @Provides
   @Named("PlayerOneDefaultName")
-  public String providePlayerOneDefaultName(GoogleApiClient googleApiClient,
+  public String providePlayerOneDefaultName(GoogleAccountManager googleAccountManager,
       AvatarManager avatarManager) {
-    if (googleApiClient.isConnected()) {
-      Player currentPlayer = Players.getCurrentPlayer(googleApiClient);
+    if (googleAccountManager.getSignInComplete()) {
+      Player currentPlayer = googleAccountManager.getCurrentPlayer();
       avatarManager.setAvatarUri(currentPlayer.getDisplayName(), currentPlayer.getIconImageUri());
       return currentPlayer.getDisplayName();
     } else {
