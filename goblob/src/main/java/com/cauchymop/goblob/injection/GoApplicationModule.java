@@ -31,7 +31,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import dagger.Binds;
 import dagger.Module;
@@ -79,23 +78,23 @@ public class GoApplicationModule {
   }
 
   @Provides
-  @NonNull
+  @Named("Not Null")
   public GoogleSignInAccount getNotNullableSignedInAccount(@Nullable GoogleSignInAccount googleSignInAccount) {
     return Preconditions.checkNotNull(googleSignInAccount);
   }
 
   @Provides
-  public TurnBasedMultiplayerClient getTurnBasedMultiplayerClient(Context context, @NonNull GoogleSignInAccount account) {
+  public TurnBasedMultiplayerClient getTurnBasedMultiplayerClient(Context context, @Named("Not Null") GoogleSignInAccount account) {
     return Games.getTurnBasedMultiplayerClient(context, account);
   }
 
   @Provides
-  public PlayersClient getPlayerClient(Context context, @NonNull GoogleSignInAccount account) {
+  public PlayersClient getPlayerClient(Context context, @Named("Not Null") GoogleSignInAccount account) {
     return Games.getPlayersClient(context, account);
   }
 
   @Provides
-  public AchievementsClient getAchievementsClient(Context context, @NonNull GoogleSignInAccount account) {
+  public AchievementsClient getAchievementsClient(Context context, @Named("Not Null") GoogleSignInAccount account) {
     return Games.getAchievementsClient(context, account);
   }
 

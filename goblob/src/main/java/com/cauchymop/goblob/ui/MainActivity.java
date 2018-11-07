@@ -373,6 +373,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public void accountStateChanged(boolean isSignInComplete) {
+    invalidateOptionsMenu();
     updateUiFromConnectionStatus(isSignInComplete);
   }
 }

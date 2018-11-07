@@ -50,8 +50,18 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   init {
     loadLegacyLocalGame()
     fireGameListChanged()
+    googleAccountManager.addAccountStateListener(object: AccountStateListener {
+      override fun accountStateChanged(isSignInComplete: Boolean) {
+        if (isSignInComplete) {
+          initTurnBasedUpdateListeners()
+        }
+      }
+    })
+  }
+
+  private fun initTurnBasedUpdateListeners() {
     val turnBasedClient = turnBasedClientProvider.get()
-    turnBasedClient.registerTurnBasedMatchUpdateCallback(object :TurnBasedMatchUpdateCallback() {
+    turnBasedClient.registerTurnBasedMatchUpdateCallback(object : TurnBasedMatchUpdateCallback() {
       override fun onTurnBasedMatchReceived(turnBasedMatch: TurnBasedMatch) {
         Log.d(TAG, "onTurnBasedMatchReceived")
         val gameData = getGameData(turnBasedMatch)

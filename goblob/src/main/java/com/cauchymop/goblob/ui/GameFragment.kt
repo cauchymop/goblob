@@ -26,6 +26,7 @@ class GameFragment : GoBlobBaseFragment(), GameView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        component.inject(this)
         setHasOptionsMenu(true)
     }
 

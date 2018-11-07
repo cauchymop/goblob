@@ -5,8 +5,9 @@ import com.google.android.gms.games.Player
 import com.google.android.gms.games.PlayersClient
 import javax.inject.Inject
 import javax.inject.Provider
+import javax.inject.Singleton
 
-
+@Singleton
 class GoogleAccountManager @Inject constructor(
     private val signInAccountProvider: Provider<GoogleSignInAccount?>,
     private val playersClientProvider: Provider<PlayersClient>) {
@@ -14,15 +15,21 @@ class GoogleAccountManager @Inject constructor(
   private var player: Player? = null
   private val listeners = mutableListOf<AccountStateListener>()
 
-  val signedInAccount = signInAccountProvider.get()
-  var signInComplete = player != null
-  val currentPlayerId = player!!.playerId
+  val signedInAccount
+    get() = signInAccountProvider.get()
+
+  val signInComplete
+      get() = player != null
+
+  val currentPlayerId
+    get() = player!!.playerId
+
   val currentPlayer = player
 
   fun onSignInSuccess() {
     playersClientProvider.get().getCurrentPlayer().addOnSuccessListener { player ->
       this.player = player
-      fireStateChanged(true);
+      fireStateChanged(true)
     }
   }
 
