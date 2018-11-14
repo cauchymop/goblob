@@ -50,7 +50,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   init {
     loadLegacyLocalGame()
     fireGameListChanged()
-    googleAccountManager.addAccountStateListener(object: AccountStateListener {
+    googleAccountManager.addAccountStateListener(object : AccountStateListener {
       override fun accountStateChanged(isSignInComplete: Boolean) {
         if (isSignInComplete) {
           initTurnBasedUpdateListeners()
@@ -159,11 +159,8 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 
     val removedMatchIds = clearRemoteGamesIfAbsent(games)
     val selectedIsGone = removedMatchIds.contains(currentMatchId)
-    var changed = removedMatchIds.isNotEmpty()
-    for (game in games) {
-      changed = changed || saveToCache(game)
-    }
-    if (changed) {
+    val changedCount = removedMatchIds.size + games.filter { saveToCache(it) }.count()
+    if (changedCount > 0) {
       forceCacheRefresh()
     }
 
@@ -173,7 +170,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       selectGame(it)
     }
 
-    Log.d(TAG, " ===> (in refreshRemoteGameListFromServer) changed is $changed and selectedIsGone is $selectedIsGone")
+    Log.d(TAG, " ===> (in refreshRemoteGameListFromServer) changedCount is $changedCount and selectedIsGone is $selectedIsGone")
     if (selectedIsGone) {
       // selected game was removed, we select new game instead
       selectGame(NO_MATCH_ID)
