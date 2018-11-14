@@ -37,8 +37,8 @@ dependencies {
     kapt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     kapt "com.google.dagger:dagger-compiler:${dagger_version}"
     api project(':goblobBase')
-    androidTestImplementation 'androidx.test:runner:1.1.0-beta01'
-    androidTestImplementation 'androidx.test:rules:1.1.0-beta01'
+    androidTestImplementation 'androidx.test:runner:1.1.0'
+    androidTestImplementation 'androidx.test:rules:1.1.0'
     androidTestImplementation("androidx.test.espresso:espresso-core:${espresso_version}")
 }
 
