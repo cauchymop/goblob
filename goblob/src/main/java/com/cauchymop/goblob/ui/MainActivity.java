@@ -373,6 +373,9 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public void accountStateChanged(boolean isSignInComplete) {
+    if (isSignInComplete) {
+      androidGameRepository.refreshRemoteGameListFromServer();
+    }
     invalidateOptionsMenu();
     updateUiFromConnectionStatus(isSignInComplete);
   }

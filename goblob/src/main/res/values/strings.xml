@@ -57,7 +57,7 @@
   <string name="configuration_message_accept_or_change">Please, validate or change the game settings</string>
   <string name="app_id" translatable="false">26793315354</string>
   <string name="about">About</string>
-  <string name="about_text"><![CDATA[<h1>Game of Go</h1>Version %1$s<br>by CauchyMop<br>(Jérôme Abela & Olivier Bonal)<br><div>Icon made from <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> is licensed by CC&nbsp;BY&nbsp;3.0</div>]]></string>
+  <string name="about_text"><![CDATA[<h1>%1$s</h1>Version %2$s<br>by CauchyMop<br>(Jérôme Abela & Olivier Bonal)<br><div>Icon made from <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> is licensed by CC&nbsp;BY&nbsp;3.0</div>]]></string>
 
   <string-array name="handicap_values" translatable="false">
     <item>@string/handicap_even</item>

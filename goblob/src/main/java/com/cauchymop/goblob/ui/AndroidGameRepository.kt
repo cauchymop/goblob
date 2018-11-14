@@ -132,7 +132,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     prefs.edit().remove(GAME_DATA).apply()
   }
 
-  private fun refreshRemoteGameListFromServer() {
+  fun refreshRemoteGameListFromServer() {
     Log.d(TAG, "refreshRemoteGameListFromServer -  currentMatchId = $currentMatchId")
     val requestId = System.currentTimeMillis()
 
