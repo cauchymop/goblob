@@ -19,18 +19,24 @@ class GoogleAccountManager @Inject constructor(
     get() = signInAccountProvider.get()
 
   val signInComplete
-      get() = player != null
+    get() = player != null
 
   val currentPlayerId
     get() = player!!.playerId
 
-  val currentPlayer = player
+  val currentPlayer
+    get() = player
 
   fun onSignInSuccess() {
     playersClientProvider.get().getCurrentPlayer().addOnSuccessListener { player ->
       this.player = player
       fireStateChanged(true)
     }
+  }
+
+  fun onSignOut() {
+    this.player = null
+    fireStateChanged(false)
   }
 
   private fun fireStateChanged(isSignInComplete: Boolean) {

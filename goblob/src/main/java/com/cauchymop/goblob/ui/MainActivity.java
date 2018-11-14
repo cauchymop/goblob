@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity
   private void signOut() {
     Log.d(TAG, "signOut");
     signInClient.signOut().addOnCompleteListener(this,
-        task -> updateUiFromConnectionStatus(false));
+        task -> googleAccountManager.onSignOut());
   }
 
   private GoBlobBaseFragment getCurrentFragment() {

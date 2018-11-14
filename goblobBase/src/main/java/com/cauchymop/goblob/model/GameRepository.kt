@@ -55,7 +55,7 @@ abstract class GameRepository(
 
   protected fun saveToCache(gameData: GameData): Boolean {
     log("saveToCache " + gameData.matchId)
-    val existingGame = gameCache.games[gameData.matchId]
+    val existingGame = gameCache.gamesMap[gameData.matchId]
     log(" -> existingGame found = " + (existingGame != null))
     val changed = existingGame == null || gameData.sequenceNumber > existingGame.sequenceNumber
     if (changed) {
@@ -80,8 +80,8 @@ abstract class GameRepository(
   protected abstract fun publishRemoteGameState(gameData: GameData): Boolean
 
   protected fun removeFromCache(matchId: String) {
-    log("removeFromCache " + matchId)
-    gameCache.mutableGames.remove(matchId)
+    log("removeFromCache $matchId")
+    gameCache.removeGames(matchId)
     forceCacheRefresh()
   }
 
