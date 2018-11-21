@@ -158,19 +158,21 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     }
 
     val removedMatchIds = clearRemoteGamesIfAbsent(games)
+    Log.d(TAG, "removedMatchIds: $removedMatchIds")
     val selectedIsGone = removedMatchIds.contains(currentMatchId)
+    Log.d(TAG, "selectedIsGone is $selectedIsGone")
     val changedCount = removedMatchIds.size + games.filter { saveToCache(it) }.count()
+    Log.d(TAG, "changedCount is $changedCount")
     if (changedCount > 0) {
       forceCacheRefresh()
     }
 
     // Select invitation if one has arrived
-    invitationMatchId?.let {
-      invitationMatchId = null
+    pendingMatchId?.let {
+      pendingMatchId = null
       selectGame(it)
     }
 
-    Log.d(TAG, " ===> (in refreshRemoteGameListFromServer) changedCount is $changedCount and selectedIsGone is $selectedIsGone")
     if (selectedIsGone) {
       // selected game was removed, we select new game instead
       selectGame(NO_MATCH_ID)

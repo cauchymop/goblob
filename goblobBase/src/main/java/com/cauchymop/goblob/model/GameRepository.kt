@@ -3,10 +3,7 @@ package com.cauchymop.goblob.model
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.google.common.base.Objects
-import com.google.common.base.Predicate
-import com.google.common.base.Predicates.not
 import com.google.common.collect.ImmutableSet
-import com.google.common.collect.Iterables.filter
 import com.google.common.collect.Lists
 import dagger.Lazy
 import javax.inject.Named
@@ -24,21 +21,19 @@ abstract class GameRepository(
     protected val gameDatas: GameDatas,
     protected val gameCache: PlayGameData.GameList.Builder) {
 
-  private val isLocalTurnPredicate = Predicate<GameData> { gameData -> gameDatas.isLocalTurn(gameData) }
-
   var currentMatchId: String = NO_MATCH_ID
     private set
-  var invitationMatchId: String? = null
+  var pendingMatchId: String? = null
 
   private val gameListlisteners = Lists.newArrayList<GameListListener>()
   private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
   private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
 
   val myTurnGames: Iterable<GameData>
-    get() = filter<GameData>(gameCache.gamesMap.values, isLocalTurnPredicate)
+    get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)
 
   val theirTurnGames: Iterable<GameData>
-    get() = filter<GameData>(gameCache.gamesMap.values, not<GameData>(isLocalTurnPredicate))
+    get() = gameCache.gamesMap.values.filterNot(gameDatas::isLocalTurn)
 
   private val currentGame: GameData?
     get() = gameCache.gamesMap[currentMatchId]

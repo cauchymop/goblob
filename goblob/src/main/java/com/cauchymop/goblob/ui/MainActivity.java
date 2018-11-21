@@ -361,6 +361,7 @@ public class MainActivity extends AppCompatActivity
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
         matchSpinner.setSelection(index);
+        return;
       }
     }
 

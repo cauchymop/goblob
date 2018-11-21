@@ -1,4 +1,5 @@
 - In Progress
+   - TODO: We should set pendingMatchId for invites and new games from check matches
    - TODO: Continue de-deprecating PlayGames (Bruno is dead!) - It seems to work now, need more test and check Selected finished game from  "Check Games UI"
    - TODO: Fix/generify startActivityForResult
 
