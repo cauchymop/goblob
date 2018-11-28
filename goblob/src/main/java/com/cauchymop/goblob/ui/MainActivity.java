@@ -25,6 +25,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.TurnBasedMultiplayerClient;
+import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -87,7 +89,7 @@ public class MainActivity extends AppCompatActivity
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d(TAG, "onCreate");
+    Log.d(TAG, "onCreate - intent = " + getIntent().getExtras());
 
     setContentView(R.layout.activity_main);
     unbinder = ButterKnife.bind(this);
@@ -297,12 +299,11 @@ public class MainActivity extends AppCompatActivity
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
-      Games.getTurnBasedMultiplayerClient(this, googleAccountManager.getSignedInAccount()).getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
+      getTurnBasedMultiplayerClient().getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
           task -> startActivityForResult(task.getResult(), RC_SELECT_PLAYER)
       );
     }
   }
-
 
   @Override
   public void gameListChanged() {
@@ -376,8 +377,21 @@ public class MainActivity extends AppCompatActivity
   public void accountStateChanged(boolean isSignInComplete) {
     if (isSignInComplete) {
       androidGameRepository.refreshRemoteGameListFromServer();
+      androidGameRepository.publishUnpublishedGames();
+      Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
+        // Retrieve the TurnBasedMatch from the connectionHint in order to select it
+        if (bundle != null) {
+          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
+          Log.d(TAG, " ==> We have an invite! " + turnBasedMatch);
+          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
+        }
+      });
     }
     invalidateOptionsMenu();
     updateUiFromConnectionStatus(isSignInComplete);
+  }
+
+  private TurnBasedMultiplayerClient getTurnBasedMultiplayerClient() {
+    return Games.getTurnBasedMultiplayerClient(this, googleAccountManager.getSignedInAccount());
   }
 }

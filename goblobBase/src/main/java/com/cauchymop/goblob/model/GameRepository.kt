@@ -2,7 +2,6 @@ package com.cauchymop.goblob.model
 
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
-import com.google.common.base.Objects
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Lists
 import dagger.Lazy
@@ -82,9 +81,14 @@ abstract class GameRepository(
 
   fun selectGame(matchId: String) {
     log("selectGame matchId = " + matchId)
-    if (Objects.equal(currentMatchId, matchId)) {
+    if (currentMatchId == matchId) {
       return
     }
+    if (matchId != NO_MATCH_ID && !gameCache.containsGames(matchId)) {
+      pendingMatchId = matchId
+      return
+    }
+
     currentMatchId = matchId
     if (matchId == NO_MATCH_ID) {
       fireGameSelected(null)
