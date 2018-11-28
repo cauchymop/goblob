@@ -1,9 +1,8 @@
 - In Progress
-   - TODO: Final Testing and publish app!!!
-   - TODO: Check bug on Marking Dead Stones if first player approve without marking any stone (right now the next player does not have his say/turn as nothing has changed)
+   - TODO: name textfield changes not taken into account unless forcing focus change to another field, clicking button is not enough
+   - TODO: Fix/generify startActivityForResult
 
    - TODO: Write GameRepository Tests
-   - TODO: Upgrade more stuff (Firebase, JetPack ...)
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first

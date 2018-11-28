@@ -2,11 +2,7 @@ package com.cauchymop.goblob.model
 
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
-import com.google.common.base.Objects
-import com.google.common.base.Predicate
-import com.google.common.base.Predicates.not
 import com.google.common.collect.ImmutableSet
-import com.google.common.collect.Iterables.filter
 import com.google.common.collect.Lists
 import dagger.Lazy
 import javax.inject.Named
@@ -24,21 +20,19 @@ abstract class GameRepository(
     protected val gameDatas: GameDatas,
     protected val gameCache: PlayGameData.GameList.Builder) {
 
-  private val isLocalTurnPredicate = Predicate<GameData> { gameData -> gameDatas.isLocalTurn(gameData) }
-
   var currentMatchId: String = NO_MATCH_ID
     private set
-  var invitationMatchId: String? = null
+  var pendingMatchId: String? = null
 
   private val gameListlisteners = Lists.newArrayList<GameListListener>()
   private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
   private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
 
   val myTurnGames: Iterable<GameData>
-    get() = filter<GameData>(gameCache.gamesMap.values, isLocalTurnPredicate)
+    get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)
 
   val theirTurnGames: Iterable<GameData>
-    get() = filter<GameData>(gameCache.gamesMap.values, not<GameData>(isLocalTurnPredicate))
+    get() = gameCache.gamesMap.values.filterNot(gameDatas::isLocalTurn)
 
   private val currentGame: GameData?
     get() = gameCache.gamesMap[currentMatchId]
@@ -55,7 +49,7 @@ abstract class GameRepository(
 
   protected fun saveToCache(gameData: GameData): Boolean {
     log("saveToCache " + gameData.matchId)
-    val existingGame = gameCache.games[gameData.matchId]
+    val existingGame = gameCache.gamesMap[gameData.matchId]
     log(" -> existingGame found = " + (existingGame != null))
     val changed = existingGame == null || gameData.sequenceNumber > existingGame.sequenceNumber
     if (changed) {
@@ -80,16 +74,21 @@ abstract class GameRepository(
   protected abstract fun publishRemoteGameState(gameData: GameData): Boolean
 
   protected fun removeFromCache(matchId: String) {
-    log("removeFromCache " + matchId)
-    gameCache.mutableGames.remove(matchId)
+    log("removeFromCache $matchId")
+    gameCache.removeGames(matchId)
     forceCacheRefresh()
   }
 
   fun selectGame(matchId: String) {
     log("selectGame matchId = " + matchId)
-    if (Objects.equal(currentMatchId, matchId)) {
+    if (currentMatchId == matchId) {
       return
     }
+    if (matchId != NO_MATCH_ID && !gameCache.containsGames(matchId)) {
+      pendingMatchId = matchId
+      return
+    }
+
     currentMatchId = matchId
     if (matchId == NO_MATCH_ID) {
       fireGameSelected(null)

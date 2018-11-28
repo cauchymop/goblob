@@ -10,15 +10,15 @@ import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase
 import com.cauchymop.goblob.proto.PlayGameData.GameList
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.games.Games
-import com.google.android.gms.games.Games.TurnBasedMultiplayer
+import com.google.android.gms.games.TurnBasedMultiplayerClient
 import com.google.android.gms.games.multiplayer.Multiplayer
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig
-import com.google.android.gms.games.multiplayer.turnbased.*
+import com.google.android.gms.games.multiplayer.turnbased.LoadMatchesResponse
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchUpdateCallback
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.TextFormat
@@ -26,6 +26,7 @@ import dagger.Lazy
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Provider
 import javax.inject.Singleton
 
 /**
@@ -35,20 +36,47 @@ import javax.inject.Singleton
 private const val GAME_DATA = "gameData"
 private const val GAMES = "games"
 private const val TAG = "AndroidGameRepository"
-private const val CACHE_CHANGED_MESSAGE = 1
-private const val CACHE_CHANGED_DELAY: Long = 100
 private const val IGNORED_VALUE = ""
 
 @Singleton
 class AndroidGameRepository @Inject
 constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
-            private val googleApiClient: GoogleApiClient, private val avatarManager: AvatarManager, analytics: Analytics,
+            private val googleAccountManager: GoogleAccountManager,
+            private val turnBasedClientProvider: Provider<TurnBasedMultiplayerClient>,
+            private val avatarManager: AvatarManager, analytics: Analytics,
             @Named("PlayerOneDefaultName") playerOneDefaultName: Lazy<String>,
-            @Named("PlayerTwoDefaultName") playerTwoDefaultName: String) : GameRepository(analytics, playerOneDefaultName, playerTwoDefaultName, gameDatas, gameCache = loadGameCache(prefs)), OnTurnBasedMatchUpdateReceivedListener {
+            @Named("PlayerTwoDefaultName") playerTwoDefaultName: String) : GameRepository(analytics, playerOneDefaultName, playerTwoDefaultName, gameDatas, gameCache = loadGameCache(prefs)) {
 
   init {
     loadLegacyLocalGame()
     fireGameListChanged()
+    googleAccountManager.addAccountStateListener(object : AccountStateListener {
+      override fun accountStateChanged(isSignInComplete: Boolean) {
+        if (isSignInComplete) {
+          initTurnBasedUpdateListeners()
+        }
+      }
+    })
+  }
+
+  private fun initTurnBasedUpdateListeners() {
+    val turnBasedClient = turnBasedClientProvider.get()
+    turnBasedClient.registerTurnBasedMatchUpdateCallback(object : TurnBasedMatchUpdateCallback() {
+      override fun onTurnBasedMatchReceived(turnBasedMatch: TurnBasedMatch) {
+        Log.d(TAG, "onTurnBasedMatchReceived")
+        val gameData = getGameData(turnBasedMatch)
+        if (gameData != null) {
+          if (saveToCache(gameData)) {
+            forceCacheRefresh()
+          }
+        }
+      }
+
+      override fun onTurnBasedMatchRemoved(matchId: String) {
+        Log.d(TAG, "onTurnBasedMatchRemoved: $matchId")
+        removeFromCache(matchId)
+      }
+    })
   }
 
   override fun forceCacheRefresh() {
@@ -64,15 +92,16 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     editor.apply()
   }
 
-  public override fun publishRemoteGameState(gameData: GameData): Boolean {
-    if (googleApiClient.isConnected) {
+  override fun publishRemoteGameState(gameData: GameData): Boolean {
+    if (googleAccountManager.signInComplete) {
       Log.d(TAG, "publishRemoteGameState: $gameData")
       val turnParticipantId = gameDatas.getCurrentPlayer(gameData).id
       val gameDataBytes = gameData.toByteArray()
       Log.d(TAG, "takeTurn $turnParticipantId")
-      TurnBasedMultiplayer.takeTurn(googleApiClient, gameData.matchId, gameDataBytes, turnParticipantId)
+      val turnBasedClient = turnBasedClientProvider.get()
+      turnBasedClient.takeTurn(gameData.matchId, gameDataBytes, turnParticipantId)
       if (gameData.phase == Phase.FINISHED) {
-        TurnBasedMultiplayer.finishMatch(googleApiClient, gameData.matchId)
+        turnBasedClient.finishMatch(gameData.matchId)
         fireGameSelected(gameData)
       }
       return true
@@ -107,53 +136,49 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     Log.d(TAG, "refreshRemoteGameListFromServer -  currentMatchId = $currentMatchId")
     val requestId = System.currentTimeMillis()
 
-    val matchListResult = TurnBasedMultiplayer.loadMatchesByStatus(googleApiClient,
-        Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
-        intArrayOf(TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN))
-    val matchListResultCallBack = { loadMatchesResult: TurnBasedMultiplayer.LoadMatchesResult ->
-      Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId))
-      val matches = loadMatchesResult.getMatches()
+    val turnBasedClient = turnBasedClientProvider.get()
+    val matchListResult = turnBasedClient.loadMatchesByStatus(Multiplayer.SORT_ORDER_SOCIAL_AGGREGATION,
+        intArrayOf(TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN, TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN, TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE))
+    matchListResult.addOnCompleteListener { task ->
+      task.result?.get()?.let { matchResponseCallback(requestId, it) }
 
-      val allMatches = ImmutableList.builder<TurnBasedMatch>()
-          .addAll(denullify(matches.getMyTurnMatches()))
-          .addAll(denullify(matches.getTheirTurnMatches()))
-          .addAll(denullify(matches.getCompletedMatches()))
-          .build()
-
-      val games = HashSet<GameData>()
-      for (match in allMatches) {
-        updateAvatars(match)
-        val gameData = getGameData(match)
-        if (gameData != null) {
-          games.add(gameData)
-        }
-      }
-
-      val removedMatchIds = clearRemoteGamesIfAbsent(games)
-      val selectedIsGone = removedMatchIds.contains(currentMatchId)
-      var changed = removedMatchIds.isNotEmpty()
-      for (game in games) {
-        changed = changed || saveToCache(game)
-      }
-      if (changed) {
-        forceCacheRefresh()
-      }
-
-      // Select invitation if one has arrived
-      invitationMatchId?.let {
-        invitationMatchId = null
-        selectGame(it)
-      }
-
-      Log.d(TAG, " ===> (in refreshRemoteGameListFromServer) changed is $changed and selectedIsGone is $selectedIsGone")
-      if (selectedIsGone) {
-        // selected game was removed, we select new game instead
-        selectGame(NO_MATCH_ID)
-      }
-
-      loadMatchesResult.release()
     }
-    matchListResult.setResultCallback(matchListResultCallBack)
+  }
+
+  private fun matchResponseCallback(requestId: Long, loadMatchesResponse: LoadMatchesResponse) {
+    Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId))
+    val allMatches = with(loadMatchesResponse) { myTurnMatches.asSequence() + theirTurnMatches.asSequence() + completedMatches.asSequence() }
+    val games = HashSet<GameData>()
+    for (match in allMatches) {
+      updateAvatars(match)
+      val gameData = getGameData(match)
+      if (gameData != null) {
+        games.add(gameData)
+      }
+    }
+
+    val removedMatchIds = clearRemoteGamesIfAbsent(games)
+    Log.d(TAG, "removedMatchIds: $removedMatchIds")
+    val selectedIsGone = removedMatchIds.contains(currentMatchId)
+    Log.d(TAG, "selectedIsGone is $selectedIsGone")
+    val changedCount = removedMatchIds.size + games.filter { saveToCache(it) }.count()
+    Log.d(TAG, "changedCount is $changedCount")
+    if (changedCount > 0) {
+      forceCacheRefresh()
+    }
+
+    // Select invitation if one has arrived
+    pendingMatchId?.let {
+      pendingMatchId = null
+      selectGame(it)
+    }
+
+    if (selectedIsGone) {
+      // selected game was removed, we select new game instead
+      selectGame(NO_MATCH_ID)
+    }
+
+    loadMatchesResponse.release()
   }
 
   private fun clearRemoteGamesIfAbsent(games: Set<GameData>): List<String> {
@@ -167,10 +192,6 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       val player = participant.player
       avatarManager.setAvatarUri(player.displayName, player.iconImageUri)
     }
-  }
-
-  private fun denullify(nullableIterable: TurnBasedMatchBuffer?): Iterable<TurnBasedMatch> {
-    return nullableIterable ?: ImmutableList.of()
   }
 
   private fun getGameData(turnBasedMatch: TurnBasedMatch): GameData? {
@@ -193,7 +214,8 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   private fun handleMatchStatusComplete(turnBasedMatch: TurnBasedMatch) {
     val myTurn = turnBasedMatch.turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN
     if (myTurn && turnBasedMatch.status == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
-      TurnBasedMultiplayer.finishMatch(googleApiClient, turnBasedMatch.matchId)
+      val turnBasedClient = turnBasedClientProvider.get()
+      turnBasedClient.finishMatch(turnBasedMatch.matchId)
     }
   }
 
@@ -239,17 +261,15 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 
     // No phase (version < 2)
     if (gameData.phase == Phase.UNKNOWN) {
-      val result: Phase
-      if (gameData.hasMatchEndStatus()) {
+      gameData.phase = if (gameData.hasMatchEndStatus()) {
         if (gameData.matchEndStatus.gameFinished) {
-          result = Phase.FINISHED
+          Phase.FINISHED
         } else {
-          result = Phase.DEAD_STONE_MARKING
+          Phase.DEAD_STONE_MARKING
         }
       } else {
-        result = Phase.IN_GAME
+        Phase.IN_GAME
       }
-      gameData.phase = result
     }
 
     // No turn (version < 2)
@@ -289,9 +309,8 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     throw RuntimeException("Our TurnBasedMatch should contain 2 players!")
   }
 
-  private fun getMyId(turnBasedMatch: TurnBasedMatch): String {
-    return turnBasedMatch.getParticipantId(Games.Players.getCurrentPlayerId(googleApiClient))
-  }
+  private fun getMyId(turnBasedMatch: TurnBasedMatch) =
+      turnBasedMatch.getParticipantId(googleAccountManager.currentPlayerId)
 
   private fun createGoPlayer(match: TurnBasedMatch, participantId: String,
                              isLocal: Boolean): PlayGameData.GoPlayer {
@@ -302,27 +321,12 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     return goPlayer
   }
 
-  override fun onTurnBasedMatchReceived(turnBasedMatch: TurnBasedMatch) {
-    Log.d(TAG, "onTurnBasedMatchReceived")
-    val gameData = getGameData(turnBasedMatch)
-    if (gameData != null) {
-      if (saveToCache(gameData)) {
-        forceCacheRefresh()
-      }
-    }
-  }
-
-  override fun onTurnBasedMatchRemoved(matchId: String) {
-    Log.d(TAG, "onTurnBasedMatchRemoved: " + matchId)
-    removeFromCache(matchId)
-  }
-
   fun handlePlayersSelected(intent: Intent) {
     Log.d(TAG, "handlePlayersSelected")
 
     // get the invitee list
     val invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS)
-    Log.d(TAG, "Invitees: " + invitees)
+    Log.d(TAG, "Invitees: $invitees")
 
     // get the automatch criteria
     var autoMatchCriteria: Bundle? = null
@@ -341,18 +345,19 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
         .setAutoMatchCriteria(autoMatchCriteria).build()
 
     // kick the match off
-    TurnBasedMultiplayer.createMatch(googleApiClient, turnBasedMatchConfig)
-        .setResultCallback(ResultCallback { initiateMatchResult ->
-          Log.d(TAG, "InitiateMatchResult " + initiateMatchResult)
-          if (!initiateMatchResult.status.isSuccess) {
-            return@ResultCallback
-          }
-          val turnBasedMatch = initiateMatchResult.match
-          createNewGameData(turnBasedMatch)
+    val turnBasedClient = turnBasedClientProvider.get()
+    turnBasedClient.createMatch(turnBasedMatchConfig).addOnCompleteListener { initiateMatchResult ->
+      Log.d(TAG, "InitiateMatchResult $initiateMatchResult")
+      if (!initiateMatchResult.isSuccessful) {
+        return@addOnCompleteListener
+      }
+      initiateMatchResult.result?.let {
+        createNewGameData(it)
 
-          Log.d(TAG, "Game created...")
-          selectGame(turnBasedMatch.matchId)
-        })
+        Log.d(TAG, "Game created...")
+        selectGame(it.matchId)
+      }
+    }
   }
 
   fun handleCheckMatchesResult(responseCode: Int, intent: Intent?) {
@@ -379,6 +384,6 @@ private fun loadGameCache(sharedPreferences: SharedPreferences): GameList.Builde
     Log.e(TAG, "Error parsing local GameList: " + e.message)
   }
 
-  Log.d(TAG, "loadGameList: " + gameListBuilder.games.size + " games loaded.")
+  Log.d(TAG, "loadGameList: " + gameListBuilder.gamesCount + " games loaded.")
   return gameListBuilder
 }

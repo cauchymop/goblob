@@ -3,6 +3,7 @@ package com.cauchymop.goblob.injection;
 import com.cauchymop.goblob.ui.GameFragment;
 import com.cauchymop.goblob.ui.InGameViewAndroid;
 import com.cauchymop.goblob.ui.MainActivity;
+import com.cauchymop.goblob.ui.PlayerChoiceFragment;
 
 import javax.inject.Singleton;
 
@@ -19,4 +20,5 @@ public interface GoApplicationComponent {
   void inject(MainActivity mainActivity);
   void inject(GameFragment gameFragment);
   void inject(InGameViewAndroid inGameViewAndroid);
+  void inject(PlayerChoiceFragment playerChoiceFragment);
 }

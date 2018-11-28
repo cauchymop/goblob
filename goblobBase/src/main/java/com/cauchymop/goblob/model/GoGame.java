@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import kotlin.Pair;
 
@@ -164,7 +165,7 @@ public class GoGame implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("GoGame(size=%d, moves=%s)", getBoardSize(), getMoveHistory());
+    return String.format(Locale.UK,"GoGame(size=%d, moves=%s)", getBoardSize(), getMoveHistory());
   }
 
   @Override

@@ -10,28 +10,34 @@ import android.view.View;
 import android.widget.Spinner;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameListListener;
 import com.cauchymop.goblob.model.GameSelectionListener;
-import com.cauchymop.goblob.model.GoogleApiClientListener;
-import com.cauchymop.goblob.model.GoogleApiClientManager;
+import com.cauchymop.goblob.model.GoogleAccountManager;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.PlayersClient;
+import com.google.android.gms.games.TurnBasedMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.example.games.basegameutils.BaseGameUtils;
 
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
@@ -42,11 +48,9 @@ import butterknife.Unbinder;
 
 import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
-import static com.google.android.gms.games.Games.Achievements;
-import static com.google.android.gms.games.Games.TurnBasedMultiplayer;
 
 public class MainActivity extends AppCompatActivity
-    implements GoogleApiClientListener, GameListListener, GameChangeListener, GameSelectionListener {
+    implements GameListListener, GameChangeListener, GameSelectionListener, AccountStateListener {
 
   private static final int RC_REQUEST_ACHIEVEMENTS = 1;
   private static final int RC_SELECT_PLAYER = 2;
@@ -65,25 +69,27 @@ public class MainActivity extends AppCompatActivity
 
   private MatchesAdapter navigationSpinnerAdapter;
   private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
-  private boolean resolvingError;
-  private boolean signInClicked;
-  private boolean autoStartSignInFlow = true;
 
-  @Inject
-  GoogleApiClient googleApiClient;
   @Inject
   GameDatas gameDatas;
   @Inject
   AndroidGameRepository androidGameRepository;
   @Inject
-  GoogleApiClientManager googleApiClientManager;
+  GoogleAccountManager googleAccountManager;
+  @Inject
+  Provider<TurnBasedMultiplayerClient> turnBasedClientProvider;
+  @Inject
+  Provider<PlayersClient> playersClientProvider;
+
   private Unbinder unbinder;
   private GameFragment gameFragment;
+  private GoogleSignInClient signInClient;
+
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.d(TAG, "onCreate");
+    Log.d(TAG, "onCreate - intent = " + getIntent().getExtras());
 
     setContentView(R.layout.activity_main);
     unbinder = ButterKnife.bind(this);
@@ -95,7 +101,7 @@ public class MainActivity extends AppCompatActivity
     androidGameRepository.addGameListListener(this);
     androidGameRepository.addGameChangeListener(this);
     androidGameRepository.addGameSelectionListener(this);
-    googleApiClientManager.registerGoogleApiClientListener(this);
+    googleAccountManager.addAccountStateListener(this);
 
     if (savedInstanceState != null) {
       androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
@@ -107,23 +113,13 @@ public class MainActivity extends AppCompatActivity
     super.onStart();
     Log.d(TAG, "onStart");
     updateMatchSpinner();
-    googleApiClient.connect();
-  }
-
-  @Override
-  protected void onStop() {
-    super.onStop();
-    Log.d(TAG, "onStop");
-    if (isSignedIn()) {
-      googleApiClient.disconnect();
-    }
+    signIn();
   }
 
   @Override
   protected void onDestroy() {
     super.onDestroy();
     Log.d(TAG, "onDestroy");
-    googleApiClientManager.unregisterGoogleApiClientListener(this);
     androidGameRepository.removeGameListListener(this);
     androidGameRepository.removeGameChangeListener(this);
     androidGameRepository.removeGameSelectionListener(this);
@@ -157,7 +153,7 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
-    boolean signedIn = isSignedIn();
+    boolean signedIn = googleAccountManager.getSignInComplete();
     menu.setGroupVisible(R.id.group_signedIn, signedIn);
     menu.setGroupVisible(R.id.group_signedOut, !signedIn);
     return super.onPrepareOptionsMenu(menu);
@@ -167,14 +163,14 @@ public class MainActivity extends AppCompatActivity
   public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
     if (id == R.id.menu_achievements) {
-      startActivityForResult(Achievements.getAchievementsIntent(googleApiClient), RC_REQUEST_ACHIEVEMENTS);
+      Games.getAchievementsClient(this, googleAccountManager.getSignedInAccount()).getAchievementsIntent()
+          .addOnCompleteListener(intentTask -> startActivityForResult(intentTask.getResult(), RC_REQUEST_ACHIEVEMENTS));
       return true;
     } else if (id == R.id.menu_signout) {
       signOut();
     } else if (id == R.id.menu_signin) {
       Log.d(TAG, "signIn from menu");
-      signInClicked = true;
-      googleApiClient.connect();
+      signIn();
     } else if (id == R.id.menu_check_matches) {
       checkMatches();
     } else if (id == R.id.menu_about) {
@@ -201,12 +197,16 @@ public class MainActivity extends AppCompatActivity
       case RC_REQUEST_ACHIEVEMENTS:
         break;
       case RC_SIGN_IN:
-        signInClicked = false;
-        resolvingError = false;
-        if (responseCode == RESULT_OK) {
-          googleApiClient.connect();
+        GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(intent);
+        if (result.isSuccess()) {
+          googleAccountManager.onSignInSuccess();
         } else {
-          BaseGameUtils.showActivityResultError(this, requestCode, responseCode, R.string.signin_other_error);
+          String message = result.getStatus().getStatusMessage();
+          if (message == null || message.isEmpty()) {
+            message = getString(R.string.signin_other_error);
+          }
+          new AlertDialog.Builder(this).setMessage(message)
+              .setNeutralButton(android.R.string.ok, null).show();
         }
         break;
       default:
@@ -220,57 +220,14 @@ public class MainActivity extends AppCompatActivity
     super.onSaveInstanceState(outState);
   }
 
-  @Override
-  public void onConnected(Bundle bundle) {
-    Log.d(TAG, "onConnected");
-    updateFromConnectionStatus();
-    TurnBasedMultiplayer.registerMatchUpdateListener(googleApiClient, androidGameRepository);
-
-    // Retrieve the TurnBasedMatch from the connectionHint in order to select it
-    if (bundle != null) {
-      TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-      Log.d(TAG, " ==> We have an invite! " + turnBasedMatch);
-      androidGameRepository.setInvitationMatchId(turnBasedMatch.getMatchId());
-    }
-    androidGameRepository.refreshRemoteGameListFromServer();
-    androidGameRepository.publishUnpublishedGames();
-  }
-
-  @Override
-  public void onConnectionSuspended(int i) {
-    Log.d(TAG, "onConnectionSuspended");
-    updateFromConnectionStatus();
-    googleApiClient.connect();
-  }
-
-  @Override
-  public void onConnectionFailed(@NonNull ConnectionResult result) {
-    Log.d(TAG, "onConnectionFailed(): attempting to resolve");
-    if (resolvingError) {
-      // Already resolving
-      Log.d(TAG, "onConnectionFailed(): ignoring connection failure, already resolving.");
-      return;
-    }
-    updateFromConnectionStatus();
-
-    // Launch the sign-in flow if the button was clicked or if auto sign-in is enabled
-    if (signInClicked || autoStartSignInFlow) {
-      autoStartSignInFlow = false;
-      signInClicked = false;
-
-      resolvingError = BaseGameUtils.resolveConnectionFailure(this, googleApiClient, result,
-          RC_SIGN_IN, getString(R.string.signin_other_error));
-    }
-  }
-
-  public void updateFromConnectionStatus() {
-    Log.d(TAG, "updateFromConnectionStatus isSignedIn = " + isSignedIn());
+  public void updateUiFromConnectionStatus(boolean isSignInComplete) {
+    Log.d(TAG, "updateUiFromConnectionStatus isSignedIn = " + isSignInComplete);
     invalidateOptionsMenu();
 
     // When initial connection fails, there is no fragment yet.
     GoBlobBaseFragment currentFragment = getCurrentFragment();
     if (currentFragment != null) {
-      currentFragment.updateFromConnectionStatus();
+      currentFragment.updateFromConnectionStatus(isSignInComplete);
     }
   }
 
@@ -284,13 +241,6 @@ public class MainActivity extends AppCompatActivity
     selectMenuItem(androidGameRepository.getCurrentMatchId());
   }
 
-  @Nullable
-  private MatchMenuItem getCurrentMatchMenuItem() {
-    Log.d(TAG, "before getSelectedItem(), matchSpinner = " + matchSpinner);
-    Log.d(TAG, "MainActivity = " + this);
-    return (MatchMenuItem) matchSpinner.getSelectedItem();
-  }
-
   private List<MatchMenuItem> getMatchMenuItems(Iterable<GameData> gameDataList) {
     List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
     for (GameData gameData : gameDataList) {
@@ -299,11 +249,25 @@ public class MainActivity extends AppCompatActivity
     return matchMenuItems;
   }
 
-  protected void signOut() {
+  private void signIn() {
+    signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+    signInClient.silentSignIn().addOnCompleteListener(this,
+        task -> {
+          if (task.isSuccessful()) {
+            // The signed in account is stored in the task's result.
+            googleAccountManager.onSignInSuccess();
+          } else {
+            // Player will need to sign-in explicitly using via UI
+            Intent intent = signInClient.getSignInIntent();
+            startActivityForResult(intent, RC_SIGN_IN);
+          }
+        });
+  }
+
+  private void signOut() {
     Log.d(TAG, "signOut");
-    signInClicked = false;
-    googleApiClientManager.signout();
-    updateFromConnectionStatus();
+    signInClient.signOut().addOnCompleteListener(this,
+        task -> googleAccountManager.onSignOut());
   }
 
   private GoBlobBaseFragment getCurrentFragment() {
@@ -324,7 +288,8 @@ public class MainActivity extends AppCompatActivity
   }
 
   public void checkMatches() {
-    startActivityForResult(TurnBasedMultiplayer.getInboxIntent(googleApiClient), RC_CHECK_MATCHES);
+    turnBasedClientProvider.get().getInboxIntent().addOnCompleteListener(task -> startActivityForResult( task.getResult(), RC_CHECK_MATCHES));
+
   }
 
   public void configureGame(boolean isLocal) {
@@ -334,10 +299,11 @@ public class MainActivity extends AppCompatActivity
     } else {
       setWaitingScreenVisible(true);
       Log.d(TAG, "Starting getSelectOpponentsIntent");
-      startActivityForResult(TurnBasedMultiplayer.getSelectOpponentsIntent(googleApiClient, 1, 1, false), RC_SELECT_PLAYER);
+      getTurnBasedMultiplayerClient().getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
+          task -> startActivityForResult(task.getResult(), RC_SELECT_PLAYER)
+      );
     }
   }
-
 
   @Override
   public void gameListChanged() {
@@ -396,6 +362,7 @@ public class MainActivity extends AppCompatActivity
       MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
       if (Objects.equal(item.getMatchId(), matchId)) {
         matchSpinner.setSelection(index);
+        return;
       }
     }
 
@@ -406,8 +373,25 @@ public class MainActivity extends AppCompatActivity
     waitingScreen.setVisibility(visible ? View.VISIBLE : View.GONE);
   }
 
-  public boolean isSignedIn() {
-    return googleApiClient.isConnected();
+  @Override
+  public void accountStateChanged(boolean isSignInComplete) {
+    if (isSignInComplete) {
+      androidGameRepository.refreshRemoteGameListFromServer();
+      androidGameRepository.publishUnpublishedGames();
+      Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
+        // Retrieve the TurnBasedMatch from the connectionHint in order to select it
+        if (bundle != null) {
+          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
+          Log.d(TAG, " ==> We have an invite! " + turnBasedMatch);
+          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
+        }
+      });
+    }
+    invalidateOptionsMenu();
+    updateUiFromConnectionStatus(isSignInComplete);
   }
 
+  private TurnBasedMultiplayerClient getTurnBasedMultiplayerClient() {
+    return Games.getTurnBasedMultiplayerClient(this, googleAccountManager.getSignedInAccount());
+  }
 }

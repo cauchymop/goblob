@@ -2,4 +2,5 @@
 <resources>
     <dimen name="default_gap">4dp</dimen>
     <dimen name="about_margin">16dp</dimen>
+    <dimen name="default_padding">16dp</dimen>
 </resources>

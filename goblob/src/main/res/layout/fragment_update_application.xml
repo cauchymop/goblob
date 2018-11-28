@@ -4,7 +4,7 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:gravity="center"
-              android:padding="@dimen/abc_dialog_padding_material"
+              android:padding="@dimen/default_padding"
               tools:context="com.cauchymop.goblob.ui.UpdateApplicationFragment">
 
   <TextView
@@ -13,7 +13,7 @@
       android:layout_height="0dp"
       android:layout_weight="1"
       android:gravity="center_vertical"
-      android:textSize="@dimen/abc_text_size_headline_material"
+      android:textSize="24sp"
       android:text="@string/update_app_message"/>
 <Button
     android:id="@+id/update_button"
