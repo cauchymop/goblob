@@ -1,7 +1,4 @@
 - In Progress
-   - TODO: name textfield changes not taken into account unless forcing focus change to another field, clicking button is not enough
-   - TODO: Fix/generify startActivityForResult
-
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
@@ -27,6 +24,7 @@ Next:
 - In GameRepository: multiple local games
 - GridLayout
 - Thanks to GameRepository: espresso tests
+- TODO: Fix/generify startActivityForResult
 
 Medium priority:
 - toast/buzz when another game is updated

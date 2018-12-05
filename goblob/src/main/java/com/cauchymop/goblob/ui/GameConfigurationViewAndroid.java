@@ -3,6 +3,7 @@ package com.cauchymop.goblob.ui;
 import android.content.Context;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,11 +27,14 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnFocusChange;
 import butterknife.OnItemSelected;
+import butterknife.OnTextChanged;
 
 /**
  * Home Page Fragment.
  */
 public class GameConfigurationViewAndroid extends LinearLayout implements GameConfigurationView {
+
+  private static final String TAG = GameConfigurationViewAndroid.class.getName();
 
   @BindView(R.id.configuration_container)
   LinearLayout configurationContainer;
@@ -116,6 +120,7 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
   @OnClick(R.id.configuration_done_button)
   void fireConfigurationValidationEvent() {
     if (configurationEventListener != null) {
+      Log.d(TAG, " ==> OnClick configuration_done_button");
       configurationEventListener.onConfigurationValidationEvent();
     }
   }
@@ -127,17 +132,19 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
     }
   }
 
-  @OnFocusChange(R.id.black_player_name)
-  void fireBlackPlayerNameChanged() {
+  @OnTextChanged(R.id.black_player_name)
+  void OnBlackPlayerTextChanged() {
     if (configurationEventListener != null) {
-      configurationEventListener.onBlackPlayerNameChanged(blackPlayerNameField.getText().toString());
+      String blackPlayerName = blackPlayerNameField.getText().toString();
+      configurationEventListener.onBlackPlayerNameChanged(blackPlayerName);
     }
   }
 
-  @OnFocusChange(R.id.white_player_name)
-  void fireWhitePlayerNameChanged() {
+  @OnTextChanged(R.id.white_player_name)
+  void OnWhitePlayerTextChanged() {
     if (configurationEventListener != null) {
-      configurationEventListener.onWhitePlayerNameChanged(whitePlayerNameField.getText().toString());
+      String whitePlayerName = whitePlayerNameField.getText().toString();
+      configurationEventListener.onWhitePlayerNameChanged(whitePlayerName);
     }
   }
 
