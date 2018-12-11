@@ -86,6 +86,7 @@ idea {
     }
 }
 
+// Adds NotNull annotation in protobuf sources.
 task annotateNotNull() << {
     ant.replaceregexp(match:'^(package .*)', replace:'\\1\nimport org.jetbrains.annotations.NotNull;\n', byline:true) {
         fileset(dir: 'generated/main/java/com/cauchymop/goblob/proto/', includes: 'PlayGameData.java')
