@@ -40,6 +40,9 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.0'
     androidTestImplementation 'androidx.test:rules:1.1.0'
     androidTestImplementation("androidx.test.espresso:espresso-core:${espresso_version}")
+    testImplementation "junit:junit:${junit_version}"
+    testImplementation "org.mockito:mockito-core:${mockito_version}"
+    testImplementation "com.google.truth:truth:0.42"
 }
 
 android {
@@ -70,7 +73,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            testCoverageEnabled false
+            testCoverageEnabled true
             minifyEnabled true
             multiDexEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),

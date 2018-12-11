@@ -1,4 +1,5 @@
 - In Progress
+   - TODO: merge jacoco reports
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
