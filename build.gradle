@@ -17,6 +17,9 @@ buildscript {
 }
 
 allprojects {
+
+    apply plugin: 'jacoco'
+
     repositories {
         jcenter()
         google()
@@ -45,4 +48,24 @@ allprojects {
         mockito_version = '2.8.9'
         fest_version = '1.2'
     }
+
+    // TODO: The same but compatible with both Android and Java modules (no sourceSets in Android so we may have to hard-code path
+//    task codeCoverageReport(type: JacocoReport) {
+//        executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+//
+//        subprojects.each {
+//            sourceSets it.sourceSets.main
+//        }
+//
+//        reports {
+//            xml.enabled true
+//            xml.destination "${buildDir}/reports/jacoco/report.xml"
+//            html.enabled false
+//            csv.enabled false
+//        }
+//    }
+//
+//    codeCoverageReport.dependsOn {
+//        subprojects*.test
+//    }
 }
