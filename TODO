@@ -1,5 +1,6 @@
 - In Progress
    - TODO: merge jacoco reports (READ TODO in top level build.gradle)
+   - TODO: Consider replacing GamePresenter by a GameViewModel publishing configuration and ingame models in LiveDatas
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
