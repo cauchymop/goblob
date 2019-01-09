@@ -49,23 +49,28 @@ allprojects {
         fest_version = '1.2'
     }
 
-    // TODO: The same but compatible with both Android and Java modules (no sourceSets in Android so we may have to hard-code path
-//    task codeCoverageReport(type: JacocoReport) {
-//        executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-//
-//        subprojects.each {
-//            sourceSets it.sourceSets.main
-//        }
-//
-//        reports {
-//            xml.enabled true
-//            xml.destination "${buildDir}/reports/jacoco/report.xml"
-//            html.enabled false
-//            csv.enabled false
-//        }
-//    }
-//
-//    codeCoverageReport.dependsOn {
-//        subprojects*.test
-//    }
+    task codeCoverageReport(type: JacocoReport) {
+        executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+        setSourceDirectories(files("goblobBase/src/main/java", "goblob/src/main/java"))
+        setClassDirectories(files("goblobBase/build/classes/java/main/",
+                "goblobBase/build/classes/kotlin/main/",
+                "goblob/build/tmp/kotlin-classes/debug/com/cauchymop/goblob",
+                "goblob/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/cauchymop/goblob"))
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: ['com/cauchymop/goblob/proto/**','**/*_*'])
+        })
+
+        reports {
+            xml.enabled true
+            xml.destination "${buildDir}/reports/jacoco/report.xml"
+            html.enabled true
+            html.destination "${buildDir}/reports/jacoco/report.html"
+            csv.enabled false
+        }
+    }
+
+    codeCoverageReport.dependsOn {
+        subprojects*.test
+    }
 }
