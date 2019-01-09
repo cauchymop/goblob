@@ -3,16 +3,12 @@ package com.cauchymop.goblob.ui;
 import android.content.Context;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.FrameLayout;
 
-/**
- */
 public class ZoomableContainer extends FrameLayout implements ScaleGestureDetector.OnScaleGestureListener {
 
-  private static final String TAG = "ZoomableView";
   private static final double MIN_MOVE = 10.0;
 
   protected PointF lastCoord = null;
@@ -39,7 +35,6 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
   private void init(Context context) {
     final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(context, this);
     this.setOnTouchListener((view, motionEvent) -> {
-//        Log.i(TAG, "onTouch " + motionEvent.getX() + "," + motionEvent.getY());
       scaleDetector.onTouchEvent(motionEvent);
       PointF centerPoint = getCenterPoint(motionEvent);
       if (motionEvent.getPointerCount() != lastPointerCount) {
@@ -52,23 +47,18 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
       }
       switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
-//            Log.i(TAG, "onTouchEvent ACTION_DOWN: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
           break;
         case MotionEvent.ACTION_MOVE:
           if (isDrag || dist(centerPoint, lastCoord) > MIN_MOVE) {
             isDrag = true;
             float dx = centerPoint.x - lastCoord.x;
             float dy = centerPoint.y - lastCoord.y;
-//              Log.i(TAG, String.format("onTouchEvent mov: tr=%f,%f d=%f,%f",
-//                  getChild().getTranslationX(), getChild().getTranslationY(), dx, dy));
             translate(dx, dy);
             lastCoord = centerPoint;
           }
           break;
         case MotionEvent.ACTION_UP:
-//            Log.i(TAG, "onTouchEvent ACTION_UP: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
           if (!isDrag && !multiFinger) {
-//              Log.i(TAG, "onTouchEvent click: x:" + motionEvent.getX() + " y:" + motionEvent.getY());
             fireClick(motionEvent);
           }
           multiFinger = false;
@@ -91,7 +81,7 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
       motionEvent.getPointerCoords(1, pointerCoord);
       float x2 = pointerCoord.x;
       float y2 = pointerCoord.y;
-      return new PointF((x1+x2)/2, (y1+y2)/2);
+      return new PointF((x1 + x2) / 2, (y1 + y2) / 2);
     }
     return null;
   }
@@ -121,7 +111,7 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
   private double dist(PointF a, PointF b) {
     float dx = a.x - b.x;
     float dy = a.y - b.y;
-    return Math.sqrt(dx*dx + dy*dy);
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   private PointF getPoint(MotionEvent event) {
@@ -140,7 +130,6 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
 
   @Override
   public boolean onScaleBegin(ScaleGestureDetector scaleDetector) {
-    Log.i(TAG, "onScaleBegin");
     return true;
   }
 
@@ -148,7 +137,6 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
   public boolean onScale(ScaleGestureDetector scaleDetector) {
     float scaleFactor = scaleDetector.getScaleFactor();
     ZoomableView child = getChild();
-//    Log.i(TAG, String.format("onScale %f*%f - (translate x:%f y:%f)", child.getScaleX(), scaleFactor, child.getTranslationX(), child.getTranslationY()));
     float scale = child.getScaleX() * scaleFactor;
     if (scale < 1) {
       scale = 1;
@@ -169,6 +157,5 @@ public class ZoomableContainer extends FrameLayout implements ScaleGestureDetect
 
   @Override
   public void onScaleEnd(ScaleGestureDetector scaleDetector) {
-    Log.i(TAG, "onScaleEnd");
   }
 }

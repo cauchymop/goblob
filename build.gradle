@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.3.0'
+    ext.kotlin_version = '1.3.10'
     repositories {
         jcenter()
         google()
@@ -17,6 +17,9 @@ buildscript {
 }
 
 allprojects {
+
+    apply plugin: 'jacoco'
+
     repositories {
         jcenter()
         google()
@@ -44,5 +47,30 @@ allprojects {
         junit_version = '4.12'
         mockito_version = '2.8.9'
         fest_version = '1.2'
+    }
+
+    task codeCoverageReport(type: JacocoReport) {
+        executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+        setSourceDirectories(files("goblobBase/src/main/java", "goblob/src/main/java"))
+        setClassDirectories(files("goblobBase/build/classes/java/main/",
+                "goblobBase/build/classes/kotlin/main/",
+                "goblob/build/tmp/kotlin-classes/debug/com/cauchymop/goblob",
+                "goblob/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/cauchymop/goblob"))
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: ['com/cauchymop/goblob/proto/**','**/*_*'])
+        })
+
+        reports {
+            xml.enabled true
+            xml.destination "${buildDir}/reports/jacoco/report.xml"
+            html.enabled true
+            html.destination "${buildDir}/reports/jacoco/report.html"
+            csv.enabled false
+        }
+    }
+
+    codeCoverageReport.dependsOn {
+        subprojects*.test
     }
 }

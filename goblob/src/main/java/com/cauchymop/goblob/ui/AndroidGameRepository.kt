@@ -10,6 +10,7 @@ import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData.Phase
 import com.cauchymop.goblob.proto.PlayGameData.GameList
+import com.crashlytics.android.Crashlytics
 import com.google.android.gms.games.Games
 import com.google.android.gms.games.TurnBasedMultiplayerClient
 import com.google.android.gms.games.multiplayer.Multiplayer
@@ -63,7 +64,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     val turnBasedClient = turnBasedClientProvider.get()
     turnBasedClient.registerTurnBasedMatchUpdateCallback(object : TurnBasedMatchUpdateCallback() {
       override fun onTurnBasedMatchReceived(turnBasedMatch: TurnBasedMatch) {
-        Log.d(TAG, "onTurnBasedMatchReceived")
+        Crashlytics.log(Log.DEBUG, TAG, "onTurnBasedMatchReceived")
         val gameData = getGameData(turnBasedMatch)
         if (gameData != null) {
           if (saveToCache(gameData)) {
@@ -73,14 +74,14 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       }
 
       override fun onTurnBasedMatchRemoved(matchId: String) {
-        Log.d(TAG, "onTurnBasedMatchRemoved: $matchId")
+        Crashlytics.log(Log.DEBUG, TAG, "onTurnBasedMatchRemoved: $matchId")
         removeFromCache(matchId)
       }
     })
   }
 
   override fun forceCacheRefresh() {
-    Log.d(TAG, "forceCacheRefresh")
+    Crashlytics.log(Log.DEBUG, TAG, "forceCacheRefresh")
     persistCache()
     fireGameListChanged()
   }
@@ -94,10 +95,10 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 
   override fun publishRemoteGameState(gameData: GameData): Boolean {
     if (googleAccountManager.signInComplete) {
-      Log.d(TAG, "publishRemoteGameState: $gameData")
+      Crashlytics.log(Log.DEBUG, TAG, "publishRemoteGameState: $gameData")
       val turnParticipantId = gameDatas.getCurrentPlayer(gameData).id
       val gameDataBytes = gameData.toByteArray()
-      Log.d(TAG, "takeTurn $turnParticipantId")
+      Crashlytics.log(Log.DEBUG, TAG, "takeTurn $turnParticipantId")
       val turnBasedClient = turnBasedClientProvider.get()
       turnBasedClient.takeTurn(gameData.matchId, gameDataBytes, turnParticipantId)
       if (gameData.phase == Phase.FINISHED) {
@@ -112,7 +113,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   }
 
   override fun log(message: String) {
-    Log.d(TAG, message)
+    Crashlytics.log(Log.DEBUG, TAG, message)
   }
 
   private fun loadLegacyLocalGame() {
@@ -122,7 +123,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     try {
       TextFormat.merge(gameDataString, gameDataBuilder)
     } catch (e: TextFormat.ParseException) {
-      Log.e(TAG, "Error parsing local GameData: ${e.message}")
+      Crashlytics.log(Log.ERROR, TAG, "Error parsing local GameData: ${e.message}")
     }
 
     val localGame = gameDataBuilder.build()
@@ -133,7 +134,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   }
 
   fun refreshRemoteGameListFromServer() {
-    Log.d(TAG, "refreshRemoteGameListFromServer -  currentMatchId = $currentMatchId")
+    Crashlytics.log(Log.DEBUG, TAG, "refreshRemoteGameListFromServer -  currentMatchId = $currentMatchId")
     val requestId = System.currentTimeMillis()
 
     val turnBasedClient = turnBasedClientProvider.get()
@@ -146,7 +147,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   }
 
   private fun matchResponseCallback(requestId: Long, loadMatchesResponse: LoadMatchesResponse) {
-    Log.d(TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId))
+    Crashlytics.log(Log.DEBUG, TAG, String.format("matchResult: requestId = %d, latency = %d ms", requestId, System.currentTimeMillis() - requestId))
     val allMatches = with(loadMatchesResponse) { myTurnMatches.asSequence() + theirTurnMatches.asSequence() + completedMatches.asSequence() }
     val games = HashSet<GameData>()
     for (match in allMatches) {
@@ -158,11 +159,11 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     }
 
     val removedMatchIds = clearRemoteGamesIfAbsent(games)
-    Log.d(TAG, "removedMatchIds: $removedMatchIds")
+    Crashlytics.log(Log.DEBUG, TAG, "removedMatchIds: $removedMatchIds")
     val selectedIsGone = removedMatchIds.contains(currentMatchId)
-    Log.d(TAG, "selectedIsGone is $selectedIsGone")
+    Crashlytics.log(Log.DEBUG, TAG, "selectedIsGone is $selectedIsGone")
     val changedCount = removedMatchIds.size + games.filter { saveToCache(it) }.count()
-    Log.d(TAG, "changedCount is $changedCount")
+    Crashlytics.log(Log.DEBUG, TAG, "changedCount is $changedCount")
     if (changedCount > 0) {
       forceCacheRefresh()
     }
@@ -294,8 +295,8 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     val whitePlayer = gameConfiguration.whiteBuilder
     blackPlayer.isLocal = iAmBlack
     whitePlayer.isLocal = !iAmBlack
-    Log.d(TAG, String.format("black: %s", blackPlayer))
-    Log.d(TAG, String.format("white %s", whitePlayer))
+    Crashlytics.log(Log.DEBUG, TAG, String.format("black: %s", blackPlayer))
+    Crashlytics.log(Log.DEBUG, TAG, String.format("white %s", whitePlayer))
     return gameData
   }
 
@@ -322,11 +323,11 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
   }
 
   fun handlePlayersSelected(intent: Intent) {
-    Log.d(TAG, "handlePlayersSelected")
+    Crashlytics.log(Log.DEBUG, TAG, "handlePlayersSelected")
 
     // get the invitee list
     val invitees = intent.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS)
-    Log.d(TAG, "Invitees: $invitees")
+    Crashlytics.log(Log.DEBUG, TAG, "Invitees: $invitees")
 
     // get the automatch criteria
     var autoMatchCriteria: Bundle? = null
@@ -335,7 +336,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
       autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
           minAutoMatchPlayers, maxAutoMatchPlayers, 0)
-      Log.d(TAG, "Automatch criteria: " + autoMatchCriteria!!)
+      Crashlytics.log(Log.DEBUG, TAG, "Automatch criteria: " + autoMatchCriteria!!)
     }
 
     // create game
@@ -347,21 +348,21 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     // kick the match off
     val turnBasedClient = turnBasedClientProvider.get()
     turnBasedClient.createMatch(turnBasedMatchConfig).addOnCompleteListener { initiateMatchResult ->
-      Log.d(TAG, "InitiateMatchResult $initiateMatchResult")
+      Crashlytics.log(Log.DEBUG, TAG, "InitiateMatchResult $initiateMatchResult")
       if (!initiateMatchResult.isSuccessful) {
         return@addOnCompleteListener
       }
       initiateMatchResult.result?.let {
         createNewGameData(it)
 
-        Log.d(TAG, "Game created...")
+        Crashlytics.log(Log.DEBUG, TAG, "Game created...")
         selectGame(it.matchId)
       }
     }
   }
 
   fun handleCheckMatchesResult(responseCode: Int, intent: Intent?) {
-    Log.d(TAG, "handleCheckMatchesResult")
+    Crashlytics.log(Log.DEBUG, TAG, "handleCheckMatchesResult")
     // Refresh is done in all cases as games can be dismissed for the Check Matches Screen if we then
     // do not select a game and press back
     refreshRemoteGameListFromServer()
@@ -375,15 +376,15 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 }
 
 private fun loadGameCache(sharedPreferences: SharedPreferences): GameList.Builder {
-  Log.d(TAG, "loadGameList")
+  Crashlytics.log(Log.DEBUG, TAG, "loadGameList")
   val gameListString = sharedPreferences.getString(GAMES, "")
   val gameListBuilder = GameList.newBuilder()
   try {
     TextFormat.merge(gameListString, gameListBuilder)
   } catch (e: TextFormat.ParseException) {
-    Log.e(TAG, "Error parsing local GameList: " + e.message)
+    Crashlytics.log(Log.ERROR, TAG, "Error parsing local GameList: " + e.message)
   }
 
-  Log.d(TAG, "loadGameList: " + gameListBuilder.gamesCount + " games loaded.")
+  Crashlytics.log(Log.DEBUG, TAG, "loadGameList: " + gameListBuilder.gamesCount + " games loaded.")
   return gameListBuilder
 }

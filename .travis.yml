@@ -30,7 +30,8 @@ before_script:
   # Nothing for us
 
 script:
-  - ./gradlew test jacocoTestReport assembleDebug
+  # We also assembleDebug to check the project can be built (not just tested)
+  - ./gradlew test codeCoverageReport assembleDebug
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

@@ -19,6 +19,7 @@ import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.view.GameConfigurationView;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
+import com.crashlytics.android.Crashlytics;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,7 +121,7 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
   @OnClick(R.id.configuration_done_button)
   void fireConfigurationValidationEvent() {
     if (configurationEventListener != null) {
-      Log.d(TAG, " ==> OnClick configuration_done_button");
+      Crashlytics.log(Log.DEBUG, TAG, " ==> OnClick configuration_done_button");
       configurationEventListener.onConfigurationValidationEvent();
     }
   }

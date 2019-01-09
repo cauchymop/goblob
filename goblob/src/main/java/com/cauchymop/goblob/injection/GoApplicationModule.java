@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.cauchymop.goblob.R;
+import com.cauchymop.goblob.analytics.AnalyticsEventLogger;
 import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
+import com.cauchymop.goblob.logger.EventLogger;
 import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
@@ -133,6 +135,12 @@ public class GoApplicationModule {
   @Singleton
   public FirebaseAnalytics getFireBaFirebaseAnalytics(Context context) {
     return FirebaseAnalytics.getInstance(context);
+  }
+
+  @Provides
+  @Singleton
+  public EventLogger getFEventLogger(FirebaseAnalytics firebaseAnalytics) {
+    return new AnalyticsEventLogger(firebaseAnalytics);
   }
 
 }

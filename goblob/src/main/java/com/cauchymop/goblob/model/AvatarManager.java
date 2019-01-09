@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.common.collect.Maps;
 
@@ -30,20 +31,20 @@ public class AvatarManager {
   }
 
   public void setAvatarUri(String playerDisplayName, Uri avatarUri) {
-    Log.d(TAG, String.format("setAvatarUri(%s, %s)", playerDisplayName, avatarUri));
+    Crashlytics.log(Log.DEBUG, TAG, String.format("setAvatarUri(%s, %s)", playerDisplayName, avatarUri));
     if (getAvatarUri(playerDisplayName) == null) {
-      Log.d(TAG, String.format("    ==> setting new Avatar for %s", playerDisplayName));
+      Crashlytics.log(Log.DEBUG, TAG, String.format("    ==> setting new Avatar for %s", playerDisplayName));
       avatarUrisByPlayerDisplayName.put(playerDisplayName, avatarUri);
     }
   }
 
   public void loadImage(ImageView avatarImage, String playerDisplayName) {
-//    Log.d(TAG, String.format("loadImage(%s)", playerDisplayName));
+//    Crashlytics.log(Log.DEBUG, TAG, String.format("loadImage(%s)", playerDisplayName));
     imageManager.loadImage(avatarImage, getAvatarUri(playerDisplayName));
   }
 
   private Uri getAvatarUri(String playerDisplayName) {
-//    Log.d(TAG, String.format("getAvatarUri(%s)", playerDisplayName));
+//    Crashlytics.log(Log.DEBUG, TAG, String.format("getAvatarUri(%s)", playerDisplayName));
     return avatarUrisByPlayerDisplayName.get(playerDisplayName);
   }
 }
