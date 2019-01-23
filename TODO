@@ -1,11 +1,12 @@
 - In Progress
-   - TODO: Consider replacing GamePresenter by a GameViewModel publishing configuration and ingame models in LiveDatas
+   - TODO: Learn how to test Android classes without Espresso or RoboElectric to test methods with Bundle in FirebaseAnalyticsSenderTest
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first
    - TODO: When marking dead stones: If not changing anything only one player have a say (probalby fixed by previous point)
    - TODO: Rename InGameView as it does more than the InGame phase (or rename phase?)
+   - TODO: Consider replacing GamePresenter by a GameViewModel publishing configuration and ingame models in LiveDatas
 
 Events:
 - Add an event for login to play games

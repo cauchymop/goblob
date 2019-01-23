@@ -23,15 +23,15 @@ repositories {
 }
 
 dependencies {
-    compile "com.google.guava:guava:${guava_version}"
-    compile "com.google.dagger:dagger:${dagger_version}"
-    compile 'com.google.protobuf:protobuf-java:3.6.1'
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    testCompile "com.google.guava:guava-testlib:${guava_version}"
-    testCompile "junit:junit:${junit_version}"
-    testCompile "org.mockito:mockito-core:${mockito_version}"
-    testCompile "com.google.truth:truth:0.42"
+    implementation "com.google.protobuf:protobuf-java:${protobuf_version}"
+    implementation "com.google.guava:guava:${guava_version}"
+    implementation "com.google.dagger:dagger:${dagger_version}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "com.google.guava:guava-testlib:${guava_version}"
+    testImplementation "junit:junit:${junit_version}"
+    testImplementation "org.mockito:mockito-core:${mockito_version}"
+    testImplementation "com.google.truth:truth:${truth_version}"
 }
 
 compileJava {
