@@ -20,8 +20,8 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     implementation "androidx.appcompat:appcompat:${appcompat_library_version}"
-    implementation 'androidx.multidex:multidex:2.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
     implementation "com.google.firebase:firebase-core:${firebase_core_version}"
     implementation "com.google.firebase:firebase-analytics:${firebase_core_version}"
     implementation "com.crashlytics.sdk.android:crashlytics:${crashlytics_version}"
@@ -35,8 +35,8 @@ dependencies {
     kapt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     kapt "com.google.dagger:dagger-compiler:${dagger_version}"
     api project(':goblobBase')
-    androidTestImplementation 'androidx.test:runner:1.1.0'
-    androidTestImplementation 'androidx.test:rules:1.1.0'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test:rules:1.1.1'
     androidTestImplementation("androidx.test.espresso:espresso-core:${espresso_version}")
     testImplementation "junit:junit:${junit_version}"
     testImplementation "org.mockito:mockito-core:${mockito_version}"
