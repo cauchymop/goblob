@@ -32,15 +32,19 @@ dependencies {
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation "com.google.dagger:dagger:${dagger_version}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "com.google.protobuf:protobuf-java:${protobuf_version}"
     kapt "com.jakewharton:butterknife-compiler:${butterknife_version}"
     kapt "com.google.dagger:dagger-compiler:${dagger_version}"
     api project(':goblobBase')
     androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation "androidx.test.ext:junit:1.1.0"
     androidTestImplementation 'androidx.test:rules:1.1.1'
-    androidTestImplementation("androidx.test.espresso:espresso-core:${espresso_version}")
+    androidTestImplementation "androidx.test.espresso:espresso-core:${espresso_version}"
+    androidTestImplementation "androidx.test.ext:truth:1.1.0"
+
     testImplementation "junit:junit:${junit_version}"
     testImplementation "org.mockito:mockito-core:${mockito_version}"
-    testImplementation "com.google.truth:truth:0.42"
+//    testImplementation "com.google.truth:truth:${truth_version}"
 }
 
 android {
