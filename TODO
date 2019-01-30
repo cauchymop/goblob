@@ -1,5 +1,5 @@
 - In Progress
-   - TODO: Learn how to test Android classes without Espresso or RoboElectric to test methods with Bundle in FirebaseAnalyticsSenderTest
+   - TODO: Continue FirebaseAnalyticsSenderTest (start with agreed)
    - TODO: Write GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
