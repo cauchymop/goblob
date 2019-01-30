@@ -1,7 +1,5 @@
 package com.cauchymop.goblob.logger
 
-import android.os.Bundle
-
 interface EventLogger {
-  fun logEvent(name:String, params:Bundle?)
+  fun logEvent(name:String, params:Map<String, String>? = null)
 }

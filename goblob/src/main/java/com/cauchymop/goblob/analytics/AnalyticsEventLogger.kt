@@ -6,7 +6,14 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import javax.inject.Inject
 
 class AnalyticsEventLogger @Inject constructor(private val firebaseAnalytics: FirebaseAnalytics) : EventLogger {
-  override fun logEvent(name: String, params: Bundle?) {
-    firebaseAnalytics.logEvent(name, params)
+
+  override fun logEvent(name: String, params: Map<String, String>?) {
+
+    firebaseAnalytics.logEvent(name, params?.let {
+      Bundle().apply {
+        params.forEach { putString(it.key, it.value) }
+      }
+    })
   }
+
 }

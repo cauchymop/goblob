@@ -1,6 +1,5 @@
 package com.cauchymop.goblob.analytics
 
-import android.os.Bundle
 import androidx.annotation.NonNull
 import com.cauchymop.goblob.logger.EventLogger
 import com.cauchymop.goblob.model.Analytics
@@ -20,22 +19,22 @@ constructor(private val eventLogger: EventLogger) : Analytics {
   override fun configurationChanged(game: PlayGameData.GameData) {
     val gameType = game.gameConfiguration.gameType
     if (gameType == PlayGameData.GameType.REMOTE) {
-      val bundle = getGameConfigurationBundle(game.gameConfiguration)
-      bundle.putBoolean("agreed", game.phase == Phase.IN_GAME)
-      eventLogger.logEvent("configurationChanged", bundle)
+      eventLogger.logEvent("configurationChanged", getGameConfigurationBundle(game.gameConfiguration).apply {
+        put("agreed", "${game.phase == Phase.IN_GAME}")
+      })
     }
   }
 
   override fun undo() {
-    eventLogger.logEvent("undo", Bundle.EMPTY)
+    eventLogger.logEvent("undo")
   }
 
   override fun redo() {
-    eventLogger.logEvent("redo", Bundle.EMPTY)
+    eventLogger.logEvent("redo")
   }
 
   override fun resign() {
-    eventLogger.logEvent("resign", Bundle.EMPTY)
+    eventLogger.logEvent("resign")
   }
 
   override fun movePlayed(gameConfiguration: GameConfiguration, move: PlayGameData.Move) {
@@ -55,19 +54,17 @@ constructor(private val eventLogger: EventLogger) : Analytics {
   }
 
   override fun gameFinished(gameConfiguration: GameConfiguration, score: Score) {
-    val gameConfigurationBundle = getGameConfigurationBundle(gameConfiguration)
-    gameConfigurationBundle.putBoolean("resigned", score.resigned)
-    gameConfigurationBundle.putFloat("wonBy", score.wonBy)
-    gameConfigurationBundle.putString("winner", score.winner.toString())
-    eventLogger.logEvent("gameFinished", gameConfigurationBundle)
+    eventLogger.logEvent("gameFinished", getGameConfigurationBundle(gameConfiguration).apply {
+      put("resigned", "${score.resigned}")
+      put("wonBy", "${score.wonBy}")
+      put("winner", "${score.winner}")
+    })
   }
 
   @NonNull
-  private fun getGameConfigurationBundle(gameConfiguration: GameConfiguration): Bundle {
-    val bundle = Bundle()
-    bundle.putString("type", gameConfiguration.gameType.name)
-    bundle.putInt("size", gameConfiguration.boardSize)
-    bundle.putInt("handicap", gameConfiguration.handicap)
-    return bundle
-  }
+  private fun getGameConfigurationBundle(gameConfiguration: GameConfiguration): MutableMap<String, String> =
+      mutableMapOf("type" to gameConfiguration.gameType.name,
+          "size" to gameConfiguration.boardSize.toString(),
+          "handicap" to gameConfiguration.handicap.toString())
+
 }
