@@ -67,13 +67,27 @@ class FirebaseAnalyticsSenderTest {
   fun configurationChanged_remote_not_agreed() {
     val black = gameDatas.createGamePlayer("pipo", "player1", true)
     val white = gameDatas.createGamePlayer("bimbo", "player2", true)
-    val localGame = gameDatas.createNewGameData("pizza", PlayGameData.GameType.REMOTE, black, white)
+    val remoteGame = gameDatas.createNewGameData("pizza", PlayGameData.GameType.REMOTE, black, white)
 
-    analyticsSender.configurationChanged(localGame)
+    analyticsSender.configurationChanged(remoteGame)
 
     val captor = ArgumentCaptor.forClass(Map::class.java)
     verify(eventLogger).logEvent(eq("configurationChanged"), capture(captor) as Map<String, String>?)
     assertThat(captor.value).containsExactly("type", "REMOTE", "size", "9", "handicap", "0", "agreed", "false")
+  }
+
+  @Test
+  fun configurationChanged_remote_agreed() {
+    val black = gameDatas.createGamePlayer("pipo", "player1", true)
+    val white = gameDatas.createGamePlayer("bimbo", "player2", true)
+    val remoteGame = gameDatas.createNewGameData("pizza", PlayGameData.GameType.REMOTE, black, white)
+        .toBuilder().setPhase(PlayGameData.GameData.Phase.IN_GAME).build()
+
+    analyticsSender.configurationChanged(remoteGame)
+
+    val captor = ArgumentCaptor.forClass(Map::class.java)
+    verify(eventLogger).logEvent(eq("configurationChanged"), capture(captor) as Map<String, String>?)
+    assertThat(captor.value).containsExactly("type", "REMOTE", "size", "9", "handicap", "0", "agreed", "true")
   }
 
   @Test
@@ -96,4 +110,98 @@ class FirebaseAnalyticsSenderTest {
 
     verify(eventLogger).logEvent("resign", null)
   }
+
+  @Test
+  fun movePlayed_passed() {
+    val gameConfig = PlayGameData.GameConfiguration.newBuilder()
+        .setBoardSize(9)
+        .setGameType(PlayGameData.GameType.LOCAL)
+        .setHandicap(0)
+        .setKomi(7.5f)
+        .setScoreType(PlayGameData.GameConfiguration.ScoreType.CHINESE)
+        .build()
+    val move = PlayGameData.Move.newBuilder().setType(PlayGameData.Move.MoveType.PASS).build()
+
+    analyticsSender.movePlayed(gameConfig, move)
+
+    val captor = ArgumentCaptor.forClass(Map::class.java)
+    verify(eventLogger).logEvent(eq("passed"), capture(captor) as Map<String, String>?)
+    assertThat(captor.value).containsExactly("type", "LOCAL", "size", "9", "handicap", "0")
+  }
+
+  @Test
+  fun movePlayed_played() {
+    val gameConfig = PlayGameData.GameConfiguration.newBuilder()
+        .setBoardSize(9)
+        .setGameType(PlayGameData.GameType.LOCAL)
+        .setHandicap(0)
+        .setKomi(7.5f)
+        .setScoreType(PlayGameData.GameConfiguration.ScoreType.CHINESE)
+        .build()
+    val move = PlayGameData.Move.newBuilder().setType(PlayGameData.Move.MoveType.MOVE).build()
+
+    analyticsSender.movePlayed(gameConfig, move)
+
+    val captor = ArgumentCaptor.forClass(Map::class.java)
+    verify(eventLogger).logEvent(eq("movePlayed"), capture(captor) as Map<String, String>?)
+    assertThat(captor.value).containsExactly("type", "LOCAL", "size", "9", "handicap", "0")
+  }
+
+  @Test
+  fun deadStoneToggled() {
+    val gameConfig = PlayGameData.GameConfiguration.newBuilder()
+        .setBoardSize(9)
+        .setGameType(PlayGameData.GameType.LOCAL)
+        .setHandicap(0)
+        .setKomi(7.5f)
+        .setScoreType(PlayGameData.GameConfiguration.ScoreType.CHINESE)
+        .build()
+
+    analyticsSender.deadStoneToggled(gameConfig)
+
+    val captor = ArgumentCaptor.forClass(Map::class.java)
+    verify(eventLogger).logEvent(eq("deadStoneToggled"), capture(captor) as Map<String, String>?)
+    assertThat(captor.value).containsExactly("type", "LOCAL", "size", "9", "handicap", "0")
+  }
+
+  @Test
+  fun invalidMovePlayed() {
+    val gameConfig = PlayGameData.GameConfiguration.newBuilder()
+        .setBoardSize(9)
+        .setGameType(PlayGameData.GameType.LOCAL)
+        .setHandicap(0)
+        .setKomi(7.5f)
+        .setScoreType(PlayGameData.GameConfiguration.ScoreType.CHINESE)
+        .build()
+
+    analyticsSender.invalidMovePlayed(gameConfig)
+
+    val captor = ArgumentCaptor.forClass(Map::class.java)
+    verify(eventLogger).logEvent(eq("invalidMovePlayed"), capture(captor) as Map<String, String>?)
+    assertThat(captor.value).containsExactly("type", "LOCAL", "size", "9", "handicap", "0")
+  }
+
+  @Test
+  fun gameFinished() {
+    val gameConfig = PlayGameData.GameConfiguration.newBuilder()
+        .setBoardSize(9)
+        .setGameType(PlayGameData.GameType.LOCAL)
+        .setHandicap(0)
+        .setKomi(7.5f)
+        .setScoreType(PlayGameData.GameConfiguration.ScoreType.CHINESE)
+        .build()
+    val score = PlayGameData.Score.newBuilder()
+        .setResigned(false)
+        .setWinner(PlayGameData.Color.BLACK)
+        .setWonBy(3f)
+        .build()
+
+    analyticsSender.gameFinished(gameConfig, score)
+
+    val captor = ArgumentCaptor.forClass(Map::class.java)
+    verify(eventLogger).logEvent(eq("gameFinished"), capture(captor) as Map<String, String>?)
+    assertThat(captor.value).containsExactly("type", "LOCAL", "size", "9", "handicap", "0", "resigned", "false", "wonBy", "3.0", "winner", "BLACK")
+  }
+
+
 }
