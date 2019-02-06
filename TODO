@@ -1,5 +1,5 @@
 - In Progress
-   - TODO: Write GameRepository Tests
+   - TODO: Continue GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)
    - TODO: When marking dead stones: could be nice to have local player marking first
