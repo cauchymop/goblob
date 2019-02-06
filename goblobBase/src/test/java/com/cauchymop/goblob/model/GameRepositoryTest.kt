@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model
 
+import any
 import com.cauchymop.goblob.proto.PlayGameData
 import com.google.common.truth.Truth.assertThat
 import dagger.Lazy
@@ -8,8 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
@@ -34,22 +34,13 @@ class GameRepositoryTest {
         playerOneDefaultName = Lazy { "Pipo" },
         playerTwoDefaultName = "Bimbo",
         gameDatas = gameDatas,
-        gameCache = gameCache) {
-      override fun forceCacheRefresh() {
-        gameRepositoryImplementationDelegate.forceCacheRefresh()
-      }
-
-      override fun publishRemoteGameState(gameData: PlayGameData.GameData): Boolean {
-        return gameRepositoryImplementationDelegate.publishRemoteGameState(gameData)
-      }
-
-      override fun log(message: String) {
-      }
-    }
+        gameCache = gameCache),
+        GameRepositoryImplementationDelegate by gameRepositoryImplementationDelegate {}
   }
 
   @After
   fun tearDown() {
+    verify(gameRepositoryImplementationDelegate, atLeast(0)).log(any())
     verifyNoMoreInteractions(analytics, gameRepositoryImplementationDelegate)
   }
 
@@ -86,4 +77,5 @@ class GameRepositoryTest {
 interface GameRepositoryImplementationDelegate {
   fun forceCacheRefresh()
   fun publishRemoteGameState(gameData: PlayGameData.GameData): Boolean
+  fun log(message: String)
 }
