@@ -37,7 +37,6 @@ import javax.inject.Singleton
 private const val GAME_DATA = "gameData"
 private const val GAMES = "games"
 private const val TAG = "AndroidGameRepository"
-private const val IGNORED_VALUE = ""
 
 @Singleton
 class AndroidGameRepository @Inject
@@ -46,7 +45,8 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
             private val turnBasedClientProvider: Provider<TurnBasedMultiplayerClient>,
             private val avatarManager: AvatarManager, analytics: Analytics,
             @Named("PlayerOneDefaultName") playerOneDefaultName: Lazy<String>,
-            @Named("PlayerTwoDefaultName") playerTwoDefaultName: String) : GameRepository(analytics, playerOneDefaultName, playerTwoDefaultName, gameDatas, gameCache = loadGameCache(prefs)) {
+            @Named("PlayerTwoDefaultName") playerTwoDefaultName: String,
+            gameCache: GameCache) : GameRepository(analytics, playerOneDefaultName, playerTwoDefaultName, gameDatas, gameCache) {
 
   init {
     loadLegacyLocalGame()
@@ -89,7 +89,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 
   private fun persistCache() {
     val editor = prefs.edit()
-    editor.putString(GAMES, TextFormat.printToString(gameCache))
+    editor.putString(GAMES, gameCache.toSerializedString())
     editor.apply()
   }
 
@@ -107,7 +107,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       }
       return true
     } else {
-      gameCache.putUnpublished(gameData.matchId, IGNORED_VALUE)
+      gameCache.addUnpublished(gameData.matchId)
       return false
     }
   }
@@ -158,7 +158,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       }
     }
 
-    val removedMatchIds = clearRemoteGamesIfAbsent(games)
+    val removedMatchIds = gameCache.clearRemoteGamesIfAbsent(games)
     Crashlytics.log(Log.DEBUG, TAG, "removedMatchIds: $removedMatchIds")
     val selectedIsGone = removedMatchIds.contains(currentMatchId)
     Crashlytics.log(Log.DEBUG, TAG, "selectedIsGone is $selectedIsGone")
@@ -180,12 +180,6 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     }
 
     loadMatchesResponse.release()
-  }
-
-  private fun clearRemoteGamesIfAbsent(games: Set<GameData>): List<String> {
-    val keysToRemove = gameCache.gamesMap.filter { gameDatas.isRemoteGame(it.value) && !games.contains(it.value) }.map { it.key }
-    keysToRemove.forEach { gameCache.removeGames(it) }
-    return keysToRemove
   }
 
   private fun updateAvatars(match: TurnBasedMatch) {

@@ -1,4 +1,5 @@
 - In Progress
+   - TODO: Continue AndroidGameRepository/Repository/GameCache refactoring
    - TODO: Continue GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)

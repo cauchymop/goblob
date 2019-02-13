@@ -2,7 +2,7 @@ package com.cauchymop.goblob.model
 
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
-import com.google.common.collect.ImmutableSet
+import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.Lists
 import dagger.Lazy
 import javax.inject.Named
@@ -18,24 +18,18 @@ abstract class GameRepository(
     @param:Named("PlayerOneDefaultName") private val playerOneDefaultName: Lazy<String>,
     @param:Named("PlayerTwoDefaultName") private val playerTwoDefaultName: String,
     protected val gameDatas: GameDatas,
-    protected val gameCache: PlayGameData.GameList.Builder) {
+    protected val gameCache: GameCache) {
 
   var currentMatchId: String = NO_MATCH_ID
     private set
   var pendingMatchId: String? = null
 
+  private val currentGame: PlayGameData.GameData?
+    get() = gameCache[currentMatchId]
+
   private val gameListlisteners = Lists.newArrayList<GameListListener>()
   private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
   private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
-
-  val myTurnGames: Iterable<GameData>
-    get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)
-
-  val theirTurnGames: Iterable<GameData>
-    get() = gameCache.gamesMap.values.filterNot(gameDatas::isLocalTurn)
-
-  private val currentGame: GameData?
-    get() = gameCache.gamesMap[currentMatchId]
 
   fun commitGameChanges(gameData: GameData) {
     saveToCache(gameData)
@@ -47,13 +41,14 @@ abstract class GameRepository(
 
   protected abstract fun forceCacheRefresh()
 
-  protected fun saveToCache(gameData: GameData): Boolean {
+  @VisibleForTesting
+  fun saveToCache(gameData: GameData): Boolean {
     log("saveToCache " + gameData.matchId)
-    val existingGame = gameCache.gamesMap[gameData.matchId]
+    val existingGame = gameCache[gameData.matchId]
     log(" -> existingGame found = " + (existingGame != null))
     val changed = existingGame == null || gameData.sequenceNumber > existingGame.sequenceNumber
     if (changed) {
-      gameCache.putGames(gameData.matchId, gameData)
+      gameCache[gameData.matchId] = gameData
       fireGameChanged(gameData)
     } else {
       log(String.format("Ignoring GameData with an old or same sequence number (%s when existing is %s)", gameData.sequenceNumber, existingGame?.sequenceNumber))
@@ -62,20 +57,18 @@ abstract class GameRepository(
   }
 
   fun publishUnpublishedGames() {
-    for (matchId in ImmutableSet.copyOf(gameCache.unpublishedMap.keys)) {
-      val gameData = gameCache.gamesMap[matchId]
-      // The match can be absent if the user changed.
-      if (gameData != null && publishRemoteGameState(gameData)) {
-        gameCache.removeUnpublished(gameData.matchId)
-      }
-    }
+    gameCache.getUnpublished()
+        .mapNotNull(gameCache::get)
+        .filter(::publishRemoteGameState)
+        .map(GameData::getMatchId)
+        .forEach(gameCache::removeUnpublished)
   }
 
   protected abstract fun publishRemoteGameState(gameData: GameData): Boolean
 
   protected fun removeFromCache(matchId: String) {
     log("removeFromCache $matchId")
-    gameCache.removeGames(matchId)
+    gameCache.removeGame(matchId)
     forceCacheRefresh()
   }
 
@@ -84,7 +77,7 @@ abstract class GameRepository(
     if (currentMatchId == matchId) {
       return
     }
-    if (matchId != NO_MATCH_ID && !gameCache.containsGames(matchId)) {
+    if (matchId != NO_MATCH_ID && gameCache[matchId] == null) {
       pendingMatchId = matchId
       return
     }
@@ -93,7 +86,7 @@ abstract class GameRepository(
     if (matchId == NO_MATCH_ID) {
       fireGameSelected(null)
     } else {
-      fireGameSelected(gameCache.gamesMap[matchId])
+      fireGameSelected(gameCache[matchId])
     }
   }
 
