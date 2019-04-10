@@ -67,9 +67,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
         Crashlytics.log(Log.DEBUG, TAG, "onTurnBasedMatchReceived")
         val gameData = getGameData(turnBasedMatch)
         if (gameData != null) {
-          if (saveToCache(gameData)) {
-            forceCacheRefresh()
-          }
+          saveToCache(gameData)
         }
       }
 
@@ -80,14 +78,8 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     })
   }
 
-  override fun forceCacheRefresh() {
-    Crashlytics.log(Log.DEBUG, TAG, "forceCacheRefresh")
-    persistCache()
-    fireGameListChanged()
-  }
-
-
-  private fun persistCache() {
+  override fun persistCache() {
+    Crashlytics.log(Log.DEBUG, TAG, "persistCache")
     val editor = prefs.edit()
     editor.putString(GAMES, gameCache.toSerializedString())
     editor.apply()
@@ -127,9 +119,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
     }
 
     val localGame = gameDataBuilder.build()
-    if (saveToCache(localGame)) {
-      forceCacheRefresh()
-    }
+    saveToCache(localGame)
     prefs.edit().remove(GAME_DATA).apply()
   }
 
@@ -158,14 +148,10 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
       }
     }
 
-    val removedMatchIds = gameCache.clearRemoteGamesIfAbsent(games)
-    Crashlytics.log(Log.DEBUG, TAG, "removedMatchIds: $removedMatchIds")
-    val selectedIsGone = removedMatchIds.contains(currentMatchId)
-    Crashlytics.log(Log.DEBUG, TAG, "selectedIsGone is $selectedIsGone")
-    val changedCount = removedMatchIds.size + games.filter { saveToCache(it) }.count()
-    Crashlytics.log(Log.DEBUG, TAG, "changedCount is $changedCount")
-    if (changedCount > 0) {
-      forceCacheRefresh()
+    var selectedIsGone = false
+    withUpdater { updater ->
+      selectedIsGone = updater.clearRemoteGamesIfAbsent(games).contains(currentMatchId)
+      games.filter { saveToCache(it, updater) }
     }
 
     // Select invitation if one has arrived

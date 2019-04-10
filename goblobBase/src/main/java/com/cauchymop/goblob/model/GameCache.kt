@@ -4,6 +4,7 @@ import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameList
 import com.google.protobuf.TextFormat
+import java.io.Closeable
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -24,11 +25,11 @@ class GameCache @Inject constructor(@Named("SerializedCache") serializedCache: S
     return cache.gamesMap.get(matchId);
   }
 
-  operator fun set(matchId: String, gameData: PlayGameData.GameData) {
-    cache.gamesMap.put(matchId, gameData)
+  private operator fun set(matchId: String, gameData: PlayGameData.GameData) {
+    cache.putGames(matchId, gameData)
   }
 
-  fun removeGame(matchId: String) {
+  private fun removeGame(matchId: String) {
     cache.removeGames(matchId)
   }
 
@@ -44,7 +45,7 @@ class GameCache @Inject constructor(@Named("SerializedCache") serializedCache: S
     return cache.unpublishedMap.keys.toList()
   }
 
-  fun clearRemoteGamesIfAbsent(games: Set<PlayGameData.GameData>): List<String> =
+  private fun clearRemoteGamesIfAbsent(games: Set<PlayGameData.GameData>): List<String> =
       cache.gamesMap.values
           .filter { gameDatas.isRemoteGame(it) && !games.contains(it) }
           .map(GameData::getMatchId)
@@ -52,4 +53,37 @@ class GameCache @Inject constructor(@Named("SerializedCache") serializedCache: S
 
   fun toSerializedString(): String = TextFormat.printToString(cache)
 
+  fun getUpdater(fireOnClose: () -> Unit) = Updater(fireOnClose)
+
+  inner class Updater(val fireOnClose: () -> Unit) : Closeable {
+    var listChanged: Boolean = false;
+
+    override fun close() {
+      if (listChanged) {
+        fireOnClose()
+      }
+    }
+
+    operator fun set(matchId: String, gameData: PlayGameData.GameData) {
+      if (!cache.gamesMap.containsKey(matchId)) {
+        listChanged = true;
+      }
+      this@GameCache[matchId] = gameData
+    }
+
+    fun removeGame(matchId: String) {
+      if (cache.gamesMap.containsKey(matchId)) {
+        listChanged = true;
+      }
+      this@GameCache.removeGame(matchId)
+    }
+
+    fun clearRemoteGamesIfAbsent(games: Set<PlayGameData.GameData>): List<String> {
+      val removedGames = this@GameCache.clearRemoteGamesIfAbsent(games)
+      if (removedGames.isNotEmpty()) {
+        listChanged = true
+      }
+      return removedGames
+    }
+  }
 }

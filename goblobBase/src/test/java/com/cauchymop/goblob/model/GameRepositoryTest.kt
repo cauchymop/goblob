@@ -7,8 +7,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TEST_MATCH_ID = "pizza"
 
@@ -21,17 +22,17 @@ class GameRepositoryTest {
   private lateinit var gameRepositoryImplementationDelegate: GameRepositoryImplementationDelegate
   @Mock
   private lateinit var gameChangeListener: GameChangeListener;
+  @Mock
+  private lateinit var gameListListener: GameListListener;
 
-  private lateinit var gameCache: PlayGameData.GameList.Builder
   private val gameDatas = GameDatas()
-
+  private lateinit var gameCache: GameCache
   private lateinit var gameRepository: GameRepository
 
 
   @Before
   fun setUp() {
-    gameCache = PlayGameData.GameList.newBuilder()
-
+    gameCache = GameCache("", gameDatas)
     gameRepository = object : GameRepository(analytics = analytics,
         playerOneDefaultName = Lazy { "Pipo" },
         playerTwoDefaultName = "Bimbo",
@@ -41,13 +42,24 @@ class GameRepositoryTest {
   }
 
   @Test
-  fun commitGameChanges_savesToCache() {
+  fun commitGameChanges_savesToCache_andPersistCache() {
     val localGame = createGameData(matchId = TEST_MATCH_ID)
-    assertThat(gameCache.gamesMap.get(TEST_MATCH_ID)).isNull()
+    gameRepository.addGameListListener(gameListListener)
+    reset(gameListListener)
+
+    val persistCacheCorrect = AtomicBoolean()
+    `when`(gameRepositoryImplementationDelegate.persistCache()).thenAnswer { a ->
+      persistCacheCorrect.getAndSet(gameCache.get(TEST_MATCH_ID) == localGame)
+      null
+    }
 
     gameRepository.commitGameChanges(localGame)
 
-    assertThat(gameCache.gamesMap.get(TEST_MATCH_ID)).isEqualTo(localGame)
+    assertThat(persistCacheCorrect.get()).isTrue()
+    inOrder(gameListListener, gameRepositoryImplementationDelegate).apply {
+      verify(gameRepositoryImplementationDelegate).persistCache()
+      verify(gameListListener).gameListChanged()
+    }
   }
 
   @Test
@@ -58,13 +70,6 @@ class GameRepositoryTest {
     gameRepository.commitGameChanges(gameData)
 
     verify(gameChangeListener).gameChanged(gameData)
-  }
-
-  @Test
-  fun commitGameChanges_callsImplements_forceCacheRefresh() {
-    gameRepository.commitGameChanges(createGameData())
-
-    verify(gameRepositoryImplementationDelegate).forceCacheRefresh()
   }
 
   @Test
@@ -86,7 +91,7 @@ class GameRepositoryTest {
 
 
 interface GameRepositoryImplementationDelegate {
-  fun forceCacheRefresh()
+  fun persistCache()
   fun publishRemoteGameState(gameData: PlayGameData.GameData): Boolean
   fun log(message: String)
 }

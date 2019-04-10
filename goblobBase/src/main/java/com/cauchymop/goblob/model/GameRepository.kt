@@ -2,7 +2,6 @@ package com.cauchymop.goblob.model
 
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
-import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.Lists
 import dagger.Lazy
 import javax.inject.Named
@@ -24,6 +23,12 @@ abstract class GameRepository(
     private set
   var pendingMatchId: String? = null
 
+  val myTurnGames: Iterable<GameData>
+    get() = gameCache.myTurnGames
+
+  val theirTurnGames: Iterable<GameData>
+    get() = gameCache.theirTurnGames
+
   private val currentGame: PlayGameData.GameData?
     get() = gameCache[currentMatchId]
 
@@ -36,24 +41,33 @@ abstract class GameRepository(
     if (gameDatas.isRemoteGame(gameData)) {
       publishRemoteGameState(gameData)
     }
-    forceCacheRefresh()
   }
 
-  protected abstract fun forceCacheRefresh()
-
-  @VisibleForTesting
-  fun saveToCache(gameData: GameData): Boolean {
+  fun saveToCache(gameData: GameData, updater: GameCache.Updater): Boolean {
     log("saveToCache " + gameData.matchId)
     val existingGame = gameCache[gameData.matchId]
     log(" -> existingGame found = " + (existingGame != null))
     val changed = existingGame == null || gameData.sequenceNumber > existingGame.sequenceNumber
     if (changed) {
-      gameCache[gameData.matchId] = gameData
+      updater[gameData.matchId] = gameData
       fireGameChanged(gameData)
     } else {
       log(String.format("Ignoring GameData with an old or same sequence number (%s when existing is %s)", gameData.sequenceNumber, existingGame?.sequenceNumber))
     }
     return changed
+  }
+
+  fun saveToCache(gameData: GameData) {
+    withUpdater { saveToCache(gameData, it) }
+  }
+
+  protected fun withUpdater(block: (GameCache.Updater) -> Unit) {
+    gameCache.getUpdater(::persistCacheAndNotify).use(block)
+  }
+
+  private fun persistCacheAndNotify() {
+    persistCache()
+    fireGameListChanged()
   }
 
   fun publishUnpublishedGames() {
@@ -68,8 +82,7 @@ abstract class GameRepository(
 
   protected fun removeFromCache(matchId: String) {
     log("removeFromCache $matchId")
-    gameCache.removeGame(matchId)
-    forceCacheRefresh()
+    withUpdater { it.removeGame(matchId) }
   }
 
   fun selectGame(matchId: String) {
@@ -146,6 +159,7 @@ abstract class GameRepository(
     return localGame
   }
 
+  abstract fun persistCache()
 }
 
 interface GameListListener {
