@@ -89,7 +89,7 @@ constructor(private val prefs: SharedPreferences, gameDatas: GameDatas,
 
   private fun persistCache() {
     val editor = prefs.edit()
-    editor.putString(GAMES, TextFormat.printToString(gameCache))
+    editor.putString(GAMES, TextFormat.printer().printToString(gameCache))
     editor.apply()
   }
 

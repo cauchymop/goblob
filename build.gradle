@@ -43,7 +43,7 @@ allprojects {
         espresso_version = '3.1.0-alpha4'
         butterknife_version = '10.0.0'
         crashlytics_version = '2.9.9'
-        protobuf_version = '3.6.1'
+        protobuf_version = '4.29.3'
 
         junit_version = '4.12'
         mockito_version = '2.8.9'
