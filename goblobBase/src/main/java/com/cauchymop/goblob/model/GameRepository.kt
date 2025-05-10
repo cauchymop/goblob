@@ -1,5 +1,6 @@
 package com.cauchymop.goblob.model
 
+import com.cauchymop.goblob.lobby.LobbyClient
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.google.common.collect.ImmutableSet
@@ -46,6 +47,8 @@ abstract class GameRepository(
   }
 
   protected abstract fun forceCacheRefresh()
+
+  protected abstract fun getLobbyClient() : LobbyClient
 
   protected fun saveToCache(gameData: GameData): Boolean {
     log("saveToCache " + gameData.matchId)

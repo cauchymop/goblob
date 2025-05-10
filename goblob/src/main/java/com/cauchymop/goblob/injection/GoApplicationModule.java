@@ -120,6 +120,12 @@ public class GoApplicationModule {
   }
 
   @Provides
+  @Named("ApplicationName")
+  public String provideApplicationName() {
+    return application.getString(R.string.app_name);
+  }
+
+  @Provides
   @Singleton
   public Context getApplicationContext() {
     return application;

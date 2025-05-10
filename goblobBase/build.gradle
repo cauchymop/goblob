@@ -27,6 +27,8 @@ dependencies {
     implementation "com.google.guava:guava:${guava_version}"
     implementation "com.google.dagger:dagger:${dagger_version}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    api fileTree(dir: 'libs', include: ['*.jar'])
+//    implementation files('libs/LobbyClient.jar')
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation "com.google.guava:guava-testlib:${guava_version}"
     testImplementation "junit:junit:${junit_version}"
