@@ -10,12 +10,35 @@ import net.yura.lobby.model.Player
 class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
 
     private val mycom: LobbyCom = LobbyCom(uuid, appName, version)
+    private val listeners = mutableListOf<LobbyClientListener>()
     var gameType: GameType? = null
         private set
 
     init {
         mycom.addEventListener(this)
         mycom.connect("lobby.yura.net", 1964)
+    }
+
+
+    fun addListener(listener: LobbyClientListener) {
+        listeners.add(listener)
+    }
+
+    fun removeListener(listener: LobbyClientListener) {
+        listeners.remove(listener)
+    }
+
+    fun removeAllListeners() {
+        listeners.clear()
+    }
+
+    fun createNewGame(name: String) {
+        val game = Game(name, "", 2, Integer.MAX_VALUE)
+        gameType?.let {
+            game.type = gameType
+        }
+        println("OLIVIER: createNewGame $game with type: ${game.type}")
+        mycom.createNewGame(game)
     }
 
     override fun connected() {
@@ -50,8 +73,11 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.getGames(gameType)
     }
 
-    override fun addOrUpdateGame(p0: Game?) {
-        println("addOrUpdateGame $p0")
+    override fun addOrUpdateGame(game: Game) {
+        println("addOrUpdateGame $game")
+        listeners.forEach {
+            it.onGameChanged(game)
+        }
     }
 
     override fun removeGame(p0: Int) {
@@ -105,4 +131,8 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     override fun setUserInfo(p0: String, p1: MutableList<Any?>?) {
         TODO("Not yet implemented")
     }
+}
+
+interface LobbyClientListener {
+    fun onGameChanged(game: Game)
 }

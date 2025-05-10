@@ -49,7 +49,7 @@ class PlayerChoiceFragment : GoBlobBaseFragment() {
 
   override fun onResume() {
     super.onResume()
-    updateRemotePlayerRadios()
+    updateRemotePlayerRadios(remoteEnabled = true)
   }
 
 
@@ -57,9 +57,9 @@ class PlayerChoiceFragment : GoBlobBaseFragment() {
     updateRemotePlayerRadios(isSignInComplete)
   }
 
-  private fun updateRemotePlayerRadios(isSignInComplete: Boolean = accountManager.signInComplete) {
+  private fun updateRemotePlayerRadios(remoteEnabled: Boolean = accountManager.signInComplete) {
     val remotePlayerRadio = binding.gameTypeRadioRemote
-    remotePlayerRadio.isEnabled = isSignInComplete
+    remotePlayerRadio.isEnabled = remoteEnabled
     if (remotePlayerRadio.isChecked) {
       binding.gameTypeRadioLocal.isChecked = true
     }
