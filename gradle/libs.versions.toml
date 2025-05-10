@@ -1,0 +1,62 @@
+[versions]
+agp = "8.12.0-rc01"
+crashlytics = "2.10.1"
+daggerVersion = "2.57"
+firebaseAnalytics = "23.0.0"
+firebaseCore = "21.1.1"
+grpcStub = "1.73.0"
+guavaVersion = "33.4.8-android"
+coreKtx = "1.16.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.1"
+kotlinStdlibJdk7 = "2.1.20"
+kotlinVersion = "2.2.0"
+material = "1.12.0"
+activity = "1.10.1"
+constraintlayout = "2.2.1"
+jetbrainsKotlinJvm = "2.2.0"
+mockitoVersion = "5.18.0"
+playServicesAuth = "21.3.0"
+playServicesGames = "23.2.0"
+protobufVersion = "4.31.1"
+protobufPluginVersion = "0.9.5"
+truthversion = "1.4.4"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
+dagger = { module = "com.google.dagger:dagger", version.ref = "daggerVersion" }
+dagger-android-processor = { module = "com.google.dagger:dagger-android-processor", version.ref = "daggerVersion" }
+dagger-android-support = { module = "com.google.dagger:dagger-android-support", version.ref = "daggerVersion" }
+dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "daggerVersion" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
+firebase-core = { module = "com.google.firebase:firebase-core", version.ref = "firebaseCore" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpcStub" }
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpcStub" }
+guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
+guava-testlib = { module = "com.google.guava:guava-testlib", version.ref = "guavaVersion" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinVersion" }
+kotlin-stdlib-jdk7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlinStdlibJdk7" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlinVersion" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoVersion" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-games = { module = "com.google.android.gms:play-services-games", version.ref = "playServicesGames" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufVersion" }
+truth = { module = "com.google.truth:truth", version.ref = "truthversion" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinVersion" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinVersion" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobufPluginVersion" }
+
