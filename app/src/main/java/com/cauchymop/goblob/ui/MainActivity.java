@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.databinding.ActivityMainBinding;
+import com.cauchymop.goblob.lobby.LobbyClient;
 import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
@@ -290,6 +291,7 @@ public class MainActivity extends AppCompatActivity
 
   public void configureGame(boolean isLocal) {
     if (isLocal) {
+      testLobby();
       GameData localGame = androidGameRepository.createNewLocalGame();
       androidGameRepository.selectGame(localGame.getMatchId());
     } else {
@@ -299,6 +301,11 @@ public class MainActivity extends AppCompatActivity
 //          task -> startActivityForResult(task.getResult(), RC_SELECT_PLAYER)
 //      );
     }
+  }
+
+  private void testLobby() {
+    LobbyClient lobbyClient = androidGameRepository.getLobbyClient();
+    System.out.println("GameType as viewed in MainActivity: " + lobbyClient.getGameType());
   }
 
   @Override

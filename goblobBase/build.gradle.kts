@@ -15,12 +15,12 @@ kotlin {
 }
 
 dependencies {
+    api(files("libs/UtilME.jar"))
+    api(files("libs/LobbyCore.jar"))
     implementation(libs.protobuf.java)
     implementation(libs.guava)
     implementation(libs.dagger)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.grpc.stub)
-    implementation(libs.grpc.protobuf)
     implementation(libs.grpc.stub)
     implementation(libs.grpc.protobuf)
     testImplementation(libs.kotlin.test.junit)
