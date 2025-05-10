@@ -1,6 +1,7 @@
 package com.cauchymop.goblob.model
 
 import com.cauchymop.goblob.lobby.LobbyClient
+import com.cauchymop.goblob.lobby.LobbyClientListener
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.google.common.collect.ImmutableSet
@@ -19,7 +20,7 @@ abstract class GameRepository(
     @param:Named("PlayerOneDefaultName") private val playerOneDefaultName: Lazy<String>,
     @param:Named("PlayerTwoDefaultName") private val playerTwoDefaultName: String,
     protected val gameDatas: GameDatas,
-    protected val gameCache: PlayGameData.GameList.Builder) {
+    protected val gameCache: PlayGameData.GameList.Builder): LobbyClientListener {
 
   var currentMatchId: String = NO_MATCH_ID
     private set
@@ -154,6 +155,11 @@ abstract class GameRepository(
     analytics.gameCreated(localGame)
     commitGameChanges(localGame)
     return localGame
+  }
+
+  fun createNewRemoteGame() {
+    // TODO: Find a nice way to set a Name
+    getLobbyClient().createNewGame("Pizza")
   }
 
 }

@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableMap
 import com.google.protobuf.InvalidProtocolBufferException
 import com.google.protobuf.TextFormat
 import dagger.Lazy
+import net.yura.lobby.model.Game
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Named
@@ -66,6 +67,12 @@ constructor(
     gameCache = loadGameCache(prefs)
 ) {
 
+    private val lobbyClient: LobbyClient = LobbyClient(
+        getOrCreateClientId(prefs),
+        appName,
+        BuildConfig.VERSION_NAME
+    )
+
     init {
         loadLegacyLocalGame()
         fireGameListChanged()
@@ -76,6 +83,11 @@ constructor(
                 }
             }
         })
+        lobbyClient.addListener(this)
+    }
+
+    override fun onGameChanged(game: Game) {
+        println("OLIVIER: onGameChanged $game")
     }
 
     private fun initTurnBasedUpdateListeners() {
@@ -105,11 +117,7 @@ constructor(
         fireGameListChanged()
     }
 
-    override fun getLobbyClient(): LobbyClient = LobbyClient(
-        getOrCreateClientId(prefs),
-        appName,
-        BuildConfig.VERSION_NAME
-    )
+    override fun getLobbyClient(): LobbyClient = lobbyClient
 
 
     private fun persistCache() {

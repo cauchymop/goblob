@@ -63,7 +63,7 @@ class PlayerChoiceFragment : GoBlobBaseFragment() {
 
   override fun onResume() {
     super.onResume()
-    updateRemotePlayerRadios()
+    updateRemotePlayerRadios(remoteEnabled = true)
   }
 
 
@@ -71,8 +71,8 @@ class PlayerChoiceFragment : GoBlobBaseFragment() {
     updateRemotePlayerRadios(isSignInComplete)
   }
 
-  private fun updateRemotePlayerRadios(isSignInComplete: Boolean = accountManager.signInComplete) {
-    remotePlayerRadio.isEnabled = isSignInComplete
+  private fun updateRemotePlayerRadios(remoteEnabled: Boolean = accountManager.signInComplete) {
+    remotePlayerRadio.isEnabled = remoteEnabled
     if (remotePlayerRadio.isChecked) {
       localHumanButton.isChecked = true
     }
