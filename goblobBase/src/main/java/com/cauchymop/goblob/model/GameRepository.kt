@@ -159,7 +159,7 @@ abstract class GameRepository(
 
   fun createNewRemoteGame() {
     // TODO: Find a nice way to set a Name
-    getLobbyClient().createNewGame("Pizza")
+    getLobbyClient().createNewGame("new remote Game")
   }
 
 }

@@ -1,5 +1,8 @@
 package com.cauchymop.goblob.ui;
 
+import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
+import static com.cauchymop.goblob.proto.PlayGameData.GameData;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -9,9 +12,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.databinding.ActivityMainBinding;
-import com.cauchymop.goblob.lobby.LobbyClient;
 import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
@@ -34,15 +42,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
-
-import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
-import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
 public class MainActivity extends AppCompatActivity
     implements GameListListener, GameChangeListener, GameSelectionListener, AccountStateListener {

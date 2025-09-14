@@ -41,6 +41,11 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.createNewGame(game)
     }
 
+    fun setGoogleLogin(email:String, idToken: String) {
+        mycom.setEmail(email)
+        mycom.setOAuthToken("googleIdToken", idToken)
+    }
+
     override fun connected() {
         println("OLIVIER: connected!")
         mycom.getGameTypes()

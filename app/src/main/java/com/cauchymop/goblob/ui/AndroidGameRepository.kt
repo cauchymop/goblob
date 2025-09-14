@@ -17,6 +17,7 @@ import com.cauchymop.goblob.model.AvatarManager
 import com.cauchymop.goblob.model.GameDatas
 import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoogleAccountManager
+import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameList
 import com.crashlytics.android.Crashlytics
@@ -68,18 +69,38 @@ constructor(
         googleAccountManager.addAccountStateListener(object : AccountStateListener {
             override fun accountStateChanged(isSignInComplete: Boolean) {
                 if (isSignInComplete) {
-                    initTurnBasedUpdateListeners()
+//                    initTurnBasedUpdateListeners()
+                    onGoogleSignIn()
                 }
             }
         })
+        // TODO: Pass Google Signin to LobbyClient somehow when isSignInComplete?
         lobbyClient.addListener(this)
+    }
+
+    private fun onGoogleSignIn() {
+        val signedInAccount = googleAccountManager.signedInAccount
+        val email = signedInAccount?.email?:return
+        val idToken = signedInAccount.idToken?:return
+        lobbyClient.setGoogleLogin(email, idToken)
     }
 
     override fun onGameChanged(game: Game) {
         println("OLIVIER: onGameChanged $game")
+        createRemoteGame(game)
     }
 
-    private fun initTurnBasedUpdateListeners() {
+    private fun createRemoteGame(game: Game){
+        val black = gameDatas.createGamePlayer("player-one", "Me", true)
+        val white = gameDatas.createGamePlayer("player-two", "Opponent", false)
+        val matchId = game.id.toString()
+        removeFromCache(matchId)
+        val remoteGame = gameDatas.createNewGameData(matchId, PlayGameData.GameType.REMOTE, black, white)
+        analytics.gameCreated(remoteGame)
+        commitGameChanges(remoteGame)
+    }
+
+//    private fun initTurnBasedUpdateListeners() {
 //        val turnBasedClient = turnBasedClientProvider.get()
 //        turnBasedClient.registerTurnBasedMatchUpdateCallback(object :
 //            TurnBasedMatchUpdateCallback() {
@@ -98,7 +119,7 @@ constructor(
 //                removeFromCache(matchId)
 //            }
 //        })
-    }
+//    }
 
     override fun forceCacheRefresh() {
         Crashlytics.log(Log.DEBUG, TAG, "forceCacheRefresh")
