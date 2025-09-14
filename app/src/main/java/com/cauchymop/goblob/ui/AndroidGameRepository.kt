@@ -56,7 +56,6 @@ constructor(
     gameDatas,
     gameCache = loadGameCache(prefs)
 ) {
-
     private val lobbyClient: LobbyClient = LobbyClient(
         getOrCreateClientId(prefs),
         appName,
@@ -80,24 +79,15 @@ constructor(
 
     private fun onGoogleSignIn() {
         val signedInAccount = googleAccountManager.signedInAccount
-        val email = signedInAccount?.email?:return
-        val idToken = signedInAccount.idToken?:return
+        val email = signedInAccount?.email ?: return
+        val idToken = signedInAccount.idToken ?: return
         lobbyClient.setGoogleLogin(email, idToken)
     }
 
     override fun onGameChanged(game: Game) {
         println("OLIVIER: onGameChanged $game")
-        createRemoteGame(game)
-    }
-
-    private fun createRemoteGame(game: Game){
-        val black = gameDatas.createGamePlayer("player-one", "Me", true)
-        val white = gameDatas.createGamePlayer("player-two", "Opponent", false)
-        val matchId = game.id.toString()
-        removeFromCache(matchId)
-        val remoteGame = gameDatas.createNewGameData(matchId, PlayGameData.GameType.REMOTE, black, white)
-        analytics.gameCreated(remoteGame)
-        commitGameChanges(remoteGame)
+        lobbyGamesById[game.id] = game
+        fireGameListChanged()
     }
 
 //    private fun initTurnBasedUpdateListeners() {

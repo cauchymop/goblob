@@ -7,6 +7,7 @@ import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Lists
 import dagger.Lazy
+import net.yura.lobby.model.Game
 import javax.inject.Named
 
 const val NO_MATCH_ID = "No Selected MatchId"
@@ -29,6 +30,11 @@ abstract class GameRepository(
   private val gameListlisteners = Lists.newArrayList<GameListListener>()
   private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
   private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
+
+  protected val lobbyGamesById: MutableMap<Int, Game> = mutableMapOf()
+
+  val lobbyGames: Iterable<Game>
+    get() = lobbyGamesById.values.sortedByDescending { it.inGame }
 
   val myTurnGames: Iterable<GameData>
     get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)
@@ -159,7 +165,7 @@ abstract class GameRepository(
 
   fun createNewRemoteGame() {
     // TODO: Find a nice way to set a Name
-    getLobbyClient().createNewGame("new remote Game")
+    getLobbyClient().createNewGame("new remote game")
   }
 
 }

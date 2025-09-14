@@ -43,4 +43,6 @@
     <string name="you_label">Vous</string>
     <string name="about">À propos</string>
     <string name="about_text"><![CDATA[<h1>%1$s</h1>Version %2$s<br>par CauchyMop<br>(Jérôme Abela & Olivier Bonal)<br><div>Icone par <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> sous license CC&nbsp;BY&nbsp;3.0</div>]]></string>
+    <string name="waiting_for_opponent">En attente de partenaire</string>
+    <string name="playing">Partie en cours</string>
 </resources>

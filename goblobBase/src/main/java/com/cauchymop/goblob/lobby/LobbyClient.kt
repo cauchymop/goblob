@@ -9,6 +9,7 @@ import net.yura.lobby.model.Player
 
 class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
 
+    private lateinit var myPlayerName: String
     private val mycom: LobbyCom = LobbyCom(uuid, appName, version)
     private val listeners = mutableListOf<LobbyClientListener>()
     var gameType: GameType? = null
@@ -19,6 +20,7 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.connect("lobby.yura.net", 1964)
     }
 
+    fun myPlayerName() : String = myPlayerName
 
     fun addListener(listener: LobbyClientListener) {
         listeners.add(listener)
@@ -67,8 +69,9 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         println("ping: $time")
     }
 
-    override fun setUsername(p0: String, p1: Int) {
+    override fun setUsername(userName: String, playerType: Int) {
         println("setUsername")
+        myPlayerName = userName
     }
 
     override fun addGameType(types: MutableList<Any?>) {

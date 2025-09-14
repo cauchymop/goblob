@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.databinding.ActivityMainBinding;
+import com.cauchymop.goblob.lobby.LobbyClient;
 import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
@@ -37,6 +38,8 @@ import com.google.android.gms.games.Games;
 import com.google.android.gms.games.PlayersClient;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+
+import net.yura.lobby.model.Game;
 
 import java.util.List;
 
@@ -245,6 +248,14 @@ public class MainActivity extends AppCompatActivity
     return matchMenuItems;
   }
 
+  private List<MatchMenuItem> getLobbyMatchMenuItems(Iterable<Game> gameList) {
+    List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
+    for (Game game : gameList) {
+      matchMenuItems.add(new LobbyGameMatchMenuItem(androidGameRepository.getLobbyClient(), game));
+    }
+    return matchMenuItems;
+  }
+
   private void signIn() {
     signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
     signInClient.silentSignIn().addOnCompleteListener(this,
@@ -346,6 +357,7 @@ public class MainActivity extends AppCompatActivity
     List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
     newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getMyTurnGames()));
     newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getTheirTurnGames()));
+    newMatchMenuItems.addAll(getLobbyMatchMenuItems(androidGameRepository.getLobbyGames()));
 
     setMatchMenuItems(newMatchMenuItems);
   }
