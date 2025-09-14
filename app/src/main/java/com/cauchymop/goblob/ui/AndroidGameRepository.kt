@@ -28,6 +28,7 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import androidx.core.content.edit
 
 /**
  * Class to persist games.
@@ -465,7 +466,7 @@ private fun getOrCreateClientId(sharedPreferences: SharedPreferences): String {
     var guid = sharedPreferences.getString(KEY_CLIENT_UUID, null)
     if (guid == null) {
         guid = UUID.randomUUID().toString()
-        sharedPreferences.edit().putString(KEY_CLIENT_UUID, guid).apply()
+        sharedPreferences.edit { putString(KEY_CLIENT_UUID, guid) }
     }
     return guid
 }
