@@ -23,6 +23,7 @@ playServicesGames = "23.2.0"
 protobufVersion = "4.31.1"
 protobufPluginVersion = "0.9.5"
 truthversion = "1.4.4"
+lobbyversion = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +53,7 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 play-services-games = { module = "com.google.android.gms:play-services-games", version.ref = "playServicesGames" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufVersion" }
 truth = { module = "com.google.truth:truth", version.ref = "truthversion" }
+lobby-core = { module = "net.yura:lobby-core", version.ref = "lobbyversion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
