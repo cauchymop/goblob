@@ -20,7 +20,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.databinding.ActivityMainBinding;
-import com.cauchymop.goblob.lobby.LobbyClient;
 import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity
     private static final int RC_CHECK_MATCHES = 3;
     private static final int RC_SIGN_IN = 4;
 
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final String CURRENT_MATCH_ID = "CURRENT_MATCH_ID";
 
     private ActivityMainBinding binding;
@@ -102,7 +101,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         Crashlytics.log(Log.DEBUG, TAG, "onStart");
         updateMatchSpinner();
-        signIn();
+//        signIn();
     }
 
     @Override
@@ -371,12 +370,16 @@ public class MainActivity extends AppCompatActivity
         for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
             MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
             if (Objects.equal(item.getMatchId(), matchId)) {
-                binding.toolbarMatchSpinner.setSelection(index);
+                setSelection(index);
                 return;
             }
         }
 
         Crashlytics.log(Log.DEBUG, TAG, String.format("selectMenuItem(%s) didn't find anything; we do nothing (it's probably loading...)", matchId));
+    }
+
+    private void setSelection(final int index) {
+        runOnUiThread(() -> binding.toolbarMatchSpinner.setSelection(index));
     }
 
     public void setWaitingScreenVisible(boolean visible) {

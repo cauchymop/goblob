@@ -1,14 +1,8 @@
 package com.cauchymop.goblob.ui
 
-//import com.google.android.gms.games.TurnBasedMultiplayerClient
-//import com.google.android.gms.games.multiplayer.Multiplayer
-//import com.google.android.gms.games.multiplayer.realtime.RoomConfig
-//import com.google.android.gms.games.multiplayer.turnbased.LoadMatchesResponse
-//import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch
-//import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig
-//import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchUpdateCallback
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import com.cauchymop.goblob.BuildConfig
 import com.cauchymop.goblob.lobby.LobbyClient
 import com.cauchymop.goblob.model.AccountStateListener
@@ -17,18 +11,15 @@ import com.cauchymop.goblob.model.AvatarManager
 import com.cauchymop.goblob.model.GameDatas
 import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoogleAccountManager
-import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameList
 import com.crashlytics.android.Crashlytics
 import com.google.protobuf.TextFormat
 import dagger.Lazy
-import net.yura.lobby.model.Game
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
-import androidx.core.content.edit
 
 /**
  * Class to persist games.
@@ -85,12 +76,6 @@ constructor(
         lobbyClient.setGoogleLogin(email, idToken)
     }
 
-    override fun onGameChanged(game: Game) {
-        println("OLIVIER: onGameChanged $game")
-        lobbyGamesById[game.id] = game
-        fireGameListChanged()
-    }
-
 //    private fun initTurnBasedUpdateListeners() {
 //        val turnBasedClient = turnBasedClientProvider.get()
 //        turnBasedClient.registerTurnBasedMatchUpdateCallback(object :
@@ -125,25 +110,6 @@ constructor(
         val editor = prefs.edit()
         editor.putString(KEY_GAMES, TextFormat.printer().printToString(gameCache))
         editor.apply()
-    }
-
-    override fun publishRemoteGameState(gameData: GameData): Boolean {
-        if (googleAccountManager.signInComplete) {
-            Crashlytics.log(Log.DEBUG, TAG, "publishRemoteGameState: $gameData")
-            val turnParticipantId = gameDatas.getCurrentPlayer(gameData).id
-            val gameDataBytes = gameData.toByteArray()
-            Crashlytics.log(Log.DEBUG, TAG, "takeTurn $turnParticipantId")
-//            val turnBasedClient = turnBasedClientProvider.get()
-//            turnBasedClient.takeTurn(gameData.matchId, gameDataBytes, turnParticipantId)
-//            if (gameData.phase == Phase.FINISHED) {
-//                turnBasedClient.finishMatch(gameData.matchId)
-//                fireGameSelected(gameData)
-//            }
-            return true
-        } else {
-            gameCache.putUnpublished(gameData.matchId, IGNORED_VALUE)
-            return false
-        }
     }
 
     override fun log(message: String) {

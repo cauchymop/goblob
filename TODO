@@ -1,5 +1,11 @@
 - In Progress
-   - TODO: Show GameConfiguration for remote lobby game and publish the GameData as first move.
+   - TODO: Turn change does not work as expected and seems out of sync between lobby and GameData
+   - TODO: State is not published correct after creating a new game (stays on Please Wait instead of selecting game)
+   - TODO: When picking a game waiting for opponent, call joinGame etc
+   - TODO: Delete remote games from cache if they don't exist anymore
+   - TODO: Re-integrate Google Login from a menu and link it to LobbyClient
+
+ - Older / Legacy TODOs:
    - TODO: Continue GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)

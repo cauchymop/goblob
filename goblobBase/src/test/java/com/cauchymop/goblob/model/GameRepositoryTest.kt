@@ -42,7 +42,7 @@ class GameRepositoryTest {
         TODO("Not yet implemented")
       }
 
-      override fun onGameChanged(game: Game) {
+      override fun onAddOrUpdateLobbyGame(game: Game) {
         TODO("Not yet implemented")
       }
     }

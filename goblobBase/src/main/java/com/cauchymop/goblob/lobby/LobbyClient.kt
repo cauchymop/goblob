@@ -48,6 +48,27 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.setOAuthToken("googleIdToken", idToken)
     }
 
+    fun playGame(gameId: Int) {
+        mycom.playGame(gameId)
+    }
+
+    fun closeGame(gameId: Int) {
+        mycom.closeGame(gameId)
+    }
+
+    fun leaveGame(gameId: Int) {
+        mycom.leaveGame(gameId)
+    }
+
+    fun joinGame(gameId: Int) {
+        mycom.joinGame(gameId, null)
+    }
+
+    fun sendGameMessage(gameId: Int, message: ByteArray) {
+        mycom.sendGameMessage(gameId, message)
+    }
+
+
     override fun connected() {
         println("OLIVIER: connected!")
         mycom.getGameTypes()
@@ -84,7 +105,7 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     override fun addOrUpdateGame(game: Game) {
         println("addOrUpdateGame $game")
         listeners.forEach {
-            it.onGameChanged(game)
+            it.onAddOrUpdateLobbyGame(game)
         }
     }
 
@@ -96,8 +117,15 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         println("gameStarted $p0")
     }
 
-    override fun messageForGame(p0: Int, p1: Any?) {
-        TODO("Not yet implemented")
+    override fun messageForGame(gameId: Int, gameData: Any?) {
+        println("messageForGame gameId = $gameId gameData ${gameData?.javaClass?.simpleName}")
+        val gameDataBytes: ByteArray? = when (gameData) {
+            is ByteArray -> gameData
+            else -> null
+        }
+        listeners.forEach {
+            it.onLobbyGameDataChanged(gameId, gameDataBytes)
+        }
     }
 
     override fun getClassLoader(p0: GameType?): ClassLoader {
@@ -105,42 +133,43 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     }
 
     override fun renamePlayer(p0: String?, p1: String?, p2: Int) {
-        TODO("Not yet implemented")
+        println("renamePlayer p0 = $p0 p1 = $p1, p2 = $p2")
     }
 
-    override fun addPlayer(p0: Player?) {
-        TODO("Not yet implemented")
+    override fun addPlayer(player: Player?) {
+        println("addPlayer $player")
     }
 
-    override fun addPlayer(p0: Int, p1: Player?) {
-        TODO("Not yet implemented")
+    override fun addPlayer(playerId: Int, player: Player?) {
+        println("addPlayer id = $playerId player = $player")
     }
 
     override fun removePlayer(p0: String?) {
-        TODO("Not yet implemented")
+        println("removePlayer $p0")
     }
 
-    override fun removePlayer(p0: Int, p1: String?) {
-        TODO("Not yet implemented")
+    override fun removePlayer(id: Int, player: String?) {
+        println("removePlayer id = $id player = $player")
     }
 
     override fun incomingChat(p0: String?, p1: String?) {
-        TODO("Not yet implemented")
+        println("incomingChat p0 = $p0 p1 = $p1")
     }
 
     override fun incomingChat(p0: Int, p1: String?, p2: String?) {
-        TODO("Not yet implemented")
+        println("incomingChat p0 = $p0 p1 = $p1, P2 = $p2")
     }
 
     override fun privateMessage(p0: String?, p1: String?) {
-        TODO("Not yet implemented")
+        println("privateMessage p0 = $p0 p1 = $p1")
     }
 
     override fun setUserInfo(p0: String, p1: MutableList<Any?>?) {
-        TODO("Not yet implemented")
+        println("setUserInfo p0 = $p0 p1 = $p1")
     }
 }
 
 interface LobbyClientListener {
-    fun onGameChanged(game: Game)
+    fun onAddOrUpdateLobbyGame(game: Game)
+    fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?)
 }
