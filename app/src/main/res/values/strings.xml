@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Game of Go</string>
+  <string name="button_pass_label">Pass</string>
+  <string name="black_label">Black</string>
+  <string name="white_label">White</string>
+  <string name="board_size_label">Board size</string>
+  <string name="handicap_label">Handicap</string>
+  <string name="configuration_done_label">Done</string>
+  <string name="choose_game_type_label">Select game type</string>
+  <string name="configure_game_label">Configure Game</string>
+  <string name="game_type_local_label">Local game</string>
+  <string name="board_size_label_9x9" translatable="false">9x9</string>
+  <string name="board_size_label_13x13" translatable="false">13x13</string>
+  <string name="board_size_label_19x19" translatable="false">19x19</string>
+  <string name="you_label">You</string>
+  <string name="name_label">Name</string>
+  <string name="color_label">Color</string>
+  <string name="opponent_label">Opponent</string>
+  <string name="player_one_default_name">Player 1</string>
+  <string name="player_two_default_name">Player 2</string>
+  <string name="end_of_game_message">"Game finished, %1$s won by %2$.1f points."</string>
+  <string name="end_of_game_resigned_message">"Game finished, %1$s won by resignation."</string>
+  <string name="opponent_passed_message">"%1$s has passed!"</string>
+  <string name="sign_out">Sign out</string>
+  <string name="achievements">Achievements</string>
+  <string name="sign_in">Sign In</string>
+  <string name="achievements_winner" translatable="false">CggImpiG6GMQAhAB</string>
+  <string name="achievements_9x9" translatable="false">CggImpiG6GMQAhAC</string>
+  <string name="achievements_13x13" translatable="false">CggImpiG6GMQAhAD</string>
+  <string name="achievements_19x19" translatable="false">CggImpiG6GMQAhAG</string>
+  <string name="achievements_remote" translatable="false">CggImpiG6GMQAhAE</string>
+  <string name="achievements_local" translatable="false">CggImpiG6GMQAhAF</string>
+  <string name="game_type_remote_label">Online game</string>
+  <string name="please_wait">Please Wait…</string>
+  <string name="button_label_check_matches">Check matches</string>
+  <string name="player_avatar_content_description" translatable="false">player_avatar</string>
+  <string name="player_stonecolor_content_description" translatable="false">Player Color Icon</string>
+  <string name="new_game_label">New Game</string>
+  <string name="match_label_remote_first_line_format" translatable="false">"%1$s vs %2$s"</string>
+  <string name="match_label_remote_second_line_format" translatable="false">"%1$d x %1$d - %2$s"</string>
+  <string name="imfeelinglucky">"I'm feeling lucky"</string>
+  <string name="button_done_label">Done</string>
+  <string name="marking_message">Marking dead stones…</string>
+  <string name="komi_label">Komi</string>
+  <string name="local_match_item_label">Current local game</string>
+  <string name="undo">Undo</string>
+  <string name="redo">Redo</string>
+  <string name="resign">Resign</string>
+  <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
+  <string name="handicap_even">Even</string>
+  <string name="update_app_message">The version of the application you are using is out of date and does not support the format of this game.\n\nPlease update the application to play this game.</string>
+  <string name="update_app_button_label">Update Application</string>
+  <string name="swap_character" translatable="false">⇅</string>
+  <string name="configuration_message_initial">Configure Game</string>
+  <string name="configuration_message_waiting_for_opponent">Waiting for other player to validate or change settings</string>
+  <string name="configuration_message_accept_or_change">Please, validate or change the game settings</string>
+  <string name="app_id" translatable="false">26793315354</string>
+  <string name="about">About</string>
+  <string name="about_text"><![CDATA[<h1>%1$s</h1>Version %2$s<br>by CauchyMop<br>(Jérôme Abela & Olivier Bonal)<br><div>Icon made from <a href="http://www.onlinewebfonts.com/icon">Icon Fonts</a> is licensed by CC&nbsp;BY&nbsp;3.0</div>]]></string>
+  <string name="waiting_for_opponent">Waiting for opponent</string>
+  <string name="playing">Playing</string>
+
+  <string-array name="handicap_values" translatable="false">
+    <item>@string/handicap_even</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+    <item>8</item>
+    <item>9</item>
+  </string-array>
+</resources>

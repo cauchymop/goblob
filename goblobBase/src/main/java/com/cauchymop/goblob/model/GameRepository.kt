@@ -1,10 +1,13 @@
 package com.cauchymop.goblob.model
 
+import com.cauchymop.goblob.lobby.LobbyClient
+import com.cauchymop.goblob.lobby.LobbyClientListener
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Lists
 import dagger.Lazy
+import net.yura.lobby.model.Game
 import javax.inject.Named
 
 const val NO_MATCH_ID = "No Selected MatchId"
@@ -18,7 +21,7 @@ abstract class GameRepository(
     @param:Named("PlayerOneDefaultName") private val playerOneDefaultName: Lazy<String>,
     @param:Named("PlayerTwoDefaultName") private val playerTwoDefaultName: String,
     protected val gameDatas: GameDatas,
-    protected val gameCache: PlayGameData.GameList.Builder) {
+    protected val gameCache: PlayGameData.GameList.Builder): LobbyClientListener {
 
   var currentMatchId: String = NO_MATCH_ID
     private set
@@ -27,6 +30,11 @@ abstract class GameRepository(
   private val gameListlisteners = Lists.newArrayList<GameListListener>()
   private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
   private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
+
+  protected val lobbyGamesById: MutableMap<Int, Game> = mutableMapOf()
+
+  val lobbyGames: Iterable<Game>
+    get() = lobbyGamesById.values.sortedByDescending { it.inGame }
 
   val myTurnGames: Iterable<GameData>
     get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)
@@ -46,6 +54,8 @@ abstract class GameRepository(
   }
 
   protected abstract fun forceCacheRefresh()
+
+  protected abstract fun getLobbyClient() : LobbyClient
 
   protected fun saveToCache(gameData: GameData): Boolean {
     log("saveToCache " + gameData.matchId)
@@ -151,6 +161,11 @@ abstract class GameRepository(
     analytics.gameCreated(localGame)
     commitGameChanges(localGame)
     return localGame
+  }
+
+  fun createNewRemoteGame() {
+    // TODO: Find a nice way to set a Name
+    getLobbyClient().createNewGame("new remote game")
   }
 
 }

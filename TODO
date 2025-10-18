@@ -1,4 +1,5 @@
 - In Progress
+   - TODO: Show GameConfiguration for remote lobby game and publish the GameData as first move.
    - TODO: Continue GameRepository Tests
    - TODO: in GameRepository: use injection instead of inheritance
    - TODO: Configuration validation (empty komi or player names)

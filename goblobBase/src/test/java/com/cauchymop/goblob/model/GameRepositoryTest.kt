@@ -1,9 +1,11 @@
 package com.cauchymop.goblob.model
 
 import any
+import com.cauchymop.goblob.lobby.LobbyClient
 import com.cauchymop.goblob.proto.PlayGameData
 import com.google.common.truth.Truth.assertThat
 import dagger.Lazy
+import net.yura.lobby.model.Game
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -35,7 +37,15 @@ class GameRepositoryTest {
         playerTwoDefaultName = "Bimbo",
         gameDatas = gameDatas,
         gameCache = gameCache),
-        GameRepositoryImplementationDelegate by gameRepositoryImplementationDelegate {}
+        GameRepositoryImplementationDelegate by gameRepositoryImplementationDelegate {
+      override fun getLobbyClient(): LobbyClient {
+        TODO("Not yet implemented")
+      }
+
+      override fun onGameChanged(game: Game) {
+        TODO("Not yet implemented")
+      }
+    }
   }
 
   @After
