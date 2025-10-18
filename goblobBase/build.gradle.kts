@@ -15,8 +15,7 @@ kotlin {
 }
 
 dependencies {
-    api(files("libs/UtilME.jar"))
-    api(files("libs/LobbyCore.jar"))
+    api(libs.lobby.core)
     implementation(libs.protobuf.java)
     implementation(libs.guava)
     implementation(libs.dagger)
