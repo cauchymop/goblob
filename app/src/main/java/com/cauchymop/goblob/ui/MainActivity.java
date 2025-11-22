@@ -343,33 +343,37 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void gameListChanged() {
-        updateMatchSpinner();
+        runOnUiThread(() -> updateMatchSpinner());
     }
 
     @Override
     public void gameChanged(GameData gameData) {
-        if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            vibrator.vibrate(200);
-        }
+        runOnUiThread(() -> {
+            if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
+                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                vibrator.vibrate(200);
+            }
+        });
     }
 
     @Override
     public void gameSelected(GameData gameData) {
-        Crashlytics.log(Log.DEBUG, TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
-        if (gameData == null) {
-            selectMenuItem(NO_MATCH_ID);
-            displayFragment(new PlayerChoiceFragment());
-            return;
-        }
+        runOnUiThread(() -> {
+            Crashlytics.log(Log.DEBUG, TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
+            if (gameData == null) {
+                selectMenuItem(NO_MATCH_ID);
+                displayFragment(new PlayerChoiceFragment());
+                return;
+            }
 
-        if (gameDatas.needsApplicationUpdate(gameData)) {
-            displayFragment(UpdateApplicationFragment.newInstance());
-            return;
-        }
+            if (gameDatas.needsApplicationUpdate(gameData)) {
+                displayFragment(UpdateApplicationFragment.newInstance());
+                return;
+            }
 
-        selectMenuItem(gameData.getMatchId());
-        displayFragment(getGameFragment());
+            selectMenuItem(gameData.getMatchId());
+            displayFragment(getGameFragment());
+        });
     }
 
     protected GameFragment getGameFragment() {
@@ -383,9 +387,9 @@ public class MainActivity extends AppCompatActivity
         Crashlytics.log(Log.DEBUG, TAG, "updateMatchSpinner");
 
         List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
+        newMatchMenuItems.addAll(getLobbyMatchMenuItems(androidGameRepository.getLobbyGames()));
         newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getMyTurnGames()));
         newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getTheirTurnGames()));
-        newMatchMenuItems.addAll(getLobbyMatchMenuItems(androidGameRepository.getLobbyGames()));
         setMatchMenuItems(newMatchMenuItems);
     }
 

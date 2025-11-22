@@ -238,19 +238,20 @@ abstract class GameRepository(
         // Filter out games with 2 players where I am not a player
         val myPlayerName = getLobbyClient().myPlayerName()
         val isOnGoingGameFromOtherPlayers = game.isOnGoingGameFromOtherPlayers(myPlayerName)
-        val isMyGameWaitingForOpponent = game.isMyGameWaitingForOpponent(myPlayerName)
 
+        if (isOnGoingGameFromOtherPlayers ) {
+            return
+        }
+
+        lobbyGamesById[game.id] = game
+        fireGameListChanged()
+
+        val isMyGameWaitingForOpponent = game.isMyGameWaitingForOpponent(myPlayerName)
+        println("OLIVIER: onAddOrUpdateLobbyGame isMyGameWaitingForOpponent = $isMyGameWaitingForOpponent")
         if (waitingForCreatedGame && isMyGameWaitingForOpponent) {
             waitingForCreatedGame = false
             selectGame(game.id.toString())
         }
-
-//        val isMyGameWaitingForOpponent = game.isMyGameWaitingForOpponent(myPlayerName)
-        if (isOnGoingGameFromOtherPlayers ) { //|| isMyGameWaitingForOpponent) {
-            return
-        }
-        lobbyGamesById[game.id] = game
-        fireGameListChanged()
     }
 
     override fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?) {
