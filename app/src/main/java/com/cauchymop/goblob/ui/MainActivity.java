@@ -154,6 +154,9 @@ public class MainActivity extends AppCompatActivity
         boolean signedIn = googleAccountManager.getSignInComplete();
         menu.setGroupVisible(R.id.group_signedIn, signedIn);
         menu.setGroupVisible(R.id.group_signedOut, !signedIn);
+        if (com.cauchymop.goblob.BuildConfig.DEBUG) {
+            menu.findItem(R.id.menu_clear_cache).setVisible(true);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -173,6 +176,10 @@ public class MainActivity extends AppCompatActivity
 //      checkMatches();
         } else if (id == R.id.menu_about) {
             startActivity(new Intent(this, AboutActivity.class));
+        } else if (id == R.id.menu_clear_cache) {
+            if (com.cauchymop.goblob.BuildConfig.DEBUG) {
+                androidGameRepository.clearCache();
+            }
         }
         return false;
     }

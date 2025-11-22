@@ -115,6 +115,12 @@ abstract class GameRepository(
         forceCacheRefresh()
     }
 
+    fun clearCache() {
+        log("clearCache")
+        gameCache.clearGames()
+        forceCacheRefresh()
+    }
+
     fun selectGame(matchId: String) {
         log("selectGame matchId = " + matchId)
         if (currentMatchId == matchId) {
