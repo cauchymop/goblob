@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0"
+agp = "8.13.1"
 crashlytics = "2.10.1"
 daggerVersion = "2.57"
 firebaseAnalytics = "23.0.0"
