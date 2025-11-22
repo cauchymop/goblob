@@ -93,7 +93,7 @@ abstract class GameRepository(
 //        }
 //    }
 
-    protected fun publishRemoteGameState(gameData: GameData): Boolean {
+    protected open fun publishRemoteGameState(gameData: GameData): Boolean {
         log("publishRemoteGameState: $gameData")
 //            val playerId = gameDatas.getCurrentPlayer(gameData).id
             val gameDataBytes = gameData.toByteArray()

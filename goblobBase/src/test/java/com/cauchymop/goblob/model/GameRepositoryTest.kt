@@ -45,6 +45,10 @@ class GameRepositoryTest {
       override fun onAddOrUpdateLobbyGame(game: Game) {
         TODO("Not yet implemented")
       }
+
+      override fun publishRemoteGameState(gameData: PlayGameData.GameData): Boolean {
+        return gameRepositoryImplementationDelegate.publishRemoteGameState(gameData)
+      }
     }
   }
 
