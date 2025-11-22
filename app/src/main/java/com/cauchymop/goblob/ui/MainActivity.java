@@ -16,6 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.cauchymop.goblob.R;
@@ -66,8 +69,6 @@ public class MainActivity extends AppCompatActivity
     AndroidGameRepository androidGameRepository;
     @Inject
     GoogleAccountManager googleAccountManager;
-    //  @Inject
-//  Provider<TurnBasedMultiplayerClient> turnBasedClientProvider;
     @Inject
     Provider<PlayersClient> playersClientProvider;
 
@@ -81,6 +82,12 @@ public class MainActivity extends AppCompatActivity
         Crashlytics.log(Log.DEBUG, TAG, "onCreate - intent = " + getIntent().getExtras());
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            binding.appToolbar.setPadding(0, insets.top, 0, 0);
+            v.setPadding(insets.left, 0, insets.right, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         ((GoApplication) getApplication()).getComponent().inject(this);
 

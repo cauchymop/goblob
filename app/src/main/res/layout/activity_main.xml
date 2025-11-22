@@ -4,7 +4,6 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:fitsSystemWindows="true"
                 tools:context=".ui.MainActivity">
 
   <androidx.appcompat.widget.Toolbar
