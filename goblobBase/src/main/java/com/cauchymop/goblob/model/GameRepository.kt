@@ -37,7 +37,9 @@ abstract class GameRepository(
     protected val lobbyGamesById: MutableMap<Int, Game> = mutableMapOf()
 
     val lobbyGames: Iterable<Game>
-        get() = lobbyGamesById.values.sortedByDescending { it.inGame }
+        get() = lobbyGamesById.values
+            .filter { !gameCache.containsGames(it.id.toString()) }
+            .sortedByDescending { it.inGame }
 
     val myTurnGames: Iterable<GameData>
         get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)

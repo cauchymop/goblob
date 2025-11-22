@@ -395,18 +395,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void accountStateChanged(boolean isSignInComplete) {
-        if (isSignInComplete) {
-            androidGameRepository.refreshRemoteGameListFromServer();
-            androidGameRepository.publishUnpublishedGames();
-            Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
-                // Retrieve the TurnBasedMatch from the connectionHint in order to select it
-//        if (bundle != null) {
-//          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-//          Crashlytics.log(Log.DEBUG, TAG, " ==> We have an invite! " + turnBasedMatch);
-//          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
+//        if (isSignInComplete) {
+//            androidGameRepository.refreshRemoteGameListFromServer();
+//            androidGameRepository.publishUnpublishedGames();
+//            Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
+//                // Retrieve the TurnBasedMatch from the connectionHint in order to select it
+////        if (bundle != null) {
+////          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
+////          Crashlytics.log(Log.DEBUG, TAG, " ==> We have an invite! " + turnBasedMatch);
+////          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
+////        }
+//            });
 //        }
-            });
-        }
         invalidateOptionsMenu();
         updateUiFromConnectionStatus(isSignInComplete);
     }
