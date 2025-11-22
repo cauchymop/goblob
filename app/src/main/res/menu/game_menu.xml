@@ -52,6 +52,11 @@
         android:visible="true"
         android:title="@string/about"/>
     <item
+        android:id="@+id/menu_leave_game"
+        android:title="@string/leave_game"
+        android:visible="false"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/menu_clear_cache"
         android:orderInCategory="100"
         app:showAsAction="never"

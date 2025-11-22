@@ -164,6 +164,14 @@ public class MainActivity extends AppCompatActivity
         if (com.cauchymop.goblob.BuildConfig.DEBUG) {
             menu.findItem(R.id.menu_clear_cache).setVisible(true);
         }
+
+        boolean isRemoteGame = false;
+        PlayGameData.GameData currentGame = androidGameRepository.getCurrentGame();
+        if (currentGame != null) {
+            isRemoteGame = androidGameRepository.getGameDatas().isRemoteGame(currentGame);
+        }
+        menu.findItem(R.id.menu_leave_game).setVisible(isRemoteGame);
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -186,6 +194,11 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.menu_clear_cache) {
             if (com.cauchymop.goblob.BuildConfig.DEBUG) {
                 androidGameRepository.clearCache();
+            }
+        } else if (id == R.id.menu_leave_game) {
+            PlayGameData.GameData currentGame = androidGameRepository.getCurrentGame();
+            if (currentGame != null) {
+                androidGameRepository.leaveGame(currentGame.getMatchId());
             }
         }
         return false;

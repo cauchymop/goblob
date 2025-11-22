@@ -22,7 +22,7 @@ abstract class GameRepository(
     protected var analytics: Analytics,
     @param:Named("PlayerOneDefaultName") private val playerOneDefaultName: Lazy<String>,
     @param:Named("PlayerTwoDefaultName") private val playerTwoDefaultName: String,
-    protected val gameDatas: GameDatas,
+    val gameDatas: GameDatas,
     protected val gameCache: PlayGameData.GameList.Builder
 ) : LobbyClientListener {
 
@@ -47,7 +47,8 @@ abstract class GameRepository(
     val theirTurnGames: Iterable<GameData>
         get() = gameCache.gamesMap.values.filterNot(gameDatas::isLocalTurn)
 
-    private val currentGame: GameData?
+
+    val currentGame: GameData?
         get() = gameCache.gamesMap[currentMatchId]
 
     fun commitGameChanges(gameData: GameData) {
@@ -82,15 +83,15 @@ abstract class GameRepository(
         return changed
     }
 
-    fun publishUnpublishedGames() {
-        for (matchId in ImmutableSet.copyOf(gameCache.unpublishedMap.keys)) {
-            val gameData = gameCache.gamesMap[matchId]
-            // The match can be absent if the user changed.
-            if (gameData != null && publishRemoteGameState(gameData)) {
-                gameCache.removeUnpublished(gameData.matchId)
-            }
-        }
-    }
+//    fun publishUnpublishedGames() {
+//        for (matchId in ImmutableSet.copyOf(gameCache.unpublishedMap.keys)) {
+//            val gameData = gameCache.gamesMap[matchId]
+//            // The match can be absent if the user changed.
+//            if (gameData != null && publishRemoteGameState(gameData)) {
+//                gameCache.removeUnpublished(gameData.matchId)
+//            }
+//        }
+//    }
 
     protected fun publishRemoteGameState(gameData: GameData): Boolean {
         log("publishRemoteGameState: $gameData")
@@ -123,6 +124,15 @@ abstract class GameRepository(
         forceCacheRefresh()
     }
 
+    fun leaveGame(matchId: String) {
+        log("leaveGame $matchId")
+        matchId.toIntOrNull()?.let {
+            getLobbyClient().leaveGame(it)
+        }
+        removeFromCache(matchId)
+        selectGame(NO_MATCH_ID)
+    }
+
     fun selectGame(matchId: String) {
         log("selectGame matchId = " + matchId)
         if (currentMatchId == matchId) {
@@ -137,6 +147,7 @@ abstract class GameRepository(
                         getLobbyClient().playGame(lobbyGameId)
                     } else if (game.isMyGameWaitingForOpponent(getLobbyClient().myPlayerName())) {
                         saveToCache(game.toNewGameData(gameDatas, getLobbyClient()))
+                        selectGame(matchId)
                     } else {
                         getLobbyClient().joinGame(lobbyGameId)
                     }
@@ -214,9 +225,12 @@ abstract class GameRepository(
         return localGame
     }
 
+    private var waitingForCreatedGame = false
+
     fun createNewRemoteGame() {
         // TODO: Find a nice way to set a Name
         val userName = getLobbyClient().myPlayerName()
+        waitingForCreatedGame = true
         getLobbyClient().createNewGame("$userName's new Game")
     }
 
@@ -224,6 +238,13 @@ abstract class GameRepository(
         // Filter out games with 2 players where I am not a player
         val myPlayerName = getLobbyClient().myPlayerName()
         val isOnGoingGameFromOtherPlayers = game.isOnGoingGameFromOtherPlayers(myPlayerName)
+        val isMyGameWaitingForOpponent = game.isMyGameWaitingForOpponent(myPlayerName)
+
+        if (waitingForCreatedGame && isMyGameWaitingForOpponent) {
+            waitingForCreatedGame = false
+            selectGame(game.id.toString())
+        }
+
 //        val isMyGameWaitingForOpponent = game.isMyGameWaitingForOpponent(myPlayerName)
         if (isOnGoingGameFromOtherPlayers ) { //|| isMyGameWaitingForOpponent) {
             return

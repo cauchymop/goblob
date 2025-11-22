@@ -84,9 +84,7 @@ constructor(
 
     private fun persistCache() {
         prefs.edit {
-            val gamesToPersist = gameCache.gamesMap.filter { !gameDatas.isRemoteGame(it.value) }
-            val gameListToPersist = GameList.newBuilder().putAllGames(gamesToPersist).build()
-            putString(KEY_GAMES, TextFormat.printer().printToString(gameListToPersist))
+            putString(KEY_GAMES, TextFormat.printer().printToString(gameCache))
         }
     }
 
