@@ -29,7 +29,6 @@ private const val GAME_DATA = "gameData"
 private const val KEY_GAMES = "games"
 private const val KEY_CLIENT_UUID = "client_uuid"
 private const val TAG = "AndroidGameRepository"
-private const val IGNORED_VALUE = ""
 
 @Singleton
 class AndroidGameRepository @Inject
@@ -84,11 +83,11 @@ constructor(
 
 
     private fun persistCache() {
-        val editor = prefs.edit()
-        val gamesToPersist = gameCache.gamesMap.filter { !gameDatas.isRemoteGame(it.value) }
-        val gameListToPersist = GameList.newBuilder().putAllGames(gamesToPersist).build()
-        editor.putString(KEY_GAMES, TextFormat.printer().printToString(gameListToPersist))
-        editor.apply()
+        prefs.edit {
+            val gamesToPersist = gameCache.gamesMap.filter { !gameDatas.isRemoteGame(it.value) }
+            val gameListToPersist = GameList.newBuilder().putAllGames(gamesToPersist).build()
+            putString(KEY_GAMES, TextFormat.printer().printToString(gameListToPersist))
+        }
     }
 
     override fun log(message: String) {
@@ -109,15 +108,7 @@ constructor(
         if (saveToCache(localGame)) {
             forceCacheRefresh()
         }
-        prefs.edit().remove(GAME_DATA).apply()
-    }
-
-    private fun clearRemoteGamesIfAbsent(games: Set<GameData>): List<String> {
-        val keysToRemove =
-            gameCache.gamesMap.filter { gameDatas.isRemoteGame(it.value) && !games.contains(it.value) }
-                .map { it.key }
-        keysToRemove.forEach { gameCache.removeGames(it) }
-        return keysToRemove
+        prefs.edit { remove(GAME_DATA) }
     }
 
 }
