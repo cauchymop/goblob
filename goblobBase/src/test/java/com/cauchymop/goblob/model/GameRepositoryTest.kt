@@ -99,6 +99,5 @@ class GameRepositoryTest {
 
 interface GameRepositoryImplementationDelegate {
   fun forceCacheRefresh()
-  // fun publishRemoteGameState(gameData: PlayGameData.GameData): Boolean // Removed
   fun log(message: String)
 }
