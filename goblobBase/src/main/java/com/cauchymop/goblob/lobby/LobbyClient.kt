@@ -1,12 +1,20 @@
 package com.cauchymop.goblob.lobby
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import net.yura.lobby.client.LobbyClient
 import net.yura.lobby.client.LobbyCom
 import net.yura.lobby.model.Game
 import net.yura.lobby.model.GameType
 import net.yura.lobby.model.Player
+import java.util.concurrent.ConcurrentHashMap
 
-
+@OptIn(FlowPreview::class)
 class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
 
     private lateinit var myPlayerName: String
@@ -15,12 +23,22 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     var gameType: GameType? = null
         private set
 
+    private val games = ConcurrentHashMap<Int, Game>()
+    private val _gamesFlow = MutableSharedFlow<Unit>(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    val gamesFlow: Flow<List<Game>> = _gamesFlow
+        .debounce(500)
+        .map { games.values.toList() }
+
     init {
         mycom.addEventListener(this)
         mycom.connect("lobby.yura.net", 1964)
     }
 
-    fun myPlayerName() : String = myPlayerName
+    fun myPlayerName(): String = myPlayerName
 
     fun addListener(listener: LobbyClientListener) {
         listeners.add(listener)
@@ -43,7 +61,7 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.createNewGame(game)
     }
 
-    fun setGoogleLogin(email:String, idToken: String) {
+    fun setGoogleLogin(email: String, idToken: String) {
         mycom.setEmail(email)
         mycom.setOAuthToken("googleIdToken", idToken)
     }
@@ -104,13 +122,17 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
 
     override fun addOrUpdateGame(game: Game) {
         println("addOrUpdateGame $game")
+        games[game.id] = game
+        _gamesFlow.tryEmit(Unit)
         listeners.forEach {
             it.onAddOrUpdateLobbyGame(game)
         }
     }
 
-    override fun removeGame(p0: Int) {
-        println("removeGame $p0")
+    override fun removeGame(gameId: Int) {
+        println("removeGame $gameId")
+        games.remove(gameId)
+        _gamesFlow.tryEmit(Unit)
     }
 
     override fun gameStarted(p0: Int) {

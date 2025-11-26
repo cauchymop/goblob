@@ -6,12 +6,12 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_23
-    targetCompatibility = JavaVersion.VERSION_23
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 dependencies {
@@ -20,9 +20,11 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.dagger)
     implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.grpc.stub)
     implementation(libs.grpc.protobuf)
     testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.guava.testlib)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
