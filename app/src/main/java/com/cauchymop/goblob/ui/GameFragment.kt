@@ -96,8 +96,10 @@ class GameFragment : GoBlobBaseFragment(), GameView {
             inGameViewModel.isRedoActionAvailable,
             inGameViewModel.isResignActionAvailable
         )
-        binding.inGameView.setInGameModel(inGameViewModel)
-        binding.currentGameView.displayedChild = IN_GAME_VIEW_INDEX
+        requireActivity().runOnUiThread {
+            binding.inGameView.setInGameModel(inGameViewModel)
+            binding.currentGameView.displayedChild = IN_GAME_VIEW_INDEX
+        }
     }
 
     private fun updateMenu(

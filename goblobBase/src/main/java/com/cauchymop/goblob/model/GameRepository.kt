@@ -127,10 +127,18 @@ abstract class GameRepository(
     }
 
     fun selectGame(matchId: String) {
-        log("selectGame matchId = " + matchId)
+        log("selectGame matchId = $matchId")
         if (currentMatchId == matchId) {
             return
         }
+
+        // Close previous game if it was a lobby game
+        currentMatchId.toIntOrNull()?.let { previousLobbyGameId ->
+            if (lobbyGamesById.containsKey(previousLobbyGameId)) {
+                getLobbyClient().closeGame(previousLobbyGameId)
+            }
+        }
+
         if (matchId != NO_MATCH_ID && !gameCache.containsGames(matchId)) {
             pendingMatchId = matchId
             matchId.toIntOrNull()?.let { lobbyGameId ->
@@ -150,10 +158,14 @@ abstract class GameRepository(
         }
 
         currentMatchId = matchId
-        val lobbyGameId = currentMatchId.toIntOrNull()
-        if (lobbyGameId != null && lobbyGamesById.containsKey(lobbyGameId)) {
-            getLobbyClient().closeGame(lobbyGameId)
+
+        // If it's a lobby game, we need to call playGame to receive updates (even if it's already in cache)
+        currentMatchId.toIntOrNull()?.let { lobbyGameId ->
+            if (lobbyGamesById.containsKey(lobbyGameId)) {
+                getLobbyClient().playGame(lobbyGameId)
+            }
         }
+
         if (matchId == NO_MATCH_ID) {
             fireGameSelected(null)
         } else {
