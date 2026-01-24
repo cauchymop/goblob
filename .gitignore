@@ -27,3 +27,6 @@ local.properties
 *.iml
 .gradle/
 build/
+
+# Antigravity
+.vscode
