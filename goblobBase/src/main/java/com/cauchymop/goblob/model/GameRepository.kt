@@ -277,8 +277,15 @@ abstract class GameRepository(
     }
 
     private fun fillLocalStates(lobbyGame: Game, gameData: GameData.Builder): GameData.Builder {
-        val whosTurn = lobbyGame.whosTurn
-        val isMyTurn = (whosTurn == getLobbyClient().myPlayerName())
+//        val whosTurn = lobbyGame.whosTurn
+//        val isMyTurn = (whosTurn == getLobbyClient().myPlayerName())
+        val myPlayerName = getLobbyClient().myPlayerName()
+        val isMyTurn = if (gameData.turn == PlayGameData.Color.BLACK) {
+            gameData.gameConfiguration.black.id == myPlayerName
+        } else {
+            gameData.gameConfiguration.white.id == myPlayerName
+        }
+
         val turnIsBlack = gameData.turn == PlayGameData.Color.BLACK
         val iAmBlack = isMyTurn && turnIsBlack || !isMyTurn && !turnIsBlack
         val gameConfiguration = gameData.gameConfigurationBuilder
