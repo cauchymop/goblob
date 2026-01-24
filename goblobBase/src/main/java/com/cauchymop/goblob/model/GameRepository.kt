@@ -71,13 +71,7 @@ abstract class GameRepository(
             gameCache.putGames(gameData.matchId, gameData)
             fireGameChanged(gameData)
         } else {
-            log(
-                String.format(
-                    "Ignoring GameData with an old or same sequence number (%s when existing is %s)",
-                    gameData.sequenceNumber,
-                    existingGame.sequenceNumber
-                )
-            )
+            log("Ignoring GameData with an old or same sequence number (${gameData.sequenceNumber} when existing is ${existingGame.sequenceNumber})")
         }
         return changed
     }
@@ -251,6 +245,7 @@ abstract class GameRepository(
             waitingForCreatedGame = false
             selectGame(game.id.toString())
         }
+
     }
 
     override fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?) {
