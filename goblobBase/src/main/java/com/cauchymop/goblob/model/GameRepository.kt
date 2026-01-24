@@ -6,7 +6,6 @@ import com.cauchymop.goblob.lobby.isMyGameWaitingForOpponent
 import com.cauchymop.goblob.lobby.isOnGoingGameFromOtherPlayers
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
-import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Lists
 import dagger.Lazy
 import net.yura.lobby.model.Game
@@ -76,7 +75,7 @@ abstract class GameRepository(
                 String.format(
                     "Ignoring GameData with an old or same sequence number (%s when existing is %s)",
                     gameData.sequenceNumber,
-                    existingGame?.sequenceNumber
+                    existingGame.sequenceNumber
                 )
             )
         }
@@ -96,8 +95,8 @@ abstract class GameRepository(
     protected fun publishRemoteGameState(gameData: GameData): Boolean {
         log("publishRemoteGameState: $gameData")
 //            val playerId = gameDatas.getCurrentPlayer(gameData).id
-            val gameDataBytes = gameData.toByteArray()
-            getLobbyClient().sendGameMessage(gameData.matchId.toInt(), gameDataBytes)
+        val gameDataBytes = gameData.toByteArray()
+        getLobbyClient().sendGameMessage(gameData.matchId.toInt(), gameDataBytes)
 //            log(Log.DEBUG, TAG, "takeTurn $turnParticipantId")
 //            val turnBasedClient = turnBasedClientProvider.get()
 //            turnBasedClient.takeTurn(gameData.matchId, gameDataBytes, turnParticipantId)
@@ -105,7 +104,7 @@ abstract class GameRepository(
 //                turnBasedClient.finishMatch(gameData.matchId)
 //                fireGameSelected(gameData)
 //            }
-            return true
+        return true
 //        } else {
 //            gameCache.putUnpublished(gameData.matchId, IGNORED_VALUE)
 //            return false
@@ -142,7 +141,7 @@ abstract class GameRepository(
             pendingMatchId = matchId
             matchId.toIntOrNull()?.let { lobbyGameId ->
                 if (lobbyGamesById.containsKey(lobbyGameId)) {
-                    val game = lobbyGamesById[lobbyGameId]?:return
+                    val game = lobbyGamesById[lobbyGameId] ?: return
                     if (game.players.size == 2) {
                         getLobbyClient().playGame(lobbyGameId)
                     } else if (game.isMyGameWaitingForOpponent(getLobbyClient().myPlayerName())) {
@@ -239,7 +238,7 @@ abstract class GameRepository(
         val myPlayerName = getLobbyClient().myPlayerName()
         val isOnGoingGameFromOtherPlayers = game.isOnGoingGameFromOtherPlayers(myPlayerName)
 
-        if (isOnGoingGameFromOtherPlayers ) {
+        if (isOnGoingGameFromOtherPlayers) {
             return
         }
 
@@ -258,9 +257,9 @@ abstract class GameRepository(
         val game = lobbyGamesById[gameId] ?: return
         val gameData: GameData = gameDataBytes?.let { data: ByteArray ->
             if (data.isNotEmpty()) {
-                GameData.parseFrom(data)
+                fillLocalStates(game, GameData.parseFrom(data).toBuilder()).build()
             } else null
-        }?: game.toNewGameData(gameDatas, getLobbyClient())
+        } ?: game.toNewGameData(gameDatas, getLobbyClient())
         println("OLIVIER: onGameDataChanged for ${game.name} gameData = $gameData")
         println("OLIVIER: pendingMatchId = $pendingMatchId, gameData.matchId = ${gameData.matchId}, game.id = ${game.id}")
         saveToCache(gameData)
@@ -268,6 +267,19 @@ abstract class GameRepository(
             pendingMatchId = null
             selectGame(gameData.matchId)
         }
+    }
+
+    private fun fillLocalStates(lobbyGame: Game, gameData: GameData.Builder): GameData.Builder {
+        val whosTurn = lobbyGame.whosTurn
+        val isMyTurn = (whosTurn == getLobbyClient().myPlayerName())
+        val turnIsBlack = gameData.turn == PlayGameData.Color.BLACK
+        val iAmBlack = isMyTurn && turnIsBlack || !isMyTurn && !turnIsBlack
+        val gameConfiguration = gameData.gameConfigurationBuilder
+        val blackPlayer = gameConfiguration.blackBuilder
+        val whitePlayer = gameConfiguration.whiteBuilder
+        blackPlayer.isLocal = iAmBlack
+        whitePlayer.isLocal = !iAmBlack
+        return gameData
     }
 
 }
@@ -289,7 +301,7 @@ fun Game.toNewGameData(gameDatas: GameDatas, lobbyClient: LobbyClient): GameData
     val white = players.firstOrNull { it.toString() != black }?.toString()
     val myPlayerName = lobbyClient.myPlayerName()
     val blackPlayer = black?.let { gameDatas.createGamePlayer(it, it, it == myPlayerName) }
-    val whitePlayer = white?.let {gameDatas.createGamePlayer(it, it, it == myPlayerName)}
+    val whitePlayer = white?.let { gameDatas.createGamePlayer(it, it, it == myPlayerName) }
     return gameDatas.createNewGameData(
         id.toString(),
         PlayGameData.GameType.REMOTE,
