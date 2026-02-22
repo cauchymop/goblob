@@ -3,6 +3,7 @@ package com.cauchymop.goblob.model
 import com.cauchymop.goblob.lobby.LobbyClient
 import com.cauchymop.goblob.lobby.LobbyClientListener
 import com.cauchymop.goblob.lobby.isMyGameWaitingForOpponent
+import com.cauchymop.goblob.lobby.isMyGameReadyToPlay
 import com.cauchymop.goblob.lobby.isOnGoingGameFromOtherPlayers
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
@@ -251,9 +252,9 @@ abstract class GameRepository(
         lobbyGamesById[game.id] = game
         fireGameListChanged()
 
-        val isMyGameWaitingForOpponent = game.isMyGameWaitingForOpponent(myPlayerName)
-        println("OLIVIER: onAddOrUpdateLobbyGame isMyGameWaitingForOpponent = $isMyGameWaitingForOpponent")
-        if (waitingForCreatedGame && isMyGameWaitingForOpponent) {
+        val isMyGameReadyToPlay = game.isMyGameReadyToPlay(myPlayerName)
+        println("OLIVIER: onAddOrUpdateLobbyGame isMyGameReadyToPlay = $isMyGameReadyToPlay")
+        if (waitingForCreatedGame && isMyGameReadyToPlay) {
             waitingForCreatedGame = false
             selectGame(game.id.toString())
         }
