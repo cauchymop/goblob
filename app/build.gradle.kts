@@ -5,12 +5,12 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(23)
 }
 
 android {
     namespace = "com.cauchymop.goblob"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         viewBinding = true
@@ -20,7 +20,7 @@ android {
     defaultConfig {
         applicationId = "com.cauchymop.goblob"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -35,11 +35,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_23
+        targetCompatibility = JavaVersion.VERSION_23
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "23"
     }
 }
 

@@ -37,7 +37,6 @@ class LobbyGameMatchMenuItem(private val lobbyClient: LobbyClient, private val g
     override fun getIcon(context: Context): Drawable? {
         val whosTurn = game.whosTurn
         val isMyTurn = (whosTurn == lobbyClient.myPlayerName())
-        println("whosTurn = $whosTurn, myPlayerName = ${lobbyClient.myPlayerName()},isMyTurn = $isMyTurn")
         val iconResId =
             if (isMyTurn) R.drawable.ic_match_your_turn else R.drawable.ic_match_their_turn
         return ContextCompat.getDrawable(context, iconResId)

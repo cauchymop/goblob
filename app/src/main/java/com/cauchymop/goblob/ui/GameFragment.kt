@@ -82,9 +82,12 @@ class GameFragment : GoBlobBaseFragment(), GameView {
     }
 
     override fun setConfigurationViewModel(configurationViewModel: ConfigurationViewModel?) {
-        updateMenu(false, false, false)
-        binding.configurationView.setConfigurationModel(configurationViewModel!!)
-        binding.currentGameView.displayedChild = GAME_CONFIGURATION_VIEW_INDEX
+        requireActivity().runOnUiThread {
+            updateMenu(false, false, false)
+            binding.configurationView.setConfigurationModel(configurationViewModel!!)
+            binding.currentGameView.displayedChild = GAME_CONFIGURATION_VIEW_INDEX
+        }
+
     }
 
     override fun setInGameViewModel(inGameViewModel: InGameViewModel) {
@@ -93,8 +96,10 @@ class GameFragment : GoBlobBaseFragment(), GameView {
             inGameViewModel.isRedoActionAvailable,
             inGameViewModel.isResignActionAvailable
         )
-        binding.inGameView.setInGameModel(inGameViewModel)
-        binding.currentGameView.displayedChild = IN_GAME_VIEW_INDEX
+        requireActivity().runOnUiThread {
+            binding.inGameView.setInGameModel(inGameViewModel)
+            binding.currentGameView.displayedChild = IN_GAME_VIEW_INDEX
+        }
     }
 
     private fun updateMenu(

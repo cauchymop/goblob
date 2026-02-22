@@ -16,11 +16,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.databinding.ActivityMainBinding;
-import com.cauchymop.goblob.lobby.LobbyClient;
 import com.cauchymop.goblob.model.AccountStateListener;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
@@ -54,7 +56,7 @@ public class MainActivity extends AppCompatActivity
     private static final int RC_CHECK_MATCHES = 3;
     private static final int RC_SIGN_IN = 4;
 
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final String CURRENT_MATCH_ID = "CURRENT_MATCH_ID";
 
     private ActivityMainBinding binding;
@@ -67,8 +69,6 @@ public class MainActivity extends AppCompatActivity
     AndroidGameRepository androidGameRepository;
     @Inject
     GoogleAccountManager googleAccountManager;
-    //  @Inject
-//  Provider<TurnBasedMultiplayerClient> turnBasedClientProvider;
     @Inject
     Provider<PlayersClient> playersClientProvider;
 
@@ -82,6 +82,12 @@ public class MainActivity extends AppCompatActivity
         Crashlytics.log(Log.DEBUG, TAG, "onCreate - intent = " + getIntent().getExtras());
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            binding.appToolbar.setPadding(0, insets.top, 0, 0);
+            v.setPadding(insets.left, 0, insets.right, insets.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         ((GoApplication) getApplication()).getComponent().inject(this);
 
@@ -102,7 +108,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         Crashlytics.log(Log.DEBUG, TAG, "onStart");
         updateMatchSpinner();
-        signIn();
+//        signIn();
     }
 
     @Override
@@ -155,6 +161,17 @@ public class MainActivity extends AppCompatActivity
         boolean signedIn = googleAccountManager.getSignInComplete();
         menu.setGroupVisible(R.id.group_signedIn, signedIn);
         menu.setGroupVisible(R.id.group_signedOut, !signedIn);
+        if (com.cauchymop.goblob.BuildConfig.DEBUG) {
+            menu.findItem(R.id.menu_clear_cache).setVisible(true);
+        }
+
+        boolean isRemoteGame = false;
+        PlayGameData.GameData currentGame = androidGameRepository.getCurrentGame();
+        if (currentGame != null) {
+            isRemoteGame = androidGameRepository.getGameDatas().isRemoteGame(currentGame);
+        }
+        menu.findItem(R.id.menu_leave_game).setVisible(isRemoteGame);
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -174,6 +191,15 @@ public class MainActivity extends AppCompatActivity
 //      checkMatches();
         } else if (id == R.id.menu_about) {
             startActivity(new Intent(this, AboutActivity.class));
+        } else if (id == R.id.menu_clear_cache) {
+            if (com.cauchymop.goblob.BuildConfig.DEBUG) {
+                androidGameRepository.clearCache();
+            }
+        } else if (id == R.id.menu_leave_game) {
+            PlayGameData.GameData currentGame = androidGameRepository.getCurrentGame();
+            if (currentGame != null) {
+                androidGameRepository.leaveGame(currentGame.getMatchId());
+            }
         }
         return false;
     }
@@ -317,33 +343,37 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void gameListChanged() {
-        updateMatchSpinner();
+        runOnUiThread(() -> updateMatchSpinner());
     }
 
     @Override
     public void gameChanged(GameData gameData) {
-        if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            vibrator.vibrate(200);
-        }
+        runOnUiThread(() -> {
+            if (gameData.getGameConfiguration().getGameType() == PlayGameData.GameType.REMOTE) {
+                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                vibrator.vibrate(200);
+            }
+        });
     }
 
     @Override
     public void gameSelected(GameData gameData) {
-        Crashlytics.log(Log.DEBUG, TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
-        if (gameData == null) {
-            selectMenuItem(NO_MATCH_ID);
-            displayFragment(new PlayerChoiceFragment());
-            return;
-        }
+        runOnUiThread(() -> {
+            Crashlytics.log(Log.DEBUG, TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
+            if (gameData == null) {
+                selectMenuItem(NO_MATCH_ID);
+                displayFragment(new PlayerChoiceFragment());
+                return;
+            }
 
-        if (gameDatas.needsApplicationUpdate(gameData)) {
-            displayFragment(UpdateApplicationFragment.newInstance());
-            return;
-        }
+            if (gameDatas.needsApplicationUpdate(gameData)) {
+                displayFragment(UpdateApplicationFragment.newInstance());
+                return;
+            }
 
-        selectMenuItem(gameData.getMatchId());
-        displayFragment(getGameFragment());
+            selectMenuItem(gameData.getMatchId());
+            displayFragment(getGameFragment());
+        });
     }
 
     protected GameFragment getGameFragment() {
@@ -357,9 +387,9 @@ public class MainActivity extends AppCompatActivity
         Crashlytics.log(Log.DEBUG, TAG, "updateMatchSpinner");
 
         List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
+        newMatchMenuItems.addAll(getLobbyMatchMenuItems(androidGameRepository.getLobbyGames()));
         newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getMyTurnGames()));
         newMatchMenuItems.addAll(getMatchMenuItems(androidGameRepository.getTheirTurnGames()));
-        newMatchMenuItems.addAll(getLobbyMatchMenuItems(androidGameRepository.getLobbyGames()));
         setMatchMenuItems(newMatchMenuItems);
     }
 
@@ -371,12 +401,16 @@ public class MainActivity extends AppCompatActivity
         for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
             MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
             if (Objects.equal(item.getMatchId(), matchId)) {
-                binding.toolbarMatchSpinner.setSelection(index);
+                setSelection(index);
                 return;
             }
         }
 
         Crashlytics.log(Log.DEBUG, TAG, String.format("selectMenuItem(%s) didn't find anything; we do nothing (it's probably loading...)", matchId));
+    }
+
+    private void setSelection(final int index) {
+        runOnUiThread(() -> binding.toolbarMatchSpinner.setSelection(index));
     }
 
     public void setWaitingScreenVisible(boolean visible) {
@@ -385,18 +419,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void accountStateChanged(boolean isSignInComplete) {
-        if (isSignInComplete) {
-            androidGameRepository.refreshRemoteGameListFromServer();
-            androidGameRepository.publishUnpublishedGames();
-            Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
-                // Retrieve the TurnBasedMatch from the connectionHint in order to select it
-//        if (bundle != null) {
-//          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-//          Crashlytics.log(Log.DEBUG, TAG, " ==> We have an invite! " + turnBasedMatch);
-//          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
+//        if (isSignInComplete) {
+//            androidGameRepository.refreshRemoteGameListFromServer();
+//            androidGameRepository.publishUnpublishedGames();
+//            Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
+//                // Retrieve the TurnBasedMatch from the connectionHint in order to select it
+////        if (bundle != null) {
+////          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
+////          Crashlytics.log(Log.DEBUG, TAG, " ==> We have an invite! " + turnBasedMatch);
+////          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
+////        }
+//            });
 //        }
-            });
-        }
         invalidateOptionsMenu();
         updateUiFromConnectionStatus(isSignInComplete);
     }
