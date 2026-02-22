@@ -264,7 +264,9 @@ public class MainActivity extends AppCompatActivity
             matchMenuItems.add(new CreateNewGameMenuItem(MainActivity.this.getString(R.string.new_game_label)));
             navigationSpinnerAdapter.notifyDataSetChanged();
 
-            MainActivity.this.selectMenuItem(androidGameRepository.getCurrentMatchId());
+            String pendingMatchId = androidGameRepository.getPendingMatchId();
+            String matchIdToSelect = pendingMatchId != null ? pendingMatchId : androidGameRepository.getCurrentMatchId();
+            MainActivity.this.selectMenuItem(matchIdToSelect);
         });
     }
 
@@ -373,6 +375,15 @@ public class MainActivity extends AppCompatActivity
 
             selectMenuItem(gameData.getMatchId());
             displayFragment(getGameFragment());
+        });
+    }
+
+    @Override
+    public void gameSelectionPending(@NonNull String matchId) {
+        runOnUiThread(() -> {
+            Crashlytics.log(Log.DEBUG, TAG, "gameSelectionPending matchId = " + matchId);
+            selectMenuItem(matchId);
+            setWaitingScreenVisible(true);
         });
     }
 

@@ -71,18 +71,32 @@ class GameRepositoryTest {
   }
 
   @Test
-  fun commitGameChanges_remoteGame() {
+  fun commitGameChanges_remoteGameNotLocalTurn() {
     val black = gameDatas.createGamePlayer("pipo", "player1", true)
-    val white = gameDatas.createGamePlayer("bimbo", "player2", true)
-    val remoteGame = gameDatas.createNewGameData("123", PlayGameData.GameType.REMOTE, black, white)
+    val white = gameDatas.createGamePlayer("bimbo", "player2", false)
+    val remoteGame = gameDatas.createNewGameData("123", PlayGameData.GameType.REMOTE, black, white).toBuilder().setTurn(PlayGameData.Color.WHITE).build()
     assertThat(gameCache.gamesMap.get("123")).isNull()
 
     gameRepository.commitGameChanges(remoteGame)
 
     assertThat(gameCache.gamesMap.get("123")).isEqualTo(remoteGame)
     verify(gameRepositoryImplementationDelegate).forceCacheRefresh()
-    // Verify interaction with LobbyClient instead of internal method call
+    // Verify interaction with LobbyClient
     verify(lobbyClient).sendGameMessage(eq(123), safeEq(remoteGame.toByteArray()))
+  }
+
+  @Test
+  fun commitGameChanges_remoteGameIsLocalTurn() {
+    val black = gameDatas.createGamePlayer("pipo", "player1", true)
+    val white = gameDatas.createGamePlayer("bimbo", "player2", false)
+    val remoteGame = gameDatas.createNewGameData("123", PlayGameData.GameType.REMOTE, black, white)
+    assertThat(gameCache.gamesMap.get("123")).isNull()
+
+    gameRepository.commitGameChanges(remoteGame)
+
+    // Verify it was caches but NOT published
+    assertThat(gameCache.gamesMap.get("123")).isEqualTo(remoteGame)
+    verify(gameRepositoryImplementationDelegate).forceCacheRefresh()
   }
 
   private fun safeAnyString(): String {

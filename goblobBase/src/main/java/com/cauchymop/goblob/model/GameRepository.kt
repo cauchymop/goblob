@@ -54,7 +54,16 @@ abstract class GameRepository(
     fun commitGameChanges(gameData: GameData) {
         saveToCache(gameData)
         if (gameDatas.isRemoteGame(gameData)) {
-            publishRemoteGameState(gameData)
+            // In Yura Lobby, sending a message automatically passes the server-side turn.
+            // Therefore, we must ONLY publish the game state if it is no longer our local turn.
+            // This ensures that if we accept a configuration but it is still our turn locally 
+            // (due to a handicap), we don't accidentally forfeit our turn in the Lobby.
+            val shouldPublish = !gameDatas.isLocalTurn(gameData)
+            if (shouldPublish) {
+                publishRemoteGameState(gameData)
+            } else {
+                log("Not publishing game state to remote server: local turn is true")
+            }
         }
         forceCacheRefresh()
     }
@@ -155,6 +164,7 @@ abstract class GameRepository(
                     }
                 }
             }
+            fireGameSelectionPending(matchId)
             return
         }
 
@@ -218,6 +228,12 @@ abstract class GameRepository(
         }
     }
 
+    protected fun fireGameSelectionPending(matchId: String) {
+        for (listener in gameSelectionListeners) {
+            listener.gameSelectionPending(matchId)
+        }
+    }
+
     protected abstract fun log(message: String)
 
     fun createNewLocalGame(): GameData {
@@ -253,8 +269,7 @@ abstract class GameRepository(
         fireGameListChanged()
 
         val isMyGameReadyToPlay = game.isMyGameReadyToPlay(myPlayerName)
-        println("OLIVIER: onAddOrUpdateLobbyGame isMyGameReadyToPlay = $isMyGameReadyToPlay")
-        if (waitingForCreatedGame && isMyGameReadyToPlay) {
+        if (isMyGameReadyToPlay && (waitingForCreatedGame || pendingMatchId == game.id.toString())) {
             waitingForCreatedGame = false
             selectGame(game.id.toString())
         }
@@ -263,15 +278,20 @@ abstract class GameRepository(
 
     override fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?) {
         val game = lobbyGamesById[gameId] ?: return
-        val gameData: GameData = gameDataBytes?.let { data: ByteArray ->
+        val gameData: GameData? = gameDataBytes?.let { data: ByteArray ->
             if (data.isNotEmpty()) {
                 fillLocalStates(game, GameData.parseFrom(data).toBuilder()).build()
             } else null
-        } ?: game.toNewGameData(gameDatas, getLobbyClient())
-        println("OLIVIER: onGameDataChanged for ${game.name} gameData = $gameData")
-        println("OLIVIER: pendingMatchId = $pendingMatchId, gameData.matchId = ${gameData.matchId}, game.id = ${game.id}")
-        saveToCache(gameData)
-        if (pendingMatchId == game.id.toString()) {
+        } ?: if (game.players.firstOrNull()?.toString() == getLobbyClient().myPlayerName()) {
+            game.toNewGameData(gameDatas, getLobbyClient())
+        } else {
+            null
+        }
+
+        if (gameData != null) {
+            saveToCache(gameData)
+        }
+        if (pendingMatchId == game.id.toString() && gameData != null) {
             pendingMatchId = null
             selectGame(gameData.matchId)
         }
@@ -309,6 +329,7 @@ interface GameChangeListener {
 
 interface GameSelectionListener {
     fun gameSelected(gameData: GameData?)
+    fun gameSelectionPending(matchId: String) {}
 }
 
 fun Game.toNewGameData(gameDatas: GameDatas, lobbyClient: LobbyClient): GameData {
