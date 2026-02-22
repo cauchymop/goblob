@@ -52,8 +52,8 @@
         android:visible="true"
         android:title="@string/about"/>
     <item
-        android:id="@+id/menu_leave_game"
-        android:title="@string/leave_game"
+        android:id="@+id/menu_resign_game"
+        android:title="@string/resign"
         android:visible="false"
         app:showAsAction="never"/>
     <item

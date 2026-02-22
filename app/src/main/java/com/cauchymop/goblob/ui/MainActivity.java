@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity
         if (currentGame != null) {
             isRemoteGame = androidGameRepository.getGameDatas().isRemoteGame(currentGame);
         }
-        menu.findItem(R.id.menu_leave_game).setVisible(isRemoteGame);
+        menu.findItem(R.id.menu_resign_game).setVisible(isRemoteGame);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity
             if (com.cauchymop.goblob.BuildConfig.DEBUG) {
                 androidGameRepository.clearCache();
             }
-        } else if (id == R.id.menu_leave_game) {
+        } else if (id == R.id.menu_resign_game) {
             PlayGameData.GameData currentGame = androidGameRepository.getCurrentGame();
             if (currentGame != null) {
                 androidGameRepository.leaveGame(currentGame.getMatchId());
