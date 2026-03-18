@@ -146,7 +146,7 @@ abstract class GameRepository(
                 if (lobbyGamesById.containsKey(lobbyGameId)) {
                     val game = lobbyGamesById[lobbyGameId] ?: return
                     if (game.players.size == 2) {
-                        getLobbyClient().playGame(lobbyGameId)
+                        getLobbyClient().openGame(lobbyGameId)
                     } else if (game.isMyGameWaitingForOpponent(getLobbyClient().myPlayerName())) {
                         saveToCache(game.toNewGameData(gameDatas, getLobbyClient()))
                         selectGame(matchId)
@@ -163,7 +163,7 @@ abstract class GameRepository(
         // If it's a lobby game, we need to call playGame to receive updates (even if it's already in cache)
         currentMatchId.toIntOrNull()?.let { lobbyGameId ->
             if (lobbyGamesById.containsKey(lobbyGameId)) {
-                getLobbyClient().playGame(lobbyGameId)
+                getLobbyClient().openGame(lobbyGameId)
             }
         }
 
