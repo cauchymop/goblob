@@ -65,6 +65,9 @@ constructor(
         })
         // TODO: Pass Google Signin to LobbyClient somehow when isSignInComplete?
         lobbyClient.addListener(this)
+    }
+
+    override fun onGameTypeReceived(gameType: net.yura.lobby.model.GameType) {
         fetchPushToken()
     }
 
@@ -74,7 +77,7 @@ constructor(
                 if (task.isSuccessful) {
                     val token = task.result
                     log("FCM token: $token")
-                    lobbyClient.setPushToken(token)
+                    lobbyClient.sendPushToken(token)
                 } else {
                     log("FCM token fetch failed: ${task.exception}")
                 }

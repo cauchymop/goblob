@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap
 class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
 
     private var myPlayerName: String = ""
-    private var pushToken: String? = null
     private val mycom: LobbyCom = LobbyCom(uuid, appName, version)
     private val listeners = mutableListOf<LobbyClientListener>()
     var gameType: GameType? = null
@@ -91,17 +90,11 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.sendGameMessage(gameId, message)
     }
 
-    fun setPushToken(token: String) {
-        this.pushToken = token
-        maybeSendPushToken()
-    }
-
-    private fun maybeSendPushToken() {
+    fun sendPushToken(token: String) {
         val gameType = this.gameType
-        val pushToken = this.pushToken
-        if (gameType != null && pushToken != null) {
-            println("OLIVIER: setPushToken $pushToken")
-            mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType, pushToken)
+        if (gameType != null) {
+            println("OLIVIER: setPushToken $token")
+            mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType, token)
         }
     }
 
@@ -137,7 +130,7 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         println("addGameType: types = $gameTypes")
         val ourGameType = gameTypes.first { it.name == "Go Blob" }
         gameType = ourGameType
-        maybeSendPushToken()
+        listeners.forEach { it.onGameTypeReceived(ourGameType) }
         mycom.getGames(gameType)
     }
 
@@ -215,4 +208,5 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
 interface LobbyClientListener {
     fun onAddOrUpdateLobbyGame(game: Game)
     fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?)
+    fun onGameTypeReceived(gameType: GameType) {}
 }
