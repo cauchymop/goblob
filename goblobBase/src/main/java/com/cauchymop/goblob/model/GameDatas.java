@@ -64,7 +64,7 @@ public class GameDatas {
         } else if (white.getIsLocal()) {
             return PlayGameData.Color.WHITE;
         } else {
-            throw new RuntimeException("Local Player is neither black or white, maybe this is a Connect4 Game...!");
+            throw new IllegalStateException("Local player must be either black or white.");
         }
     }
 
@@ -101,9 +101,8 @@ public class GameDatas {
                 .setVersion(VERSION)
                 .setMatchId(matchId)
                 .setPhase(Phase.INITIAL)
-                .setGameConfiguration(gameConfiguration)
-                .addAllMove(ImmutableList.of());
-        builder.setTurn(getLocalColor(gameConfiguration));
+                .setGameConfiguration(gameConfiguration);
+        builder.setTurn(computeInGameTurn(gameConfiguration, 0));
         return builder.build();
     }
 
