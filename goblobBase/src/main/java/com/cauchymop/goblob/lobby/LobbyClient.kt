@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import net.yura.lobby.client.LobbyClient
 import net.yura.lobby.client.LobbyCom
+import net.yura.lobby.client.PushLobbyClient
 import net.yura.lobby.model.Game
 import net.yura.lobby.model.GameType
 import net.yura.lobby.model.Player
@@ -89,8 +90,9 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.sendGameMessage(gameId, message)
     }
 
-    fun setPushToken(token: String, type: String) {
-        mycom.setPushToken(token, gameType, type)
+    fun sendPushToken(token: String) {
+        println("OLIVIER: setPushToken $token")
+        mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType!!, token)
     }
 
 
@@ -124,6 +126,7 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         val gameTypes = types.filterIsInstance<GameType>()
         println("addGameType: types = $gameTypes")
         gameType = gameTypes.first { it.name == "Go Blob" }
+        listeners.forEach { it.onGameTypeReceived() }
         mycom.getGames(gameType)
     }
 
@@ -201,4 +204,5 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
 interface LobbyClientListener {
     fun onAddOrUpdateLobbyGame(game: Game)
     fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?)
+    fun onGameTypeReceived() {}
 }

@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
 
             // Get new FCM registration token
             String token = task.getResult();
-            androidGameRepository.getLobbyClient().setPushToken(token, "FCM");
+            androidGameRepository.getLobbyClient().sendPushToken(token);
         });
     }
 

@@ -24,7 +24,7 @@ class GoFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        gameRepository.getLobbyClient().setPushToken(token, "FCM")
+        gameRepository.getLobbyClient().sendPushToken(token)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
