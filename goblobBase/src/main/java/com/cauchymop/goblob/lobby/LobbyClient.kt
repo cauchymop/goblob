@@ -17,11 +17,14 @@ import java.util.concurrent.ConcurrentHashMap
 @OptIn(FlowPreview::class)
 class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
 
-    private lateinit var myPlayerName: String
+    private var myPlayerName: String = ""
     private val mycom: LobbyCom = LobbyCom(uuid, appName, version)
     private val listeners = mutableListOf<LobbyClientListener>()
     var gameType: GameType? = null
         private set
+
+    val isConnected: Boolean
+        get() = gameType != null && myPlayerName.isNotEmpty()
 
     private val games = ConcurrentHashMap<Int, Game>()
     private val _gamesFlow = MutableSharedFlow<Unit>(

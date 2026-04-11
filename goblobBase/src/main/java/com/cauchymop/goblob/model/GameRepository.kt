@@ -54,11 +54,21 @@ abstract class GameRepository(
     fun commitGameChanges(gameData: GameData) {
         saveToCache(gameData)
         if (gameDatas.isRemoteGame(gameData)) {
-            publishRemoteGameState(gameData)
+            val isLocalTurn = gameDatas.isLocalTurn(gameData)
+            log("commitGameChanges: isLocalTurn=$isLocalTurn, phase=${gameData.phase}, turn=${gameData.turn}")
+            // In Yura Lobby, sending a message automatically passes the server-side turn.
+            // Therefore, we must ONLY publish the game state if it is no longer our local turn.
+            // This ensures that if we accept a configuration but it is still our turn locally
+            // (due to a handicap), we don't accidentally forfeit our turn in the Lobby.
+            val shouldPublish = !isLocalTurn
+            if (shouldPublish) {
+                publishRemoteGameState(gameData)
+            } else {
+                log("Not publishing game state to remote server: local turn is true")
+            }
         }
         forceCacheRefresh()
     }
-
     protected abstract fun forceCacheRefresh()
 
     protected abstract fun getLobbyClient(): LobbyClient
@@ -155,6 +165,7 @@ abstract class GameRepository(
                     }
                 }
             }
+            fireGameSelectionPending(matchId)
             return
         }
 
@@ -218,6 +229,12 @@ abstract class GameRepository(
         }
     }
 
+    protected fun fireGameSelectionPending(matchId: String) {
+        for (listener in gameSelectionListeners) {
+            listener.gameSelectionPending(matchId)
+        }
+    }
+
     protected abstract fun log(message: String)
 
     fun createNewLocalGame(): GameData {
@@ -233,11 +250,15 @@ abstract class GameRepository(
 
     private var waitingForCreatedGame = false
 
-    fun createNewRemoteGame() {
-        // TODO: Find a nice way to set a Name
+    fun createNewRemoteGame(): Boolean {
+        if (!getLobbyClient().isConnected) {
+            log("Error: Lobby is not connected, cannot create remote game.")
+            return false
+        }
         val userName = getLobbyClient().myPlayerName()
         waitingForCreatedGame = true
         getLobbyClient().createNewGame("$userName's new Game")
+        return true
     }
 
     override fun onAddOrUpdateLobbyGame(game: Game) {
@@ -253,8 +274,7 @@ abstract class GameRepository(
         fireGameListChanged()
 
         val isMyGameReadyToPlay = game.isMyGameReadyToPlay(myPlayerName)
-        println("OLIVIER: onAddOrUpdateLobbyGame isMyGameReadyToPlay = $isMyGameReadyToPlay")
-        if (waitingForCreatedGame && isMyGameReadyToPlay) {
+        if (isMyGameReadyToPlay && (waitingForCreatedGame || pendingMatchId == game.id.toString())) {
             waitingForCreatedGame = false
             selectGame(game.id.toString())
         }
@@ -263,37 +283,37 @@ abstract class GameRepository(
 
     override fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?) {
         val game = lobbyGamesById[gameId] ?: return
-        val gameData: GameData = gameDataBytes?.let { data: ByteArray ->
-            if (data.isNotEmpty()) {
-                fillLocalStates(game, GameData.parseFrom(data).toBuilder()).build()
-            } else null
-        } ?: game.toNewGameData(gameDatas, getLobbyClient())
-        println("OLIVIER: onGameDataChanged for ${game.name} gameData = $gameData")
-        println("OLIVIER: pendingMatchId = $pendingMatchId, gameData.matchId = ${gameData.matchId}, game.id = ${game.id}")
-        saveToCache(gameData)
-        if (pendingMatchId == game.id.toString()) {
-            pendingMatchId = null
-            selectGame(gameData.matchId)
+
+        var gameData: GameData? = null
+        if (gameDataBytes != null && gameDataBytes.isNotEmpty()) {
+            gameData = fillLocalStates(GameData.parseFrom(gameDataBytes).toBuilder()).build()
+        } else if (game.players.firstOrNull()?.toString() == getLobbyClient().myPlayerName()) {
+            gameData = game.toNewGameData(gameDatas, getLobbyClient())
+        }
+
+        if (gameData != null) {
+            saveToCache(gameData)
+            if (pendingMatchId == game.id.toString()) {
+                pendingMatchId = null
+                selectGame(gameData.matchId)
+            }
         }
     }
 
-    private fun fillLocalStates(lobbyGame: Game, gameData: GameData.Builder): GameData.Builder {
-//        val whosTurn = lobbyGame.whosTurn
-//        val isMyTurn = (whosTurn == getLobbyClient().myPlayerName())
+    private fun fillLocalStates(gameData: GameData.Builder): GameData.Builder {
         val myPlayerName = getLobbyClient().myPlayerName()
-        val isMyTurn = if (gameData.turn == PlayGameData.Color.BLACK) {
-            gameData.gameConfiguration.black.id == myPlayerName
-        } else {
-            gameData.gameConfiguration.white.id == myPlayerName
-        }
+        val iAmBlack = gameData.gameConfiguration.black.id == myPlayerName
 
-        val turnIsBlack = gameData.turn == PlayGameData.Color.BLACK
-        val iAmBlack = isMyTurn && turnIsBlack || !isMyTurn && !turnIsBlack
         val gameConfiguration = gameData.gameConfigurationBuilder
         val blackPlayer = gameConfiguration.blackBuilder
         val whitePlayer = gameConfiguration.whiteBuilder
         blackPlayer.isLocal = iAmBlack
         whitePlayer.isLocal = !iAmBlack
+        
+        if (!iAmBlack && whitePlayer.id.isEmpty()) {
+            whitePlayer.id = myPlayerName
+            whitePlayer.name = myPlayerName
+        }
         return gameData
     }
 
@@ -309,6 +329,7 @@ interface GameChangeListener {
 
 interface GameSelectionListener {
     fun gameSelected(gameData: GameData?)
+    fun gameSelectionPending(matchId: String) {}
 }
 
 fun Game.toNewGameData(gameDatas: GameDatas, lobbyClient: LobbyClient): GameData {

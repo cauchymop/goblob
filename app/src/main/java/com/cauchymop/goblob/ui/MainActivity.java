@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -264,7 +265,9 @@ public class MainActivity extends AppCompatActivity
             matchMenuItems.add(new CreateNewGameMenuItem(MainActivity.this.getString(R.string.new_game_label)));
             navigationSpinnerAdapter.notifyDataSetChanged();
 
-            MainActivity.this.selectMenuItem(androidGameRepository.getCurrentMatchId());
+            String pendingMatchId = androidGameRepository.getPendingMatchId();
+            String matchIdToSelect = pendingMatchId != null ? pendingMatchId : androidGameRepository.getCurrentMatchId();
+            MainActivity.this.selectMenuItem(matchIdToSelect);
         });
     }
 
@@ -334,10 +337,11 @@ public class MainActivity extends AppCompatActivity
         } else {
             setWaitingScreenVisible(true);
             Crashlytics.log(Log.DEBUG, TAG, "Starting getSelectOpponentsIntent");
-            androidGameRepository.createNewRemoteGame();
-            //      getTurnBasedMultiplayerClient().getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
-//          task -> startActivityForResult(task.getResult(), RC_SELECT_PLAYER)
-//      );
+            boolean success = androidGameRepository.createNewRemoteGame();
+            if (!success) {
+                setWaitingScreenVisible(false);
+                Toast.makeText(this, "Not connected to the Lobby. Please try again later.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -373,6 +377,15 @@ public class MainActivity extends AppCompatActivity
 
             selectMenuItem(gameData.getMatchId());
             displayFragment(getGameFragment());
+        });
+    }
+
+    @Override
+    public void gameSelectionPending(@NonNull String matchId) {
+        runOnUiThread(() -> {
+            Crashlytics.log(Log.DEBUG, TAG, "gameSelectionPending matchId = " + matchId);
+            selectMenuItem(matchId);
+            setWaitingScreenVisible(true);
         });
     }
 
