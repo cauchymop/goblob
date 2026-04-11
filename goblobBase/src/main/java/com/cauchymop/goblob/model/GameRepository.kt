@@ -283,26 +283,24 @@ abstract class GameRepository(
 
     override fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?) {
         val game = lobbyGamesById[gameId] ?: return
-        val gameData: GameData? = gameDataBytes?.let { data: ByteArray ->
-            if (data.isNotEmpty()) {
-                fillLocalStates(game, GameData.parseFrom(data).toBuilder()).build()
-            } else null
-        } ?: if (game.players.firstOrNull()?.toString() == getLobbyClient().myPlayerName()) {
-            game.toNewGameData(gameDatas, getLobbyClient())
-        } else {
-            null
+
+        var gameData: GameData? = null
+        if (gameDataBytes != null && gameDataBytes.isNotEmpty()) {
+            gameData = fillLocalStates(GameData.parseFrom(gameDataBytes).toBuilder()).build()
+        } else if (game.players.firstOrNull()?.toString() == getLobbyClient().myPlayerName()) {
+            gameData = game.toNewGameData(gameDatas, getLobbyClient())
         }
 
         if (gameData != null) {
             saveToCache(gameData)
-        }
-        if (pendingMatchId == game.id.toString() && gameData != null) {
-            pendingMatchId = null
-            selectGame(gameData.matchId)
+            if (pendingMatchId == game.id.toString()) {
+                pendingMatchId = null
+                selectGame(gameData.matchId)
+            }
         }
     }
 
-    private fun fillLocalStates(lobbyGame: Game, gameData: GameData.Builder): GameData.Builder {
+    private fun fillLocalStates(gameData: GameData.Builder): GameData.Builder {
         val myPlayerName = getLobbyClient().myPlayerName()
         val iAmBlack = gameData.gameConfiguration.black.id == myPlayerName
 
