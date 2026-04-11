@@ -67,7 +67,7 @@ constructor(
         lobbyClient.addListener(this)
     }
 
-    override fun onGameTypeReceived(gameType: net.yura.lobby.model.GameType) {
+    override fun onGameTypeReceived() {
         fetchPushToken()
     }
 

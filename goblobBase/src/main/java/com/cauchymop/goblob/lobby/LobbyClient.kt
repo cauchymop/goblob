@@ -91,11 +91,8 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     }
 
     fun sendPushToken(token: String) {
-        val gameType = this.gameType
-        if (gameType != null) {
-            println("OLIVIER: setPushToken $token")
-            mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType, token)
-        }
+        println("OLIVIER: setPushToken $token")
+        mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType!!, token)
     }
 
 
@@ -128,9 +125,8 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     override fun addGameType(types: MutableList<Any?>) {
         val gameTypes = types.filterIsInstance<GameType>()
         println("addGameType: types = $gameTypes")
-        val ourGameType = gameTypes.first { it.name == "Go Blob" }
-        gameType = ourGameType
-        listeners.forEach { it.onGameTypeReceived(ourGameType) }
+        gameType = gameTypes.first { it.name == "Go Blob" }
+        listeners.forEach { it.onGameTypeReceived() }
         mycom.getGames(gameType)
     }
 
@@ -208,5 +204,5 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
 interface LobbyClientListener {
     fun onAddOrUpdateLobbyGame(game: Game)
     fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?)
-    fun onGameTypeReceived(gameType: GameType) {}
+    fun onGameTypeReceived() {}
 }
