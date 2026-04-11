@@ -12,10 +12,16 @@ import net.yura.lobby.client.LobbyCom
 import net.yura.lobby.model.Game
 import net.yura.lobby.model.GameType
 import net.yura.lobby.model.Player
+import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
 @OptIn(FlowPreview::class)
-class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
+class LobbyClient(
+    uuid: String,
+    appName: String,
+    version: String,
+    private val pushTokenProvider: (((String?) -> Unit) -> Unit)? = null
+) : LobbyClient {
 
     private var myPlayerName: String = ""
     private val mycom: LobbyCom = LobbyCom(uuid, appName, version)
@@ -120,7 +126,83 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         val gameTypes = types.filterIsInstance<GameType>()
         println("addGameType: types = $gameTypes")
         gameType = gameTypes.first { it.name == "Go Blob" }
+        gameType?.let { sendPushToken(it) }
         mycom.getGames(gameType)
+    }
+
+    private fun sendPushToken(gameType: GameType) {
+        val provider = pushTokenProvider ?: return
+        provider { pushToken ->
+            if (pushToken.isNullOrBlank()) {
+                println("addGameType: push token is empty, skipping push registration")
+                return@provider
+            }
+
+            try {
+                val pushSystemFcm = getPushSystemFcm()
+                if (invokePushTokenSetter(mycom, pushSystemFcm, gameType, pushToken)) {
+                    println("addGameType: push token registered")
+                } else {
+                    println("addGameType: failed to find setPushToken implementation")
+                }
+            } catch (e: Throwable) {
+                println("addGameType: failed to register push token ${e.message}")
+            }
+        }
+    }
+
+    private fun getPushSystemFcm(): Any {
+        val pushLobbyClientClass = Class.forName("net.yura.lobby.client.PushLobbyClient")
+        val field = pushLobbyClientClass.getField("PUSH_SYSTEM_FCM")
+        return field.get(null)
+    }
+
+    private fun invokePushTokenSetter(target: Any, pushSystemFcm: Any, gameType: GameType, pushToken: String): Boolean {
+        if (invokeSetPushToken(target, pushSystemFcm, gameType, pushToken)) {
+            return true
+        }
+
+        val nestedTargets = mutableListOf<Any>()
+        target.javaClass.methods
+            .asSequence()
+            .filter { it.parameterCount == 0 }
+            .filter { it.returnType.name == "net.yura.lobby.client.Connection" }
+            .forEach {
+                val nested = it.invoke(target)
+                if (nested != null) {
+                    nestedTargets += nested
+                }
+            }
+
+        target.javaClass.declaredFields
+            .asSequence()
+            .filter { it.type.name == "net.yura.lobby.client.Connection" }
+            .forEach {
+                it.isAccessible = true
+                val nested = it.get(target)
+                if (nested != null) {
+                    nestedTargets += nested
+                }
+            }
+
+        return nestedTargets.any { invokeSetPushToken(it, pushSystemFcm, gameType, pushToken) }
+    }
+
+    private fun invokeSetPushToken(target: Any, pushSystemFcm: Any, gameType: GameType, pushToken: String): Boolean {
+        val candidates = target.javaClass.methods.filter {
+            it.name == "setPushToken" && it.parameterCount == 3
+        }
+        val matched = candidates.firstOrNull { method ->
+            val parameterTypes = method.parameterTypes
+            parameterTypes[1].isAssignableFrom(gameType.javaClass) &&
+                parameterTypes[2].isAssignableFrom(String::class.java)
+        } ?: return false
+
+        if (!Modifier.isPublic(matched.modifiers)) {
+            matched.isAccessible = true
+        }
+        matched.invoke(target, pushSystemFcm, gameType, pushToken)
+        return true
     }
 
     override fun addOrUpdateGame(game: Game) {

@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.protobuf.java)
     implementation(libs.firebase.core)
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.messaging)
     implementation(libs.kotlin.stdlib.jdk7)
     implementation(libs.crashlytics)
 

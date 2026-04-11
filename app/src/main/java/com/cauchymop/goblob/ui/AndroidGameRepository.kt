@@ -15,6 +15,7 @@ import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameList
 import com.crashlytics.android.Crashlytics
 import com.google.protobuf.TextFormat
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.Lazy
 import java.util.UUID
 import javax.inject.Inject
@@ -50,7 +51,14 @@ constructor(
         getOrCreateClientId(prefs),
         appName,
         BuildConfig.VERSION_NAME
-    )
+    ) { onToken ->
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token -> onToken(token) }
+            .addOnFailureListener {
+                Crashlytics.log(Log.WARN, TAG, "Failed to get push token: ${it.message}")
+                onToken(null)
+            }
+    }
 
     init {
         loadLegacyLocalGame()

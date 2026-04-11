@@ -4,6 +4,7 @@ crashlytics = "2.10.1"
 daggerVersion = "2.57"
 firebaseAnalytics = "23.0.0"
 firebaseCore = "21.1.1"
+firebaseMessaging = "25.0.0"
 grpcStub = "1.73.0"
 guavaVersion = "33.4.8-android"
 coreKtx = "1.16.0"
@@ -35,6 +36,7 @@ dagger-android-support = { module = "com.google.dagger:dagger-android-support", 
 dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "daggerVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
 firebase-core = { module = "com.google.firebase:firebase-core", version.ref = "firebaseCore" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
 grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpcStub" }
 grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpcStub" }
 guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
@@ -64,4 +66,3 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinVersion" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPluginVersion" }
-
