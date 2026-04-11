@@ -3,7 +3,10 @@ package com.cauchymop.goblob.ui;
 import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
@@ -13,10 +16,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -75,6 +81,15 @@ public class MainActivity extends AppCompatActivity
 
     private GameFragment gameFragment;
     private GoogleSignInClient signInClient;
+    private Runnable pendingAction;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (pendingAction != null) {
+                    pendingAction.run();
+                    pendingAction = null;
+                }
+            });
 
 
     @Override
@@ -147,7 +162,11 @@ public class MainActivity extends AppCompatActivity
     void onMatchItemSelected(int position) {
         MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
         Crashlytics.log(Log.DEBUG, TAG, "onItemSelected: " + item.getMatchId());
-        androidGameRepository.selectGame(item.getMatchId());
+        if (item instanceof GameMatchMenuItem || item instanceof LobbyGameMatchMenuItem) {
+            ensureNotificationsPermission(() -> androidGameRepository.selectGame(item.getMatchId()));
+        } else {
+            androidGameRepository.selectGame(item.getMatchId());
+        }
     }
 
     @Override
@@ -335,13 +354,37 @@ public class MainActivity extends AppCompatActivity
             GameData localGame = androidGameRepository.createNewLocalGame();
             androidGameRepository.selectGame(localGame.getMatchId());
         } else {
-            setWaitingScreenVisible(true);
-            Crashlytics.log(Log.DEBUG, TAG, "Starting getSelectOpponentsIntent");
-            boolean success = androidGameRepository.createNewRemoteGame();
-            if (!success) {
-                setWaitingScreenVisible(false);
-                Toast.makeText(this, "Not connected to the Lobby. Please try again later.", Toast.LENGTH_LONG).show();
+            ensureNotificationsPermission(() -> {
+                setWaitingScreenVisible(true);
+                Crashlytics.log(Log.DEBUG, TAG, "Starting getSelectOpponentsIntent");
+                boolean success = androidGameRepository.createNewRemoteGame();
+                if (!success) {
+                    setWaitingScreenVisible(false);
+                    Toast.makeText(this, "Not connected to the Lobby. Please try again later.", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    private void ensureNotificationsPermission(Runnable onPermissionGranted) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            pendingAction = onPermissionGranted;
+            if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.notification_permission_title)
+                        .setMessage(R.string.notification_permission_message)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS))
+                        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                            onPermissionGranted.run();
+                            pendingAction = null;
+                        })
+                        .show();
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
+        } else {
+            onPermissionGranted.run();
         }
     }
 
