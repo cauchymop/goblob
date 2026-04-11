@@ -66,8 +66,8 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.setOAuthToken("googleIdToken", idToken)
     }
 
-    fun playGame(gameId: Int) {
-        mycom.playGame(gameId)
+    fun openGame(gameId: Int) {
+        mycom.openGame(gameId)
     }
 
     fun closeGame(gameId: Int) {
