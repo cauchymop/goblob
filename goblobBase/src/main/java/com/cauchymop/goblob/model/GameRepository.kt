@@ -54,11 +54,13 @@ abstract class GameRepository(
     fun commitGameChanges(gameData: GameData) {
         saveToCache(gameData)
         if (gameDatas.isRemoteGame(gameData)) {
+            val isLocalTurn = gameDatas.isLocalTurn(gameData)
+            log("commitGameChanges: isLocalTurn=$isLocalTurn, phase=${gameData.phase}, turn=${gameData.turn}")
             // In Yura Lobby, sending a message automatically passes the server-side turn.
             // Therefore, we must ONLY publish the game state if it is no longer our local turn.
-            // This ensures that if we accept a configuration but it is still our turn locally 
+            // This ensures that if we accept a configuration but it is still our turn locally
             // (due to a handicap), we don't accidentally forfeit our turn in the Lobby.
-            val shouldPublish = !gameDatas.isLocalTurn(gameData)
+            val shouldPublish = !isLocalTurn
             if (shouldPublish) {
                 publishRemoteGameState(gameData)
             } else {
@@ -67,7 +69,6 @@ abstract class GameRepository(
         }
         forceCacheRefresh()
     }
-
     protected abstract fun forceCacheRefresh()
 
     protected abstract fun getLobbyClient(): LobbyClient
@@ -298,22 +299,19 @@ abstract class GameRepository(
     }
 
     private fun fillLocalStates(lobbyGame: Game, gameData: GameData.Builder): GameData.Builder {
-//        val whosTurn = lobbyGame.whosTurn
-//        val isMyTurn = (whosTurn == getLobbyClient().myPlayerName())
         val myPlayerName = getLobbyClient().myPlayerName()
-        val isMyTurn = if (gameData.turn == PlayGameData.Color.BLACK) {
-            gameData.gameConfiguration.black.id == myPlayerName
-        } else {
-            gameData.gameConfiguration.white.id == myPlayerName
-        }
+        val iAmBlack = gameData.gameConfiguration.black.id == myPlayerName
 
-        val turnIsBlack = gameData.turn == PlayGameData.Color.BLACK
-        val iAmBlack = isMyTurn && turnIsBlack || !isMyTurn && !turnIsBlack
         val gameConfiguration = gameData.gameConfigurationBuilder
         val blackPlayer = gameConfiguration.blackBuilder
         val whitePlayer = gameConfiguration.whiteBuilder
         blackPlayer.isLocal = iAmBlack
         whitePlayer.isLocal = !iAmBlack
+        
+        if (!iAmBlack && whitePlayer.id.isEmpty()) {
+            whitePlayer.id = myPlayerName
+            whitePlayer.name = myPlayerName
+        }
         return gameData
     }
 
