@@ -250,11 +250,15 @@ abstract class GameRepository(
 
     private var waitingForCreatedGame = false
 
-    fun createNewRemoteGame() {
-        // TODO: Find a nice way to set a Name
+    fun createNewRemoteGame(): Boolean {
+        if (!getLobbyClient().isConnected) {
+            log("Error: Lobby is not connected, cannot create remote game.")
+            return false
+        }
         val userName = getLobbyClient().myPlayerName()
         waitingForCreatedGame = true
         getLobbyClient().createNewGame("$userName's new Game")
+        return true
     }
 
     override fun onAddOrUpdateLobbyGame(game: Game) {

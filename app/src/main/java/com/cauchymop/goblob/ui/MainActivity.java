@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -336,10 +337,11 @@ public class MainActivity extends AppCompatActivity
         } else {
             setWaitingScreenVisible(true);
             Crashlytics.log(Log.DEBUG, TAG, "Starting getSelectOpponentsIntent");
-            androidGameRepository.createNewRemoteGame();
-            //      getTurnBasedMultiplayerClient().getSelectOpponentsIntent(1, 1, false).addOnCompleteListener(
-//          task -> startActivityForResult(task.getResult(), RC_SELECT_PLAYER)
-//      );
+            boolean success = androidGameRepository.createNewRemoteGame();
+            if (!success) {
+                setWaitingScreenVisible(false);
+                Toast.makeText(this, "Not connected to the Lobby. Please try again later.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 

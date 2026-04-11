@@ -23,6 +23,9 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     var gameType: GameType? = null
         private set
 
+    val isConnected: Boolean
+        get() = gameType != null && myPlayerName.isNotEmpty()
+
     private val games = ConcurrentHashMap<Int, Game>()
     private val _gamesFlow = MutableSharedFlow<Unit>(
         replay = 1,
