@@ -14,6 +14,7 @@ import com.cauchymop.goblob.model.GoogleAccountManager
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameList
 import com.crashlytics.android.Crashlytics
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.protobuf.TextFormat
 import dagger.Lazy
 import java.util.UUID
@@ -64,6 +65,23 @@ constructor(
         })
         // TODO: Pass Google Signin to LobbyClient somehow when isSignInComplete?
         lobbyClient.addListener(this)
+        fetchPushToken()
+    }
+
+    private fun fetchPushToken() {
+        try {
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    log("FCM token: $token")
+                    lobbyClient.setPushToken(token)
+                } else {
+                    log("FCM token fetch failed: ${task.exception}")
+                }
+            }
+        } catch (e: Exception) {
+            log("Error fetching FCM token: ${e.message}")
+        }
     }
 
     private fun onGoogleSignIn() {

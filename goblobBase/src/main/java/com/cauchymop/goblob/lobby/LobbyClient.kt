@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import net.yura.lobby.client.LobbyClient
 import net.yura.lobby.client.LobbyCom
+import net.yura.lobby.client.PushLobbyClient
 import net.yura.lobby.model.Game
 import net.yura.lobby.model.GameType
 import net.yura.lobby.model.Player
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient {
 
     private var myPlayerName: String = ""
+    private var pushToken: String? = null
     private val mycom: LobbyCom = LobbyCom(uuid, appName, version)
     private val listeners = mutableListOf<LobbyClientListener>()
     var gameType: GameType? = null
@@ -89,6 +91,20 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.sendGameMessage(gameId, message)
     }
 
+    fun setPushToken(token: String) {
+        this.pushToken = token
+        maybeSendPushToken()
+    }
+
+    private fun maybeSendPushToken() {
+        val gameType = this.gameType
+        val pushToken = this.pushToken
+        if (gameType != null && pushToken != null) {
+            println("OLIVIER: setPushToken $pushToken")
+            mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType, pushToken)
+        }
+    }
+
 
     override fun connected() {
         println("OLIVIER: connected!")
@@ -119,7 +135,9 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     override fun addGameType(types: MutableList<Any?>) {
         val gameTypes = types.filterIsInstance<GameType>()
         println("addGameType: types = $gameTypes")
-        gameType = gameTypes.first { it.name == "Go Blob" }
+        val ourGameType = gameTypes.first { it.name == "Go Blob" }
+        gameType = ourGameType
+        maybeSendPushToken()
         mycom.getGames(gameType)
     }
 
