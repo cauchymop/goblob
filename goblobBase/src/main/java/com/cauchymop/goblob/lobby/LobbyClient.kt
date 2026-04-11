@@ -89,6 +89,10 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         mycom.sendGameMessage(gameId, message)
     }
 
+    fun setPushToken(token: String, type: String) {
+        mycom.setPushToken(token, gameType, type)
+    }
+
 
     override fun connected() {
         println("OLIVIER: connected!")

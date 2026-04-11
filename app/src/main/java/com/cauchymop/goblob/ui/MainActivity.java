@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -85,6 +86,9 @@ public class MainActivity extends AppCompatActivity
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    updatePushToken();
+                }
                 if (pendingAction != null) {
                     pendingAction.run();
                     pendingAction = null;
@@ -117,6 +121,24 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState != null) {
             androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
         }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED) {
+            updatePushToken();
+        }
+    }
+
+    private void updatePushToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                return;
+            }
+
+            // Get new FCM registration token
+            String token = task.getResult();
+            androidGameRepository.getLobbyClient().setPushToken(token, "FCM");
+        });
     }
 
     @Override

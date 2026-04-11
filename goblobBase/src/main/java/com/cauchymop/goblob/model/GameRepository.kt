@@ -71,7 +71,7 @@ abstract class GameRepository(
     }
     protected abstract fun forceCacheRefresh()
 
-    protected abstract fun getLobbyClient(): LobbyClient
+    abstract fun getLobbyClient(): LobbyClient
 
     protected fun saveToCache(gameData: GameData): Boolean {
         log("saveToCache " + gameData.matchId)
