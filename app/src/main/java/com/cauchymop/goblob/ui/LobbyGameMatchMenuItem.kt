@@ -18,7 +18,7 @@ class LobbyGameMatchMenuItem(private val lobbyClient: LobbyClient, private val g
 
     override fun getSecondLine(context: Context): String {
         val gameStatus =
-            if (game.inGame != 0) {
+            if (game.numOfPlayers < game.maxPlayers) {
                 context.getString(R.string.waiting_for_opponent)
             } else {
                 context.getString(R.string.playing)
