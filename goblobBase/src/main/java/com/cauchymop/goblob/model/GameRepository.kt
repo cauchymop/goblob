@@ -300,6 +300,26 @@ abstract class GameRepository(
         }
     }
 
+    override fun onLoggedIn(userName: String) {
+        log("onLoggedIn: $userName")
+        // When we log in, we need to refresh the local states of all cached games
+        // to ensure the isLocal fields are correctly set for the new user.
+        var changed = false
+        gameCache.gamesMap.forEach { (matchId, gameData) ->
+            if (gameDatas.isRemoteGame(gameData)) {
+                val updatedGameData = fillLocalStates(gameData.toBuilder()).build()
+                if (updatedGameData != gameData) {
+                    gameCache.putGames(matchId, updatedGameData)
+                    changed = true
+                }
+            }
+        }
+        if (changed) {
+            forceCacheRefresh()
+            fireGameListChanged()
+        }
+    }
+
     private fun fillLocalStates(gameData: GameData.Builder): GameData.Builder {
         val myPlayerName = getLobbyClient().myPlayerName()
         val iAmBlack = gameData.gameConfiguration.black.id == myPlayerName
@@ -309,7 +329,7 @@ abstract class GameRepository(
         val whitePlayer = gameConfiguration.whiteBuilder
         blackPlayer.isLocal = iAmBlack
         whitePlayer.isLocal = !iAmBlack
-        
+
         if (!iAmBlack && whitePlayer.id.isEmpty()) {
             whitePlayer.id = myPlayerName
             whitePlayer.name = myPlayerName

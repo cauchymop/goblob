@@ -1,6 +1,5 @@
 package com.cauchymop.goblob.lobby
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -118,8 +117,9 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     }
 
     override fun setUsername(userName: String, playerType: Int) {
-        println("setUsername")
+        println("setUsername: " + userName)
         myPlayerName = userName
+        listeners.forEach { it.onLoggedIn(userName) }
     }
 
     override fun addGameType(types: MutableList<Any?>) {
@@ -205,4 +205,5 @@ interface LobbyClientListener {
     fun onAddOrUpdateLobbyGame(game: Game)
     fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?)
     fun onGameTypeReceived() {}
+    fun onLoggedIn(userName: String)
 }
