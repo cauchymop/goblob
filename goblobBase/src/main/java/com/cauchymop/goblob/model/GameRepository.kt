@@ -2,9 +2,8 @@ package com.cauchymop.goblob.model
 
 import com.cauchymop.goblob.lobby.LobbyClient
 import com.cauchymop.goblob.lobby.LobbyClientListener
-import com.cauchymop.goblob.lobby.isMyGameWaitingForOpponent
-import com.cauchymop.goblob.lobby.isMyGameReadyToPlay
-import com.cauchymop.goblob.lobby.isOnGoingGameFromOtherPlayers
+import com.cauchymop.goblob.lobby.isJoinable
+import com.cauchymop.goblob.lobby.isMyGame
 import com.cauchymop.goblob.proto.PlayGameData
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.google.common.collect.Lists
@@ -39,7 +38,7 @@ abstract class GameRepository(
     val lobbyGames: Iterable<Game>
         get() = lobbyGamesById.values
             .filter { !gameCache.containsGames(it.id.toString()) }
-            .sortedByDescending { it.inGame }
+            .sortedBy { it.numOfPlayers }
 
     val myTurnGames: Iterable<GameData>
         get() = gameCache.gamesMap.values.filter(gameDatas::isLocalTurn)
@@ -153,16 +152,18 @@ abstract class GameRepository(
         if (matchId != NO_MATCH_ID && !gameCache.containsGames(matchId)) {
             pendingMatchId = matchId
             matchId.toIntOrNull()?.let { lobbyGameId ->
-                if (lobbyGamesById.containsKey(lobbyGameId)) {
-                    val game = lobbyGamesById[lobbyGameId] ?: return
-                    if (game.players.size == 2) {
-                        getLobbyClient().openGame(lobbyGameId)
-                    } else if (game.isMyGameWaitingForOpponent(getLobbyClient().myPlayerName())) {
+                val game = lobbyGamesById[lobbyGameId] ?: return@let
+                val myPlayerName = getLobbyClient().myPlayerName()
+                when (game.getState(myPlayerName)) {
+                    Game.STATE_CAN_PLAY -> getLobbyClient().openGame(lobbyGameId)
+                    Game.STATE_CAN_LEAVE -> {
+                        // This is a game I am in, but it is not full (e.g. waiting for an opponent).
+                        // We convert the Lobby Game to our internal GameData format and save it to cache.
+                        // Then we re-select the game, which will now find it in cache and proceed with the selection.
                         saveToCache(game.toNewGameData(gameDatas, getLobbyClient()))
                         selectGame(matchId)
-                    } else {
-                        getLobbyClient().joinGame(lobbyGameId)
                     }
+                    Game.STATE_CAN_JOIN -> getLobbyClient().joinGame(lobbyGameId)
                 }
             }
             fireGameSelectionPending(matchId)
@@ -262,19 +263,18 @@ abstract class GameRepository(
     }
 
     override fun onAddOrUpdateLobbyGame(game: Game) {
-        // Filter out games with 2 players where I am not a player
+        // Filter out games that I can't join or I am not a participant of.
         val myPlayerName = getLobbyClient().myPlayerName()
-        val isOnGoingGameFromOtherPlayers = game.isOnGoingGameFromOtherPlayers(myPlayerName)
-
-        if (isOnGoingGameFromOtherPlayers) {
+        if (!game.isJoinable(myPlayerName) && !game.isMyGame(myPlayerName)) {
             return
         }
 
         lobbyGamesById[game.id] = game
         fireGameListChanged()
 
-        val isMyGameReadyToPlay = game.isMyGameReadyToPlay(myPlayerName)
-        if (isMyGameReadyToPlay && (waitingForCreatedGame || pendingMatchId == game.id.toString())) {
+        val isReadyToPlay = game.getState(myPlayerName) == Game.STATE_CAN_PLAY
+        val isAwaitingSelection = waitingForCreatedGame || pendingMatchId == game.id.toString()
+        if (isReadyToPlay && isAwaitingSelection) {
             waitingForCreatedGame = false
             selectGame(game.id.toString())
         }
