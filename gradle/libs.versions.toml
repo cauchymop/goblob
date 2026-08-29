@@ -26,6 +26,7 @@ protobufPluginVersion = "0.9.5"
 truthversion = "1.4.4"
 lobbyversion = "1.1.0"
 coroutinesVersion = "1.10.1"
+googleServices = "4.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -66,4 +67,5 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlinVersion" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPluginVersion" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 

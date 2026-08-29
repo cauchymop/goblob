@@ -61,6 +61,10 @@
   <string name="waiting_for_opponent">Waiting for opponent</string>
   <string name="playing">Playing</string>
   <string name="leave_game">Leave Game</string>
+  <string name="notification_permission_title">Notifications</string>
+  <string name="notification_permission_message">To keep you updated on your matches and whose turn it is, we need your permission to show notifications.</string>
+  <string name="notification_channel_name">Matches</string>
+  <string name="notification_channel_description">Notifications for game updates and turns.</string>
 
   <string-array name="handicap_values" translatable="false">
     <item>@string/handicap_even</item>

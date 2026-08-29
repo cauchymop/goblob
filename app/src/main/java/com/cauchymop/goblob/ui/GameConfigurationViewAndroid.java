@@ -22,7 +22,6 @@ import com.cauchymop.goblob.databinding.MessageAreaBinding;
 import com.cauchymop.goblob.presenter.ConfigurationEventListener;
 import com.cauchymop.goblob.view.GameConfigurationView;
 import com.cauchymop.goblob.viewmodel.ConfigurationViewModel;
-import com.crashlytics.android.Crashlytics;
 
 /**
  * Home Page Fragment.
@@ -143,7 +142,7 @@ public class GameConfigurationViewAndroid extends LinearLayout implements GameCo
 
     void fireConfigurationValidationEvent() {
         if (configurationEventListener != null) {
-            Crashlytics.log(Log.DEBUG, TAG, " ==> OnClick configuration_done_button");
+            Log.d(TAG, " ==> OnClick configuration_done_button");
             configurationEventListener.onConfigurationValidationEvent();
         }
     }

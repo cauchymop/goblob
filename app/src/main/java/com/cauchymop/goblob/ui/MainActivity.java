@@ -3,7 +3,10 @@ package com.cauchymop.goblob.ui;
 import static com.cauchymop.goblob.model.GameRepositoryKt.NO_MATCH_ID;
 import static com.cauchymop.goblob.proto.PlayGameData.GameData;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
@@ -13,10 +16,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,7 +38,6 @@ import com.cauchymop.goblob.model.GameListListener;
 import com.cauchymop.goblob.model.GameSelectionListener;
 import com.cauchymop.goblob.model.GoogleAccountManager;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -75,12 +81,24 @@ public class MainActivity extends AppCompatActivity
 
     private GameFragment gameFragment;
     private GoogleSignInClient signInClient;
+    private Runnable pendingAction;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    updatePushToken();
+                }
+                if (pendingAction != null) {
+                    pendingAction.run();
+                    pendingAction = null;
+                }
+            });
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Crashlytics.log(Log.DEBUG, TAG, "onCreate - intent = " + getIntent().getExtras());
+        Log.d(TAG, "onCreate - intent = " + getIntent().getExtras());
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, windowInsets) -> {
@@ -100,14 +118,35 @@ public class MainActivity extends AppCompatActivity
         googleAccountManager.addAccountStateListener(this);
 
         if (savedInstanceState != null) {
-            androidGameRepository.selectGame(savedInstanceState.getString(CURRENT_MATCH_ID));
+            String currentMatchId = savedInstanceState.getString(CURRENT_MATCH_ID);
+            if (currentMatchId != null) {
+                androidGameRepository.selectGame(currentMatchId);
+            }
         }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED) {
+            updatePushToken();
+        }
+    }
+
+    private void updatePushToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                return;
+            }
+
+            // Get new FCM registration token
+            String token = task.getResult();
+            androidGameRepository.getLobbyClient().sendPushToken(token);
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Crashlytics.log(Log.DEBUG, TAG, "onStart");
+        Log.d(TAG, "onStart");
         updateMatchSpinner();
 //        signIn();
     }
@@ -115,7 +154,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Crashlytics.log(Log.DEBUG, TAG, "onDestroy");
+        Log.d(TAG, "onDestroy");
         androidGameRepository.removeGameListListener(this);
         androidGameRepository.removeGameChangeListener(this);
         androidGameRepository.removeGameSelectionListener(this);
@@ -127,27 +166,33 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(binding.appToolbar);
 
         ActionBar supportActionBar = getSupportActionBar();
-        supportActionBar.setDisplayShowTitleEnabled(false);
-        navigationSpinnerAdapter = new MatchesAdapter(supportActionBar.getThemedContext(), matchMenuItems);
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayShowTitleEnabled(false);
+            navigationSpinnerAdapter = new MatchesAdapter(supportActionBar.getThemedContext(), matchMenuItems);
 
-        binding.toolbarMatchSpinner.setAdapter(navigationSpinnerAdapter);
-        binding.toolbarMatchSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                onMatchItemSelected(position);
-            }
+            binding.toolbarMatchSpinner.setAdapter(navigationSpinnerAdapter);
+            binding.toolbarMatchSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    onMatchItemSelected(position);
+                }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     void onMatchItemSelected(int position) {
         MatchMenuItem item = navigationSpinnerAdapter.getItem(position);
-        Crashlytics.log(Log.DEBUG, TAG, "onItemSelected: " + item.getMatchId());
-        androidGameRepository.selectGame(item.getMatchId());
+        Log.d(TAG, "onItemSelected: " + item.getMatchId());
+        if (item instanceof GameMatchMenuItem || item instanceof LobbyGameMatchMenuItem) {
+            ensureNotificationsPermission(() -> androidGameRepository.selectGame(item.getMatchId()));
+        } else {
+            androidGameRepository.selectGame(item.getMatchId());
+        }
     }
 
     @Override
@@ -186,7 +231,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.menu_signout) {
             signOut();
         } else if (id == R.id.menu_signin) {
-            Crashlytics.log(Log.DEBUG, TAG, "signIn from menu");
+            Log.d(TAG, "signIn from menu");
             signIn();
         } else if (id == R.id.menu_check_matches) {
 //      checkMatches();
@@ -208,7 +253,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         super.onActivityResult(requestCode, responseCode, intent);
-        Crashlytics.log(Log.DEBUG, TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
+        Log.d(TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
         switch (requestCode) {
             case RC_SELECT_PLAYER:
                 if (responseCode == RESULT_OK) {
@@ -236,7 +281,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
             default:
-                Crashlytics.log(Log.ERROR, TAG, "onActivityResult unexpected requestCode " + requestCode);
+        Log.e(TAG, "onActivityResult unexpected requestCode " + requestCode);
         }
     }
 
@@ -247,7 +292,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void updateUiFromConnectionStatus(boolean isSignInComplete) {
-        Crashlytics.log(Log.DEBUG, TAG, "updateUiFromConnectionStatus isSignedIn = " + isSignInComplete);
+        Log.d(TAG, "updateUiFromConnectionStatus isSignedIn = " + isSignInComplete);
         invalidateOptionsMenu();
 
         // When initial connection fails, there is no fragment yet.
@@ -303,7 +348,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void signOut() {
-        Crashlytics.log(Log.DEBUG, TAG, "signOut");
+        Log.d(TAG, "signOut");
         signInClient.signOut().addOnCompleteListener(this,
                 task -> googleAccountManager.onSignOut());
     }
@@ -313,7 +358,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void displayFragment(GoBlobBaseFragment fragment) {
-        Crashlytics.log(Log.DEBUG, TAG, "displayFragment " + fragment.getClass().getSimpleName());
+        Log.d(TAG, "displayFragment " + fragment.getClass().getSimpleName());
         setWaitingScreenVisible(false);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
@@ -335,13 +380,37 @@ public class MainActivity extends AppCompatActivity
             GameData localGame = androidGameRepository.createNewLocalGame();
             androidGameRepository.selectGame(localGame.getMatchId());
         } else {
-            setWaitingScreenVisible(true);
-            Crashlytics.log(Log.DEBUG, TAG, "Starting getSelectOpponentsIntent");
-            boolean success = androidGameRepository.createNewRemoteGame();
-            if (!success) {
-                setWaitingScreenVisible(false);
-                Toast.makeText(this, "Not connected to the Lobby. Please try again later.", Toast.LENGTH_LONG).show();
+            ensureNotificationsPermission(() -> {
+                setWaitingScreenVisible(true);
+                Log.d(TAG, "Starting getSelectOpponentsIntent");
+                boolean success = androidGameRepository.createNewRemoteGame();
+                if (!success) {
+                    setWaitingScreenVisible(false);
+                    Toast.makeText(this, "Not connected to the Lobby. Please try again later.", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    private void ensureNotificationsPermission(Runnable onPermissionGranted) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            pendingAction = onPermissionGranted;
+            if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.notification_permission_title)
+                        .setMessage(R.string.notification_permission_message)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS))
+                        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                            onPermissionGranted.run();
+                            pendingAction = null;
+                        })
+                        .show();
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
+        } else {
+            onPermissionGranted.run();
         }
     }
 
@@ -363,7 +432,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void gameSelected(GameData gameData) {
         runOnUiThread(() -> {
-            Crashlytics.log(Log.DEBUG, TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
+            Log.d(TAG, "gameSelected gameData = " + (gameData == null ? null : gameData.getMatchId()));
             if (gameData == null) {
                 selectMenuItem(NO_MATCH_ID);
                 displayFragment(new PlayerChoiceFragment());
@@ -383,7 +452,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void gameSelectionPending(@NonNull String matchId) {
         runOnUiThread(() -> {
-            Crashlytics.log(Log.DEBUG, TAG, "gameSelectionPending matchId = " + matchId);
+            Log.d(TAG, "gameSelectionPending matchId = " + matchId);
             selectMenuItem(matchId);
             setWaitingScreenVisible(true);
         });
@@ -397,7 +466,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateMatchSpinner() {
-        Crashlytics.log(Log.DEBUG, TAG, "updateMatchSpinner");
+        Log.d(TAG, "updateMatchSpinner");
 
         List<MatchMenuItem> newMatchMenuItems = Lists.newArrayList();
         newMatchMenuItems.addAll(getLobbyMatchMenuItems(androidGameRepository.getLobbyGames()));
@@ -410,7 +479,7 @@ public class MainActivity extends AppCompatActivity
      * Selects the given match (or the first one) and return its index.
      */
     private void selectMenuItem(@NonNull String matchId) {
-        Crashlytics.log(Log.DEBUG, TAG, "selectMenuItem matchId = " + matchId);
+        Log.d(TAG, "selectMenuItem matchId = " + matchId);
         for (int index = 0; index < navigationSpinnerAdapter.getCount(); index++) {
             MatchMenuItem item = navigationSpinnerAdapter.getItem(index);
             if (Objects.equal(item.getMatchId(), matchId)) {
@@ -419,7 +488,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        Crashlytics.log(Log.DEBUG, TAG, String.format("selectMenuItem(%s) didn't find anything; we do nothing (it's probably loading...)", matchId));
+        Log.d(TAG, String.format("selectMenuItem(%s) didn't find anything; we do nothing (it's probably loading...)", matchId));
     }
 
     private void setSelection(final int index) {
