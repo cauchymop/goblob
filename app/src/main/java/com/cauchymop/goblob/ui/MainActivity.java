@@ -136,17 +136,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void handleIntent(Intent intent) {
-        if (intent != null && intent.hasExtra(PushLobbyClient.GAME_ID)) {
-            Object extra = intent.getExtras().get(PushLobbyClient.GAME_ID);
-            if (extra != null) {
-                String gameId = String.valueOf(extra);
-                Log.d(TAG, "handleIntent gameId = " + gameId);
-                androidGameRepository.selectGame(gameId);
-            } else {
-                Log.w(TAG, "handleIntent extra is null");
-            }
+        if (intent == null) {
+            return;
         }
 
+        String gameId = intent.getStringExtra(PushLobbyClient.GAME_ID);
+        if (gameId != null) {
+            Log.d(TAG, "handleIntent gameId = " + gameId);
+            androidGameRepository.selectGame(gameId);
+        }
     }
 
     private void updatePushToken() {
