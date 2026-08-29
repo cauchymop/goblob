@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.images.ImageManager;
 import com.google.common.collect.Maps;
 
@@ -31,9 +30,9 @@ public class AvatarManager {
   }
 
   public void setAvatarUri(String playerDisplayName, Uri avatarUri) {
-    Crashlytics.log(Log.DEBUG, TAG, String.format("setAvatarUri(%s, %s)", playerDisplayName, avatarUri));
+    Log.d(TAG, String.format("setAvatarUri(%s, %s)", playerDisplayName, avatarUri));
     if (getAvatarUri(playerDisplayName) == null) {
-      Crashlytics.log(Log.DEBUG, TAG, String.format("    ==> setting new Avatar for %s", playerDisplayName));
+      Log.d(TAG, String.format("    ==> setting new Avatar for %s", playerDisplayName));
       avatarUrisByPlayerDisplayName.put(playerDisplayName, avatarUri);
     }
   }

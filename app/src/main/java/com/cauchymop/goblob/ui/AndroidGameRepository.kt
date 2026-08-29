@@ -13,7 +13,6 @@ import com.cauchymop.goblob.model.GameRepository
 import com.cauchymop.goblob.model.GoogleAccountManager
 import com.cauchymop.goblob.proto.PlayGameData.GameData
 import com.cauchymop.goblob.proto.PlayGameData.GameList
-import com.crashlytics.android.Crashlytics
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.protobuf.TextFormat
 import dagger.Lazy
@@ -95,7 +94,7 @@ constructor(
     }
 
     override fun forceCacheRefresh() {
-        Crashlytics.log(Log.DEBUG, TAG, "forceCacheRefresh")
+        Log.d(TAG, "forceCacheRefresh")
         persistCache()
         fireGameListChanged()
     }
@@ -110,7 +109,7 @@ constructor(
     }
 
     override fun log(message: String) {
-        Crashlytics.log(Log.DEBUG, TAG, message)
+        Log.d(TAG, message)
     }
 
     private fun loadLegacyLocalGame() {
@@ -120,7 +119,7 @@ constructor(
         try {
             TextFormat.merge(gameDataString, gameDataBuilder)
         } catch (e: TextFormat.ParseException) {
-            Crashlytics.log(Log.ERROR, TAG, "Error parsing local GameData: ${e.message}")
+            Log.e(TAG, "Error parsing local GameData: ${e.message}")
         }
 
         val localGame = gameDataBuilder.build()
@@ -133,17 +132,16 @@ constructor(
 }
 
 private fun loadGameCache(sharedPreferences: SharedPreferences): GameList.Builder {
-    Crashlytics.log(Log.DEBUG, TAG, "loadGameList")
+    Log.d(TAG, "loadGameList")
     val gameListString = sharedPreferences.getString(KEY_GAMES, "")
     val gameListBuilder = GameList.newBuilder()
     try {
         TextFormat.merge(gameListString, gameListBuilder)
     } catch (e: TextFormat.ParseException) {
-        Crashlytics.log(Log.ERROR, TAG, "Error parsing local GameList: " + e.message)
+        Log.e(TAG, "Error parsing local GameList: " + e.message)
     }
 
-    Crashlytics.log(
-        Log.DEBUG,
+    Log.d(
         TAG,
         "loadGameList: " + gameListBuilder.gamesCount + " games loaded."
     )

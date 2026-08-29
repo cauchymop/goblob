@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -65,7 +66,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
     implementation(libs.kotlin.stdlib.jdk7)
-    implementation(libs.crashlytics)
+    // implementation(libs.crashlytics)
 
     kapt(libs.dagger.compiler)
     kapt(libs.dagger.android.processor)
