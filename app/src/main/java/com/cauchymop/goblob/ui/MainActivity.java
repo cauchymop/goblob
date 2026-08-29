@@ -140,15 +140,11 @@ public class MainActivity extends AppCompatActivity
             Object extra = intent.getExtras().get(PushLobbyClient.GAME_ID);
             if (extra != null) {
                 String gameId = String.valueOf(extra);
-                Crashlytics.log(Log.DEBUG, TAG, "handleIntent gameId = " + gameId);
+                Log.d(TAG, "handleIntent gameId = " + gameId);
                 androidGameRepository.selectGame(gameId);
             }
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED) {
-            updatePushToken();
-        }
     }
 
     private void updatePushToken() {
