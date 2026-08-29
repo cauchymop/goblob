@@ -142,6 +142,8 @@ public class MainActivity extends AppCompatActivity
                 String gameId = String.valueOf(extra);
                 Log.d(TAG, "handleIntent gameId = " + gameId);
                 androidGameRepository.selectGame(gameId);
+            } else {
+                Log.w(TAG, "handleIntent extra is null");
             }
         }
 
