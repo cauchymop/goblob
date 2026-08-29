@@ -90,8 +90,9 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     }
 
     fun sendPushToken(token: String) {
-        println("OLIVIER: setPushToken $token")
-        mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType!!, token)
+        println("OLIVIER: setPushToken $token, gameType: $gameType")
+        if (gameType == null) return
+        mycom.setPushToken(PushLobbyClient.PUSH_SYSTEM_FCM, gameType, token)
     }
 
 

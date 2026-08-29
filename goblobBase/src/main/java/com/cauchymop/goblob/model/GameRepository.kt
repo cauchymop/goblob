@@ -279,6 +279,9 @@ abstract class GameRepository(
             selectGame(game.id.toString())
         }
 
+        if (currentMatchId == game.id.toString()) {
+            getLobbyClient().openGame(game.id)
+        }
     }
 
     override fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?) {

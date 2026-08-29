@@ -48,6 +48,7 @@ import com.google.android.gms.games.PlayersClient;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
+import net.yura.lobby.client.PushLobbyClient;
 import net.yura.lobby.model.Game;
 
 import java.util.List;
@@ -122,12 +123,28 @@ public class MainActivity extends AppCompatActivity
             if (currentMatchId != null) {
                 androidGameRepository.selectGame(currentMatchId);
             }
+        } else {
+            handleIntent(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.hasExtra(PushLobbyClient.GAME_ID)) {
+            Object extra = intent.getExtras().get(PushLobbyClient.GAME_ID);
+            if (extra != null) {
+                String gameId = String.valueOf(extra);
+                Log.d(TAG, "handleIntent gameId = " + gameId);
+                androidGameRepository.selectGame(gameId);
+            }
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED) {
-            updatePushToken();
-        }
     }
 
     private void updatePushToken() {
