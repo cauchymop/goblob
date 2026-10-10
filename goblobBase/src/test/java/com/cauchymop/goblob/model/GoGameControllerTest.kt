@@ -51,9 +51,11 @@ class GoGameControllerTest {
   }
 
   @Test
-  fun buildGameData_incrementsSequence() {
-    gameData = gameData.toBuilder().addAllMove(ImmutableList.of(GAME_DATAS.createMove(2, 3), GAME_DATAS.createMove(4, 5))).setSequenceNumber(3).build()
+  fun playMove_incrementsSequence() {
+    gameData = gameData.toBuilder().setSequenceNumber(3).build()
     controller.gameData = gameData
+
+    controller.playMoveOrToggleDeadStone(GAME_DATAS.createMove(2, 3))
 
     val controllerGameData = controller.gameData
 

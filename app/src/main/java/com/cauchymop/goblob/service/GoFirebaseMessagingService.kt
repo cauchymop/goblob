@@ -41,12 +41,16 @@ class GoFirebaseMessagingService : FirebaseMessagingService() {
         val options = remoteMessage.data[PushLobbyClient.OPTIONS] ?: ""
         Log.d("Push Received", "onMessageReceived: $title $message $gameId $options")
 
-        // TODO: Use the payload to pass to the pendingIntent and open the correct game when
-        //  handling it
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra(PushLobbyClient.GAME_ID, gameId)
         }
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            this,
+            gameId.hashCode(),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val builder = NotificationCompat.Builder(this, GoApplication.CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

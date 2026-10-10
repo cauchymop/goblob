@@ -33,7 +33,7 @@ class GoGameController @Inject constructor(
   private var initialGameData: GameData by Delegates.notNull()
 
   var gameData: GameData
-    get() = gameDataBuilder.apply { sequenceNumber++ }.build()
+    get() = gameDataBuilder.build()
     set(value) {
       this.initialGameData = value
       this.gameDataBuilder = Preconditions.checkNotNull(value).toBuilder()
@@ -101,6 +101,7 @@ class GoGameController @Inject constructor(
     if (canUndo()) {
       gameDataBuilder.addRedo(0, removeLastMove())
       game.undo()
+      gameDataBuilder.sequenceNumber++
       return true
     }
     return false
@@ -125,6 +126,7 @@ class GoGameController @Inject constructor(
       analytics.gameFinished(gameConfiguration, score)
     }
     gameDataBuilder.turn = opponentColor
+    gameDataBuilder.sequenceNumber++
   }
 
   fun canUndo(): Boolean {
@@ -141,6 +143,7 @@ class GoGameController @Inject constructor(
       winner = opponentColor
       resigned = true
     }
+    gameDataBuilder.sequenceNumber++
     analytics.gameFinished(gameConfiguration, score)
   }
 
@@ -159,6 +162,7 @@ class GoGameController @Inject constructor(
       gameDataBuilder.phase = CONFIGURATION
       gameDataBuilder.turn = gameDatas.getOpponentColor(gameConfiguration)
     }
+    gameDataBuilder.sequenceNumber++
     analytics.configurationChanged(gameDataBuilder.build())
   }
 
@@ -208,6 +212,7 @@ class GoGameController @Inject constructor(
       updateRedoForMove(move)
       gameDataBuilder.addMove(move)
       gameDataBuilder.turn = opponentColor
+      gameDataBuilder.sequenceNumber++
       checkForMatchEnd()
       analytics.movePlayed(gameConfiguration, move)
       return true
@@ -237,6 +242,7 @@ class GoGameController @Inject constructor(
     }
     matchEndStatus.lastModifier = gameDataBuilder.turn
     matchEndStatus.score = calculateScore()
+    gameDataBuilder.sequenceNumber++
     analytics.deadStoneToggled(gameConfiguration)
     return true
   }
