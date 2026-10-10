@@ -1,41 +1,37 @@
 package com.cauchymop.goblob.model
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.games.Player
-import com.google.android.gms.games.PlayersClient
+import android.content.SharedPreferences
+import androidx.core.content.edit
 import javax.inject.Inject
-import javax.inject.Provider
 import javax.inject.Singleton
 
-@Singleton
-class GoogleAccountManager @Inject constructor(
-    private val signInAccountProvider: Provider<GoogleSignInAccount?>,
-    private val playersClientProvider: Provider<PlayersClient>) {
+private const val KEY_SIGNED_IN_EMAIL = "signed_in_email"
+private const val KEY_ID_TOKEN = "id_token"
 
-  private var player: Player? = null
+@Singleton
+class GoogleAccountManager @Inject constructor(private val prefs: SharedPreferences) {
+
   private val listeners = mutableListOf<AccountStateListener>()
 
-  val signedInAccount
-    get() = signInAccountProvider.get()
+  val signInComplete: Boolean
+    get() = getEmail() != null
 
-  val signInComplete
-    get() = player != null
+  fun getEmail(): String? = prefs.getString(KEY_SIGNED_IN_EMAIL, null)
+  fun getIdToken(): String? = prefs.getString(KEY_ID_TOKEN, null)
 
-  val currentPlayerId
-    get() = player!!.playerId
-
-  val currentPlayer
-    get() = player
-
-  fun onSignInSuccess() {
-    playersClientProvider.get().getCurrentPlayer().addOnSuccessListener { player ->
-      this.player = player
-      fireStateChanged(true)
+  fun onSignInSuccess(email: String, idToken: String) {
+    prefs.edit {
+      putString(KEY_SIGNED_IN_EMAIL, email)
+      putString(KEY_ID_TOKEN, idToken)
     }
+    fireStateChanged(true)
   }
 
   fun onSignOut() {
-    this.player = null
+    prefs.edit {
+      remove(KEY_SIGNED_IN_EMAIL)
+      remove(KEY_ID_TOKEN)
+    }
     fireStateChanged(false)
   }
 
@@ -46,7 +42,6 @@ class GoogleAccountManager @Inject constructor(
   fun addAccountStateListener(accountStateListener: AccountStateListener) {
     listeners.add(accountStateListener)
   }
-
 }
 
 interface AccountStateListener {

@@ -30,6 +30,7 @@ import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
 import com.google.common.base.Preconditions;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.FirebaseUser;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -103,14 +104,22 @@ public class GoApplicationModule {
   @Provides
   @Named("PlayerOneDefaultName")
   public String providePlayerOneDefaultName(GoogleAccountManager googleAccountManager,
-      AvatarManager avatarManager) {
-    if (googleAccountManager.getSignInComplete()) {
-      Player currentPlayer = googleAccountManager.getCurrentPlayer();
-      avatarManager.setAvatarUri(currentPlayer.getDisplayName(), currentPlayer.getIconImageUri());
-      return currentPlayer.getDisplayName();
-    } else {
-      return application.getString(R.string.player_one_default_name);
+      AndroidGameRepository androidGameRepository) {
+    String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
+    if (lobbyName != null && !lobbyName.isEmpty() && !lobbyName.startsWith("Guest")) {
+      return lobbyName;
     }
+    String customName = androidGameRepository.getDisplayName();
+    if (customName != null && !customName.isEmpty()) {
+      return customName;
+    }
+    if (googleAccountManager.getSignInComplete()) {
+      String email = googleAccountManager.getEmail();
+      if (email != null) {
+        return email;
+      }
+    }
+    return application.getString(R.string.player_one_default_name);
   }
 
   @Provides

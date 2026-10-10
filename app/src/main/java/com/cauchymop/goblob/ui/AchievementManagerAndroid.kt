@@ -63,7 +63,11 @@ internal class AchievementManagerAndroid @Inject constructor(context: Context,
 
   private fun unlockAchievement(achievementId: String) {
     if (googleAccountManager.signInComplete) {
-      achievementClientProvider.get().unlock(achievementId)
+      try {
+        achievementClientProvider.get().unlock(achievementId)
+      } catch (e: Exception) {
+        // Ignore if Play Games client is unavailable
+      }
     }
   }
 }

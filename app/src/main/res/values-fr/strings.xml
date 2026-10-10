@@ -46,4 +46,6 @@
     <string name="waiting_for_opponent">En attente de partenaire</string>
     <string name="playing">Partie en cours</string>
     <string name="leave_game">Quitter la partie</string>
+    <string name="login_success">Connecté en tant que %1$s</string>
+    <string name="auth_error">Erreur d\'authentification : %1$s</string>
 </resources>

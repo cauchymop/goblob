@@ -29,7 +29,7 @@ abstract class GameRepository(
         private set
     var pendingMatchId: String? = null
 
-    private val gameListlisteners = Lists.newArrayList<GameListListener>()
+    protected val gameListlisteners = Lists.newArrayList<GameListListener>()
     private val gameChangelisteners = Lists.newArrayList<GameChangeListener>()
     private val gameSelectionListeners = Lists.newArrayList<GameSelectionListener>()
 
@@ -321,6 +321,7 @@ abstract class GameRepository(
             forceCacheRefresh()
             fireGameListChanged()
         }
+        gameListlisteners.forEach { it.onLoginSuccess(userName) }
     }
 
     private fun fillLocalStates(gameData: GameData.Builder): GameData.Builder {
@@ -344,6 +345,8 @@ abstract class GameRepository(
 
 interface GameListListener {
     fun gameListChanged()
+    fun onLoginSuccess(userName: String) {}
+    fun onAuthError(message: String) {}
 }
 
 interface GameChangeListener {
