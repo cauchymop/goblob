@@ -8,7 +8,6 @@ import javax.inject.Singleton
 
 @Singleton
 class GamePresenter @Inject constructor(private val gameRepository: GameRepository,
-                                        private val achievementManager: AchievementManager,
                                         private val updater: GameViewUpdater,
                                         private val configurationViewEventProcessor: ConfigurationViewEventProcessor,
                                         private val inGameViewEventProcessor: InGameViewEventProcessor,
@@ -50,7 +49,6 @@ class GamePresenter @Inject constructor(private val gameRepository: GameReposito
   }
 
   private fun gameUpdated() {
-    achievementManager.updateAchievements(goGameController)
     updateView()
   }
 

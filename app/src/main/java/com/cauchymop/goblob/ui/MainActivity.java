@@ -39,7 +39,6 @@ import com.cauchymop.goblob.model.GameListListener;
 import com.cauchymop.goblob.model.GameSelectionListener;
 import com.cauchymop.goblob.model.GoogleAccountManager;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.google.android.gms.games.PlayersClient;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -49,7 +48,6 @@ import net.yura.lobby.model.Game;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 public class MainActivity extends AppCompatActivity
         implements GameListListener, GameChangeListener, GameSelectionListener, AccountStateListener {
@@ -70,8 +68,6 @@ public class MainActivity extends AppCompatActivity
     AndroidGameRepository androidGameRepository;
     @Inject
     GoogleAccountManager googleAccountManager;
-    @Inject
-    Provider<PlayersClient> playersClientProvider;
     @Inject
     CredentialAuthHelper credentialAuthHelper;
 
@@ -556,14 +552,15 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         android.widget.EditText input = new android.widget.EditText(this);
-        String currentName = "";
-        String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
-        if (lobbyName != null && !lobbyName.isEmpty() && !lobbyName.startsWith("Guest")) {
-            currentName = lobbyName;
-        } else {
-            currentName = androidGameRepository.getDisplayName();
-            if (currentName.isEmpty() && googleAccountManager.getEmail() != null) {
-                currentName = googleAccountManager.getEmail();
+        String currentName = androidGameRepository.getDisplayName();
+        if (currentName.isEmpty()) {
+            if (googleAccountManager.getSignInComplete()) {
+                String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
+                if (lobbyName != null && !lobbyName.isEmpty()) {
+                    currentName = lobbyName;
+                } else if (googleAccountManager.getEmail() != null) {
+                    currentName = googleAccountManager.getEmail();
+                }
             }
         }
         input.setText(currentName);
@@ -581,13 +578,6 @@ public class MainActivity extends AppCompatActivity
                     if (!newName.isEmpty()) {
                         androidGameRepository.setDisplayName(newName);
                         androidGameRepository.getLobbyClient().setNick(newName);
-                        com.google.firebase.auth.FirebaseUser user = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-                        if (user != null) {
-                            com.google.firebase.auth.UserProfileChangeRequest profileUpdates = new com.google.firebase.auth.UserProfileChangeRequest.Builder()
-                                    .setDisplayName(newName)
-                                    .build();
-                            user.updateProfile(profileUpdates);
-                        }
                     }
                 })
                 .setNegativeButton(R.string.cancel, null)

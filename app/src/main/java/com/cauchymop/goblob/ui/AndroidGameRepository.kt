@@ -76,18 +76,19 @@ constructor(
 
     override fun onAuthError(message: String) {
         log("Auth error received from lobby: $message")
+        val email = googleAccountManager.getEmail()
+        if (email != null) {
+            prefs.edit { remove("${KEY_DISPLAY_NAME}_$email") }
+        }
+        displayName = ""
         if (!message.contains("already in the database", ignoreCase = true)) {
-            val email = googleAccountManager.getEmail()
             googleAccountManager.onSignOut()
-            if (email != null) {
-                prefs.edit { remove("${KEY_DISPLAY_NAME}_$email") }
-            }
-            displayName = ""
         }
         gameListlisteners.forEach { it.onAuthError(message) }
     }
 
     override fun onGameTypeReceived() {
+        fetchPushToken()
     }
 
     private fun fetchPushToken() {

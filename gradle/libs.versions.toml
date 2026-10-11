@@ -5,7 +5,6 @@ daggerVersion = "2.57"
 firebaseAnalytics = "23.0.0"
 firebaseMessaging = "24.1.0"
 firebaseCore = "21.1.1"
-firebaseAuth = "23.2.0"
 credentials = "1.6.0"
 googleid = "1.1.1"
 grpcStub = "1.73.0"
@@ -32,7 +31,6 @@ coroutinesVersion = "1.10.1"
 googleServices = "4.5.0"
 
 [libraries]
-firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
