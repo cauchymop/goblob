@@ -32,19 +32,13 @@ import androidx.fragment.app.FragmentTransaction;
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.databinding.ActivityMainBinding;
 import com.cauchymop.goblob.model.AccountStateListener;
+import com.cauchymop.goblob.model.CredentialAuthHelper;
 import com.cauchymop.goblob.model.GameChangeListener;
 import com.cauchymop.goblob.model.GameDatas;
 import com.cauchymop.goblob.model.GameListListener;
 import com.cauchymop.goblob.model.GameSelectionListener;
 import com.cauchymop.goblob.model.GoogleAccountManager;
 import com.cauchymop.goblob.proto.PlayGameData;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.PlayersClient;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -54,15 +48,11 @@ import net.yura.lobby.model.Game;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 public class MainActivity extends AppCompatActivity
         implements GameListListener, GameChangeListener, GameSelectionListener, AccountStateListener {
 
-    private static final int RC_REQUEST_ACHIEVEMENTS = 1;
-    private static final int RC_SELECT_PLAYER = 2;
-    private static final int RC_CHECK_MATCHES = 3;
-    private static final int RC_SIGN_IN = 4;
+    private static final int RC_SELECT_PLAYER = 1;
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String CURRENT_MATCH_ID = "CURRENT_MATCH_ID";
@@ -70,6 +60,7 @@ public class MainActivity extends AppCompatActivity
     private ActivityMainBinding binding;
     private MatchesAdapter navigationSpinnerAdapter;
     private List<MatchMenuItem> matchMenuItems = Lists.newArrayList();
+    private AlertDialog currentDialog;
 
     @Inject
     GameDatas gameDatas;
@@ -78,10 +69,9 @@ public class MainActivity extends AppCompatActivity
     @Inject
     GoogleAccountManager googleAccountManager;
     @Inject
-    Provider<PlayersClient> playersClientProvider;
+    CredentialAuthHelper credentialAuthHelper;
 
     private GameFragment gameFragment;
-    private GoogleSignInClient signInClient;
     private Runnable pendingAction;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -165,13 +155,28 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         Log.d(TAG, "onStart");
         updateMatchSpinner();
-//        signIn();
+        if (!googleAccountManager.getSignInComplete()) {
+            trySilentSignIn();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (currentDialog != null && currentDialog.isShowing()) {
+            currentDialog.dismiss();
+            currentDialog = null;
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
+        if (currentDialog != null && currentDialog.isShowing()) {
+            currentDialog.dismiss();
+            currentDialog = null;
+        }
         androidGameRepository.removeGameListListener(this);
         androidGameRepository.removeGameChangeListener(this);
         androidGameRepository.removeGameSelectionListener(this);
@@ -241,17 +246,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.menu_achievements) {
-            Games.getAchievementsClient(this, googleAccountManager.getSignedInAccount()).getAchievementsIntent()
-                    .addOnCompleteListener(intentTask -> startActivityForResult(intentTask.getResult(), RC_REQUEST_ACHIEVEMENTS));
-            return true;
-        } else if (id == R.id.menu_signout) {
+        if (id == R.id.menu_signout) {
             signOut();
         } else if (id == R.id.menu_signin) {
             Log.d(TAG, "signIn from menu");
             signIn();
-        } else if (id == R.id.menu_check_matches) {
-//      checkMatches();
+        } else if (id == R.id.menu_change_display_name) {
+            showDisplayNameDialog();
+            return true;
         } else if (id == R.id.menu_about) {
             startActivity(new Intent(this, AboutActivity.class));
         } else if (id == R.id.menu_clear_cache) {
@@ -271,34 +273,14 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         super.onActivityResult(requestCode, responseCode, intent);
         Log.d(TAG, String.format("onActivityResult requestCode = %d, responseCode = %d", requestCode, responseCode));
-        switch (requestCode) {
-            case RC_SELECT_PLAYER:
-                if (responseCode == RESULT_OK) {
+        if (requestCode == RC_SELECT_PLAYER) {
+            if (responseCode == RESULT_OK) {
 //          androidGameRepository.handlePlayersSelected(intent);
-                } else {
-                    setWaitingScreenVisible(false);
-                }
-                break;
-            case RC_CHECK_MATCHES:
-//        androidGameRepository.handleCheckMatchesResult(responseCode, intent);
-                break;
-            case RC_REQUEST_ACHIEVEMENTS:
-                break;
-            case RC_SIGN_IN:
-                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(intent);
-                if (result.isSuccess()) {
-                    googleAccountManager.onSignInSuccess();
-                } else {
-                    String message = result.getStatus().getStatusMessage();
-                    if (message == null || message.isEmpty()) {
-                        message = getString(R.string.signin_other_error);
-                    }
-                    new AlertDialog.Builder(this).setMessage(message)
-                            .setNeutralButton(android.R.string.ok, null).show();
-                }
-                break;
-            default:
-        Log.e(TAG, "onActivityResult unexpected requestCode " + requestCode);
+            } else {
+                setWaitingScreenVisible(false);
+            }
+        } else {
+            Log.e(TAG, "onActivityResult unexpected requestCode " + requestCode);
         }
     }
 
@@ -349,25 +331,46 @@ public class MainActivity extends AppCompatActivity
         return matchMenuItems;
     }
 
+    private void trySilentSignIn() {
+        String webClientId = getString(R.string.web_client_id);
+        credentialAuthHelper.startGoogleSignIn(this, webClientId, true,
+                (idToken, email) -> {
+                    googleAccountManager.onSignInSuccess(email, idToken);
+                },
+                e -> Log.d(TAG, "Silent sign-in failed", e)
+        );
+    }
+
     private void signIn() {
-        signInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-        signInClient.silentSignIn().addOnCompleteListener(this,
-                task -> {
-                    if (task.isSuccessful()) {
-                        // The signed in account is stored in the task's result.
-                        googleAccountManager.onSignInSuccess();
-                    } else {
-                        // Player will need to sign-in explicitly using via UI
-                        Intent intent = signInClient.getSignInIntent();
-                        startActivityForResult(intent, RC_SIGN_IN);
+        String webClientId = getString(R.string.web_client_id);
+        credentialAuthHelper.startGoogleSignIn(this, webClientId, false,
+                (idToken, email) -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
                     }
-                });
+                    googleAccountManager.onSignInSuccess(email, idToken);
+                },
+                e -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    googleAccountManager.onSignOut();
+                    String message = "No Google accounts found on this device. Please add a Google account in your device Settings and try again.";
+                    if (!(e instanceof androidx.credentials.exceptions.NoCredentialException)) {
+                        message = "Sign-in error: " + e.getLocalizedMessage();
+                    }
+                    if (currentDialog != null && currentDialog.isShowing()) {
+                        currentDialog.dismiss();
+                    }
+                    currentDialog = new AlertDialog.Builder(this).setMessage(message)
+                            .setNeutralButton(android.R.string.ok, null).show();
+                }
+        );
     }
 
     private void signOut() {
         Log.d(TAG, "signOut");
-        signInClient.signOut().addOnCompleteListener(this,
-                task -> googleAccountManager.onSignOut());
+        googleAccountManager.onSignOut();
     }
 
     private GoBlobBaseFragment getCurrentFragment() {
@@ -386,11 +389,6 @@ public class MainActivity extends AppCompatActivity
         // Commit the transaction
         ft.commitAllowingStateLoss();
     }
-
-//  public void checkMatches() {
-//    turnBasedClientProvider.get().getInboxIntent().addOnCompleteListener(task -> startActivityForResult( task.getResult(), RC_CHECK_MATCHES));
-//
-//  }
 
     public void configureGame(boolean isLocal) {
         if (isLocal) {
@@ -414,7 +412,13 @@ public class MainActivity extends AppCompatActivity
                 ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             pendingAction = onPermissionGranted;
             if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                new AlertDialog.Builder(this)
+                if (isFinishing() || isDestroyed()) {
+                    return;
+                }
+                if (currentDialog != null && currentDialog.isShowing()) {
+                    currentDialog.dismiss();
+                }
+                currentDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.notification_permission_title)
                         .setMessage(R.string.notification_permission_message)
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS))
@@ -518,20 +522,62 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void accountStateChanged(boolean isSignInComplete) {
-//        if (isSignInComplete) {
-//            androidGameRepository.refreshRemoteGameListFromServer();
-//            androidGameRepository.publishUnpublishedGames();
-//            Games.getGamesClient(this, googleAccountManager.getSignedInAccount()).getActivationHint().addOnSuccessListener(bundle -> {
-//                // Retrieve the TurnBasedMatch from the connectionHint in order to select it
-////        if (bundle != null) {
-////          TurnBasedMatch turnBasedMatch = bundle.getParcelable(Multiplayer.EXTRA_TURN_BASED_MATCH);
-////          Crashlytics.log(Log.DEBUG, TAG, " ==> We have an invite! " + turnBasedMatch);
-////          androidGameRepository.setPendingMatchId(turnBasedMatch.getMatchId());
-////        }
-//            });
-//        }
         invalidateOptionsMenu();
         updateUiFromConnectionStatus(isSignInComplete);
+    }
+
+    @Override
+    public void onLoginSuccess(String userName) {
+        runOnUiThread(() -> {
+            android.widget.Toast.makeText(this, getString(R.string.login_success, userName), android.widget.Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
+    public void onServerError(String message) {
+        runOnUiThread(() -> {
+            android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
+    public void onAuthError(String message) {
+        runOnUiThread(() -> {
+            if (currentDialog != null && currentDialog.isShowing()) {
+                currentDialog.dismiss();
+            }
+            currentDialog = new AlertDialog.Builder(this)
+                    .setTitle(R.string.signin_other_error)
+                    .setMessage(getString(R.string.auth_error, message))
+                    .setNeutralButton(android.R.string.ok, null)
+                    .show();
+        });
+    }
+
+    private void showDisplayNameDialog() {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        android.widget.EditText input = new android.widget.EditText(this);
+        String currentName = androidGameRepository.getLobbyClient().myPlayerName();
+        input.setText(currentName);
+        input.setSelection(input.getText().length());
+
+        if (currentDialog != null && currentDialog.isShowing()) {
+            currentDialog.dismiss();
+        }
+        currentDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.display_name_dialog_title)
+                .setMessage("Your current display name is: " + currentName)
+                .setView(input)
+                .setPositiveButton(R.string.save, (dialog, which) -> {
+                    String newName = input.getText().toString().trim();
+                    if (!newName.isEmpty()) {
+                        androidGameRepository.getLobbyClient().setNick(newName);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
 
 //  private TurnBasedMultiplayerClient getTurnBasedMultiplayerClient() {

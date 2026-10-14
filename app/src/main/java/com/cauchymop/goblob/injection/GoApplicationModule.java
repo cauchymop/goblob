@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import androidx.annotation.Nullable;
-
 import com.cauchymop.goblob.R;
 import com.cauchymop.goblob.analytics.AnalyticsEventLogger;
 import com.cauchymop.goblob.analytics.FirebaseAnalyticsSender;
@@ -15,20 +13,11 @@ import com.cauchymop.goblob.model.Analytics;
 import com.cauchymop.goblob.model.AvatarManager;
 import com.cauchymop.goblob.model.GameRepository;
 import com.cauchymop.goblob.model.GoogleAccountManager;
-import com.cauchymop.goblob.presenter.AchievementManager;
 import com.cauchymop.goblob.presenter.FeedbackSender;
 import com.cauchymop.goblob.presenter.GameMessageGenerator;
-import com.cauchymop.goblob.ui.AchievementManagerAndroid;
 import com.cauchymop.goblob.ui.AndroidFeedbackSender;
 import com.cauchymop.goblob.ui.AndroidGameRepository;
 import com.cauchymop.goblob.ui.GameMessageGeneratorAndroid;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.games.AchievementsClient;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.Player;
-import com.google.android.gms.games.PlayersClient;
-import com.google.common.base.Preconditions;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Named;
@@ -60,10 +49,6 @@ public class GoApplicationModule {
 
     @Binds
     @Singleton
-    AchievementManager getAchievementManager(AchievementManagerAndroid achievementManagerAndroid);
-
-    @Binds
-    @Singleton
     FeedbackSender getFeedbackSender(AndroidFeedbackSender androidFeedbackSender);
   }
 
@@ -74,43 +59,19 @@ public class GoApplicationModule {
   }
 
   @Provides
-  @Nullable
-  public GoogleSignInAccount getSignedInAccount(Context context) {
-    return GoogleSignIn.getLastSignedInAccount(context);
-  }
-
-  @Provides
-  @Named("Not Null")
-  public GoogleSignInAccount getNotNullableSignedInAccount(@Nullable GoogleSignInAccount googleSignInAccount) {
-    return Preconditions.checkNotNull(googleSignInAccount);
-  }
-
-//  @Provides
-//  public TurnBasedMultiplayerClient getTurnBasedMultiplayerClient(Context context, @Named("Not Null") GoogleSignInAccount account) {
-//    return Games.getTurnBasedMultiplayerClient(context, account);
-//  }
-
-  @Provides
-  public PlayersClient getPlayerClient(Context context, @Named("Not Null") GoogleSignInAccount account) {
-    return Games.getPlayersClient(context, account);
-  }
-
-  @Provides
-  public AchievementsClient getAchievementsClient(Context context, @Named("Not Null") GoogleSignInAccount account) {
-    return Games.getAchievementsClient(context, account);
+  @Singleton
+  public Application provideApplication() {
+    return application;
   }
 
   @Provides
   @Named("PlayerOneDefaultName")
-  public String providePlayerOneDefaultName(GoogleAccountManager googleAccountManager,
-      AvatarManager avatarManager) {
-    if (googleAccountManager.getSignInComplete()) {
-      Player currentPlayer = googleAccountManager.getCurrentPlayer();
-      avatarManager.setAvatarUri(currentPlayer.getDisplayName(), currentPlayer.getIconImageUri());
-      return currentPlayer.getDisplayName();
-    } else {
-      return application.getString(R.string.player_one_default_name);
+  public String providePlayerOneDefaultName(AndroidGameRepository androidGameRepository) {
+    String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
+    if (!lobbyName.isEmpty()) {
+      return lobbyName;
     }
+    return application.getString(R.string.player_one_default_name);
   }
 
   @Provides
@@ -127,26 +88,25 @@ public class GoApplicationModule {
 
   @Provides
   @Singleton
-  public Context getApplicationContext() {
+  public SharedPreferences provideSharedPreferences(Application application) {
+    return PreferenceManager.getDefaultSharedPreferences(application);
+  }
+
+  @Provides
+  @Singleton
+  public Context provideContext(Application application) {
     return application;
   }
 
   @Provides
   @Singleton
-  public SharedPreferences getSharedPreferences(Context context) {
-    return PreferenceManager.getDefaultSharedPreferences(context);
+  public FirebaseAnalytics provideFirebaseAnalytics(Application application) {
+    return FirebaseAnalytics.getInstance(application);
   }
 
   @Provides
   @Singleton
-  public FirebaseAnalytics getFireBaFirebaseAnalytics(Context context) {
-    return FirebaseAnalytics.getInstance(context);
+  public EventLogger provideEventLogger(AnalyticsEventLogger analyticsEventLogger) {
+    return analyticsEventLogger;
   }
-
-  @Provides
-  @Singleton
-  public EventLogger getFEventLogger(FirebaseAnalytics firebaseAnalytics) {
-    return new AnalyticsEventLogger(firebaseAnalytics);
-  }
-
 }

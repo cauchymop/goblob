@@ -77,4 +77,12 @@
     <item>8</item>
     <item>9</item>
   </string-array>
+  <string name="change_display_name">Change display name</string>
+  <string name="display_name_dialog_title">Choose Display Name</string>
+  <string name="display_name_dialog_message">Enter your public display name (handle):</string>
+  <string name="cancel">Cancel</string>
+  <string name="save">Save</string>
+  <string name="login_success">Logged in as %1$s</string>
+  <string name="auth_error">Authentication error: %1$s</string>
+  <string name="web_client_id" translatable="false">783159960229-3ssrlemm017ak0qrlpv83rvjjud1mn2b.apps.googleusercontent.com</string>
 </resources>

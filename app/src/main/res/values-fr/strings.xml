@@ -46,4 +46,11 @@
     <string name="waiting_for_opponent">En attente de partenaire</string>
     <string name="playing">Partie en cours</string>
     <string name="leave_game">Quitter la partie</string>
+    <string name="change_display_name">Changer de nom d\'affichage</string>
+    <string name="display_name_dialog_title">Choisir un nom d\'affichage</string>
+    <string name="display_name_dialog_message">Entrez votre nom d\'affichage public :</string>
+    <string name="cancel">Annuler</string>
+    <string name="save">Enregistrer</string>
+    <string name="login_success">Connecté en tant que %1$s</string>
+    <string name="auth_error">Erreur d\'authentification : %1$s</string>
 </resources>

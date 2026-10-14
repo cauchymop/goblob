@@ -65,6 +65,9 @@ dependencies {
     implementation(libs.firebase.core)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     implementation(libs.kotlin.stdlib.jdk7)
     // implementation(libs.crashlytics)
 

@@ -66,6 +66,21 @@ constructor(
         lobbyClient.addListener(this)
     }
 
+    override fun onConnected() {
+        if (googleAccountManager.signInComplete) {
+            onGoogleSignIn()
+        }
+        fetchPushToken()
+    }
+
+    override fun onAuthError(message: String) {
+        log("Auth error received from lobby: $message")
+        if (!message.contains("already in the database", ignoreCase = true)) {
+            googleAccountManager.onSignOut()
+        }
+        gameListlisteners.forEach { it.onAuthError(message) }
+    }
+
     override fun onGameTypeReceived() {
         fetchPushToken()
     }
@@ -87,9 +102,8 @@ constructor(
     }
 
     private fun onGoogleSignIn() {
-        val signedInAccount = googleAccountManager.signedInAccount
-        val email = signedInAccount?.email ?: return
-        val idToken = signedInAccount.idToken ?: return
+        val email = googleAccountManager.getEmail() ?: return
+        val idToken = googleAccountManager.getIdToken() ?: return
         lobbyClient.setGoogleLogin(email, idToken)
     }
 

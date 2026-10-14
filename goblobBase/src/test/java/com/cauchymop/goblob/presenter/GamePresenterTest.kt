@@ -25,9 +25,6 @@ class GamePresenterTest {
   private lateinit var gameRepository: GameRepository
 
   @Mock
-  private lateinit var achievementManager: AchievementManager
-
-  @Mock
   private lateinit var view: GameView
 
   @Mock
@@ -52,13 +49,13 @@ class GamePresenterTest {
   fun setUp() {
     gamePresenter = createGamePresenter()
     gamePresenter.view = view
-    reset<Any>(view, gameViewUpdater, gameRepository, achievementManager, goGameController)
+    reset<Any>(view, gameViewUpdater, gameRepository, goGameController)
   }
 
   @After
   fun tearDown() {
     verify(goGameController, atLeast(0)).matchId
-    verifyNoMoreInteractions(analytics, gameRepository, achievementManager, gameViewUpdater, view, goGameController)
+    verifyNoMoreInteractions(analytics, gameRepository, gameViewUpdater, view, goGameController)
   }
 
   @Test
@@ -71,7 +68,6 @@ class GamePresenterTest {
     verify(view).setConfigurationViewListener(configurationViewEventProcessor)
     verify(view).setInGameActionListener(inGameViewEventProcessor)
     // from gameUpdated
-    verify(achievementManager).updateAchievements(goGameController)
     verify(gameViewUpdater).update()
   }
 
@@ -120,7 +116,6 @@ class GamePresenterTest {
     gamePresenter.gameChanged(createGameData(Phase.IN_GAME).setMatchId("pizza").setPhase(INITIAL).build())
 
     verify(gameViewUpdater).update()
-    verify(achievementManager).updateAchievements(goGameController)
   }
 
   private fun setInitialGame(matchId: String) {
@@ -129,12 +124,11 @@ class GamePresenterTest {
 
   fun setInitialGame() {
     gamePresenter.gameSelected(createGameData(Phase.IN_GAME).build())
-    reset<Any>(gameRepository, achievementManager, gameViewUpdater, view, goGameController)
+    reset<Any>(gameRepository, gameViewUpdater, view, goGameController)
   }
 
   private fun createGamePresenter(): GamePresenter {
     return GamePresenter(gameRepository,
-        achievementManager,
         gameViewUpdater,
         configurationViewEventProcessor,
         inGameViewEventProcessor,

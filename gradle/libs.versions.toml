@@ -5,6 +5,8 @@ daggerVersion = "2.57"
 firebaseAnalytics = "23.0.0"
 firebaseMessaging = "24.1.0"
 firebaseCore = "21.1.1"
+credentials = "1.6.0"
+googleid = "1.1.1"
 grpcStub = "1.73.0"
 guavaVersion = "33.4.8-android"
 coreKtx = "1.16.0"
@@ -29,6 +31,9 @@ coroutinesVersion = "1.10.1"
 googleServices = "4.5.0"
 
 [libraries]
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
 dagger = { module = "com.google.dagger:dagger", version.ref = "daggerVersion" }

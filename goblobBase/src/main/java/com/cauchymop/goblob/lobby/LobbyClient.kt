@@ -65,8 +65,14 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
     }
 
     fun setGoogleLogin(email: String, idToken: String) {
+        println("OLIVIER: setGoogleLogin(email:$email, idToken:$idToken)")
         mycom.setEmail(email)
         mycom.setOAuthToken("googleIdToken", idToken)
+    }
+
+    fun setNick(nick: String) {
+        println("OLIVIER: setNick $nick")
+        mycom.setNick(nick)
     }
 
     fun openGame(gameId: Int) {
@@ -98,6 +104,7 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
 
     override fun connected() {
         println("OLIVIER: connected!")
+        listeners.forEach { it.onConnected() }
         mycom.getGameTypes()
     }
 
@@ -111,6 +118,11 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
 
     override fun error(msg: String) {
         println("OLIVIER: error: $msg")
+        if (msg.contains("login error", ignoreCase = true) || msg.contains("database", ignoreCase = true)) {
+            listeners.forEach { it.onAuthError(msg) }
+        } else {
+            listeners.forEach { it.onServerError(msg) }
+        }
     }
 
     override fun ping(time: Long) {
@@ -206,5 +218,8 @@ interface LobbyClientListener {
     fun onAddOrUpdateLobbyGame(game: Game)
     fun onLobbyGameDataChanged(gameId: Int, gameDataBytes: ByteArray?)
     fun onGameTypeReceived() {}
+    fun onConnected() {}
+    fun onAuthError(message: String) {}
+    fun onServerError(message: String) {}
     fun onLoggedIn(userName: String)
 }
