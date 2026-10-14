@@ -72,11 +72,11 @@ abstract class GameRepository(
 
     abstract fun getLobbyClient(): LobbyClient
 
-    protected fun saveToCache(gameData: GameData): Boolean {
+    protected fun saveToCache(gameData: GameData, forceOverwrite: Boolean = false): Boolean {
         log("saveToCache " + gameData.matchId)
         val existingGame = gameCache.gamesMap[gameData.matchId]
         log(" -> existingGame found = " + (existingGame != null))
-        val changed = existingGame == null || gameData.sequenceNumber > existingGame.sequenceNumber
+        val changed = forceOverwrite || existingGame == null || gameData.sequenceNumber > existingGame.sequenceNumber
         if (changed) {
             gameCache.putGames(gameData.matchId, gameData)
             fireGameChanged(gameData)
@@ -289,13 +289,13 @@ abstract class GameRepository(
 
         var gameData: GameData? = null
         if (gameDataBytes != null && gameDataBytes.isNotEmpty()) {
-            gameData = fillLocalStates(GameData.parseFrom(gameDataBytes).toBuilder()).build()
+            gameData = fillLocalStates(GameData.parseFrom(gameDataBytes).toBuilder(), game.whosTurn).build()
         } else if (game.players.firstOrNull()?.toString() == getLobbyClient().myPlayerName()) {
             gameData = game.toNewGameData(gameDatas, getLobbyClient())
         }
 
         if (gameData != null) {
-            saveToCache(gameData)
+            saveToCache(gameData, forceOverwrite = true)
             if (pendingMatchId == game.id.toString()) {
                 pendingMatchId = null
                 selectGame(gameData.matchId)
@@ -310,7 +310,9 @@ abstract class GameRepository(
         var changed = false
         gameCache.gamesMap.forEach { (matchId, gameData) ->
             if (gameDatas.isRemoteGame(gameData)) {
-                val updatedGameData = fillLocalStates(gameData.toBuilder()).build()
+                val lobbyGameId = matchId.toIntOrNull()
+                val game = lobbyGameId?.let { lobbyGamesById[it] }
+                val updatedGameData = fillLocalStates(gameData.toBuilder(), game?.whosTurn).build()
                 if (updatedGameData != gameData) {
                     gameCache.putGames(matchId, updatedGameData)
                     changed = true
@@ -324,7 +326,15 @@ abstract class GameRepository(
         gameListlisteners.forEach { it.onLoginSuccess(userName) }
     }
 
-    private fun fillLocalStates(gameData: GameData.Builder): GameData.Builder {
+    override fun onServerError(message: String) {
+        log("Server error received: $message")
+        // Don't auto-reopen on server error to avoid infinite loops when the server rejects moves
+        // If the state is broken, we keep it as is, or we could reset to the last known good state
+        // if we had it. For now, we just pass the error to the UI.
+        gameListlisteners.forEach { it.onServerError(message) }
+    }
+
+    private fun fillLocalStates(gameData: GameData.Builder, whosTurn: String? = null): GameData.Builder {
         val myPlayerName = getLobbyClient().myPlayerName()
         val iAmBlack = gameData.gameConfiguration.black.id == myPlayerName
 
@@ -338,6 +348,15 @@ abstract class GameRepository(
             whitePlayer.id = myPlayerName
             whitePlayer.name = myPlayerName
         }
+
+        if (!whosTurn.isNullOrEmpty()) {
+            if (whosTurn == gameConfiguration.black.id || whosTurn == gameConfiguration.black.name) {
+                gameData.turn = PlayGameData.Color.BLACK
+            } else if (whosTurn == gameConfiguration.white.id || whosTurn == gameConfiguration.white.name) {
+                gameData.turn = PlayGameData.Color.WHITE
+            }
+        }
+
         return gameData
     }
 
@@ -347,6 +366,7 @@ interface GameListListener {
     fun gameListChanged()
     fun onLoginSuccess(userName: String) {}
     fun onAuthError(message: String) {}
+    fun onServerError(message: String) {}
 }
 
 interface GameChangeListener {

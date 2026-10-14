@@ -534,6 +534,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onServerError(String message) {
+        runOnUiThread(() -> {
+            android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
     public void onAuthError(String message) {
         runOnUiThread(() -> {
             if (currentDialog != null && currentDialog.isShowing()) {
@@ -552,17 +559,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         android.widget.EditText input = new android.widget.EditText(this);
-        String currentName = androidGameRepository.getDisplayName();
-        if (currentName.isEmpty()) {
-            if (googleAccountManager.getSignInComplete()) {
-                String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
-                if (lobbyName != null && !lobbyName.isEmpty()) {
-                    currentName = lobbyName;
-                } else if (googleAccountManager.getEmail() != null) {
-                    currentName = googleAccountManager.getEmail();
-                }
-            }
-        }
+        String currentName = androidGameRepository.getLobbyClient().myPlayerName();
         input.setText(currentName);
         input.setSelection(input.getText().length());
 
@@ -576,7 +573,6 @@ public class MainActivity extends AppCompatActivity
                 .setPositiveButton(R.string.save, (dialog, which) -> {
                     String newName = input.getText().toString().trim();
                     if (!newName.isEmpty()) {
-                        androidGameRepository.setDisplayName(newName);
                         androidGameRepository.getLobbyClient().setNick(newName);
                     }
                 })

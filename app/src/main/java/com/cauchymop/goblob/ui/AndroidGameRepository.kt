@@ -28,7 +28,6 @@ import javax.inject.Singleton
 private const val GAME_DATA = "gameData"
 private const val KEY_GAMES = "games"
 private const val KEY_CLIENT_UUID = "client_uuid"
-private const val KEY_DISPLAY_NAME = "display_name"
 private const val TAG = "AndroidGameRepository"
 
 @Singleton
@@ -76,11 +75,6 @@ constructor(
 
     override fun onAuthError(message: String) {
         log("Auth error received from lobby: $message")
-        val email = googleAccountManager.getEmail()
-        if (email != null) {
-            prefs.edit { remove("${KEY_DISPLAY_NAME}_$email") }
-        }
-        displayName = ""
         if (!message.contains("already in the database", ignoreCase = true)) {
             googleAccountManager.onSignOut()
         }
@@ -112,17 +106,6 @@ constructor(
         val idToken = googleAccountManager.getIdToken() ?: return
         lobbyClient.setGoogleLogin(email, idToken)
     }
-
-    var displayName: String
-        get() {
-            val suffix = googleAccountManager.getEmail() ?: "default"
-            return prefs.getString("${KEY_DISPLAY_NAME}_$suffix", "") ?: ""
-        }
-        set(value) {
-            val suffix = googleAccountManager.getEmail() ?: "default"
-            prefs.edit { putString("${KEY_DISPLAY_NAME}_$suffix", value) }
-            fireGameListChanged()
-        }
 
     override fun forceCacheRefresh() {
         Log.d(TAG, "forceCacheRefresh")

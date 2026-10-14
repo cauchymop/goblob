@@ -120,6 +120,8 @@ class LobbyClient(uuid: String, appName: String, version: String) : LobbyClient 
         println("OLIVIER: error: $msg")
         if (msg.contains("login error", ignoreCase = true) || msg.contains("database", ignoreCase = true)) {
             listeners.forEach { it.onAuthError(msg) }
+        } else {
+            listeners.forEach { it.onServerError(msg) }
         }
     }
 
@@ -218,5 +220,6 @@ interface LobbyClientListener {
     fun onGameTypeReceived() {}
     fun onConnected() {}
     fun onAuthError(message: String) {}
+    fun onServerError(message: String) {}
     fun onLoggedIn(userName: String)
 }

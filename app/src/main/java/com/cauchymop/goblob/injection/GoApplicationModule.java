@@ -66,21 +66,10 @@ public class GoApplicationModule {
 
   @Provides
   @Named("PlayerOneDefaultName")
-  public String providePlayerOneDefaultName(GoogleAccountManager googleAccountManager,
-      AndroidGameRepository androidGameRepository) {
-    String customName = androidGameRepository.getDisplayName();
-    if (customName != null && !customName.isEmpty()) {
-      return customName;
-    }
-    if (googleAccountManager.getSignInComplete()) {
-      String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
-      if (lobbyName != null && !lobbyName.isEmpty()) {
-        return lobbyName;
-      }
-      String email = googleAccountManager.getEmail();
-      if (email != null) {
-        return email;
-      }
+  public String providePlayerOneDefaultName(AndroidGameRepository androidGameRepository) {
+    String lobbyName = androidGameRepository.getLobbyClient().myPlayerName();
+    if (!lobbyName.isEmpty()) {
+      return lobbyName;
     }
     return application.getString(R.string.player_one_default_name);
   }
